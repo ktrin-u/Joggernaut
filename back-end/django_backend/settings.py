@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'api.apps.ApiConfig'
 ]
 
 MIDDLEWARE = [
@@ -51,7 +53,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'django_backend.urls'
 
-TEMPLATES = [
+TEMPLATES = [   # type:ignore
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -79,7 +81,7 @@ mysqlconf = Path("./conf/mysql.conf")
 if not mysqlconf.is_file():
     raise FileNotFoundError("conf/mysql.conf is missing")
 
-DATABASES = {
+DATABASES = {   # type: ignore
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "OPTIONS": {
