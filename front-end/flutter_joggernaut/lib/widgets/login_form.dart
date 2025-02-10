@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/home_page.dart';
 import 'package:flutter_application_1/widgets/recovery_form.dart';
 
 class LoginForm extends StatelessWidget {
@@ -186,7 +187,12 @@ class LoginForm extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (route) => false, 
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
                     backgroundColor: Color.fromRGBO(245, 245, 245, 1),
