@@ -7,6 +7,8 @@ class MenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Column(
       children: [ 
         Material(
@@ -18,10 +20,10 @@ class MenuButton extends StatelessWidget {
             customBorder: CircleBorder(),
             splashColor: Colors.black12,
             child: Padding(
-              padding: EdgeInsets.all(30),
+              padding: EdgeInsets.all(screenHeight*0.03),
               child: Icon(
                 icon, 
-                size: 30, 
+                size: screenWidth*0.075, 
                 color: Colors.black87,
               ),
             ),
@@ -32,7 +34,7 @@ class MenuButton extends StatelessWidget {
           label,
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontSize: 18,
+            fontSize: screenWidth * 0.045,
             fontWeight: FontWeight.w300,
             color: Color.fromRGBO(0, 0, 0, 1),
           ),

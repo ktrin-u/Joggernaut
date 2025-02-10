@@ -12,6 +12,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Color.fromRGBO(250, 243, 239, 1),
@@ -24,7 +26,7 @@ class _HomePageState extends State<HomePage> {
                   "Welcome,",
                   style: TextStyle(
                     fontFamily: 'Roboto',
-                    fontSize: 22,
+                    fontSize: screenWidth * 0.055,
                     fontWeight: FontWeight.w300,
                     color: Color.fromRGBO(51, 51, 51, 1),
                   ),
@@ -33,38 +35,38 @@ class _HomePageState extends State<HomePage> {
                   "Ernest K.",
                   style: TextStyle(
                     fontFamily: 'Big Shoulders Display',
-                    fontSize: 52,
+                    fontSize: screenWidth * 0.13,
                     fontWeight: FontWeight.bold,
                     color: Color.fromRGBO(90, 155, 212, 1),
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
                 Wrap(
-                  spacing: 50,
+                  spacing: screenWidth * 0.1,
                   alignment: WrapAlignment.center,
                   children: [
                     MenuButton(icon: Icons.fitness_center, label: "Workout"),
                     MenuButton(icon: Icons.videogame_asset, label: "Play"),
                   ],
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 Wrap(
-                  spacing: 50,
+                  spacing: screenWidth * 0.1,
                   alignment: WrapAlignment.center,
                   children: [
                     MenuButton(icon: Icons.people, label: "Social"),
                     MenuButton(icon: Icons.person, label: "Profile"),
                   ],
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 Wrap(
-                  spacing: 50,
+                  spacing: screenWidth * 0.1,
                   alignment: WrapAlignment.center,
                   children: [
                     MenuButton(icon: Icons.settings, label: "Settings"),
                   ],
                 ),
-                SizedBox(height: 80),
+                SizedBox(height: screenHeight * 0.08),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
@@ -75,17 +77,20 @@ class _HomePageState extends State<HomePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                    padding: EdgeInsets.symmetric( 
+                      horizontal: screenWidth * 0.065, 
+                      vertical: screenHeight * 0.008,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    minimumSize: const Size(90, 30),
+                    minimumSize: Size(screenWidth * 0.04, screenHeight * 0.01),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Log out",
                     style: TextStyle(
                       fontFamily: 'Roboto',
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.w400,
                       color: Color.fromRGBO(0, 0, 0, 1),
                     ),
