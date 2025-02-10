@@ -16,7 +16,7 @@ class Gender(models.TextChoices):
     OTHER = 'Other'
 
 
-class Users(models.Model):
+class User(models.Model):
     userid = models.AutoField(db_column='userID', primary_key=True)  # Field name made lowercase.
     username = models.CharField(unique=True, max_length=50)
     email = models.CharField(unique=True, max_length=100)
@@ -29,7 +29,7 @@ class Users(models.Model):
 
 class UserActivity(models.Model):
     activityid = models.AutoField(db_column='activityID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(Users, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
     calories = models.IntegerField()
     steps = models.IntegerField()
 
@@ -39,7 +39,7 @@ class UserActivity(models.Model):
 
 class UserAuditLog(models.Model):
     logid = models.AutoField(db_column='logID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(Users, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
     action = models.CharField(max_length=50)
     details = models.TextField()
     timestamp = models.DateTimeField()
@@ -50,7 +50,7 @@ class UserAuditLog(models.Model):
 
 class UserAuth(models.Model):
     authid = models.AutoField(db_column='authID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(Users, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
     oauth2token = models.TextField(db_column='Oauth2token')  # Field name made lowercase.
     oauth2tokenexpiry = models.DateTimeField(db_column='Oauth2tokenExpiry', )  # Field name made lowercase.
     refreshtoken = models.TextField(db_column='refreshToken')  # Field name made lowercase.
@@ -62,7 +62,7 @@ class UserAuth(models.Model):
 
 class UserProfiles(models.Model):
     profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(Users, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
     firstname = models.CharField(max_length=50)
     lastname = models.CharField(max_length=50)
     dateofbirth = models.DateField(db_column='dateOfBirth')  # Field name made lowercase.
@@ -77,7 +77,7 @@ class UserProfiles(models.Model):
 
 class UserSettings(models.Model):
     settingid = models.AutoField(db_column='settingID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(Users, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
     status = models.CharField(choices=Status, max_length=14)
 
     class Meta:
