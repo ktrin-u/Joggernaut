@@ -77,6 +77,17 @@ files = [
 ]
 
 [[package]]
+name = "pytz"
+version = "2025.1"
+description = "World timezone definitions, modern and historical"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytz-2025.1-py2.py3-none-any.whl", hash = "sha256:89dd22dca55b46eac6eda23b2d72721bf1bdfef212645d81513ef5d03038de57"},
+    {file = "pytz-2025.1.tar.gz", hash = "sha256:c2db42be2a2518b28e65f9207c4d05e6ff547d1efa4086469ef855e4ab70178e"},
+]
+
+[[package]]
 name = "sqlparse"
 version = "0.5.3"
 description = "A non-validating SQL parser."
@@ -105,4 +116,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "c41fa45c622f72127277fecd8b01bbd995e06e4103803b2a9d9941d7719703e4"
+content-hash = "61575a542f1998bbe841a2aca13a3367149c7adff926c8eac88c7790a2a8babf"
