@@ -30,3 +30,20 @@ def check_taken_phonenumber(request: Request) -> Response:
         status=status.HTTP_200_OK
     )
 
+
+@api_view(['GET'])
+def check_taken_email(request: Request) -> Response:
+    email = request.query_params.get("email")
+
+    registered_emails = User.objects.values_list("email", flat=True)
+
+    if email in registered_emails:
+        return Response(
+            {"msg": "taken"},
+            status=status.HTTP_409_CONFLICT
+        )
+
+    return Response(
+        {"msg": "valid"},
+        status=status.HTTP_200_OK
+    )
