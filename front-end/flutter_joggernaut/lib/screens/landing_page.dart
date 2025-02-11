@@ -29,7 +29,7 @@ class _LandingPageState extends State<LandingPage> {
     });
   }
 
-  void _showBottomSheet(BuildContext context, Widget form) {
+  void _showLoginSheet(BuildContext context, Widget form) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -39,9 +39,41 @@ class _LandingPageState extends State<LandingPage> {
       ),
       backgroundColor: Colors.white,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: SingleChildScrollView(child: form),
+        return  ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.70,  
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20), 
+            child: SingleChildScrollView(
+              child: form,
+            )
+          )
+        );
+      },
+    ).whenComplete(() => _resetTitlePosition());
+  }
+
+  void _showSignupSheet(BuildContext context, Widget form) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      barrierColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return  ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.80, 
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+            child: SingleChildScrollView(
+              child: form,
+            )
+          )
         );
       },
     ).whenComplete(() => _resetTitlePosition());
@@ -49,6 +81,9 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -58,64 +93,86 @@ class _LandingPageState extends State<LandingPage> {
           AnimatedPositioned(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
-            top: _titleMovedUpLogin ? 275 : (_titleMovedUpSignUp ? 110 : MediaQuery.of(context).size.height / 2.5),
+            top: _titleMovedUpLogin
+                ? screenHeight * 0.18
+                : (_titleMovedUpSignUp ? screenHeight * 0.08 : screenHeight / 2.5),
             left: 0,
             right: 0,
             child: Center(
-              child: Text("JOGGERNAUT", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 69.87, fontFamily: 'Big Shoulders Display')),
+              child: Text(
+                "JOGGERNAUT",
+                style: TextStyle(
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.15, 
+                  fontFamily: 'Big Shoulders Display',
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
           Positioned(
-            bottom: 80,
-            left: 0,
-            right: 0,
+            bottom: screenHeight * 0.08, 
+            left: screenWidth * 0.1, 
+            right: screenWidth * 0.1, 
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                OutlinedButton(
-                  onPressed: () {
-                    _moveTitleUpLogin();
-                    _showBottomSheet(context, const LoginForm());
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 1.2),
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _moveTitleUpLogin();
+                      _showLoginSheet(context, const LoginForm());
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white, width: 1.2),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.05,
+                        vertical: screenHeight * 0.01,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: Size(screenWidth * 0.4, screenHeight * 0.05),
                     ),
-                    minimumSize: const Size(165, 30),
-                  ),
-                  child: const Text(
-                    "Log In",
-                    style: TextStyle(
-                      color: Color.fromRGBO(255, 255, 255, 1),
-                      fontFamily: 'Roboto',
-                      fontSize: 17.47,
-                      fontWeight: FontWeight.w700,
+                    child: Text(
+                      "Log In",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Roboto',
+                        fontSize: screenWidth * 0.045, 
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    _moveTitleUpSignUp();
-                    _showBottomSheet(context, const SignUpForm());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                    foregroundColor: Color.fromRGBO(51, 51, 51, 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                const SizedBox(width: 20), 
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _moveTitleUpSignUp();
+                      _showSignupSheet(context, const SignUpForm());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.05,
+                        vertical: screenHeight * 0.01,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: Size(screenWidth * 0.4, screenHeight * 0.05),
                     ),
-                    minimumSize: const Size(165, 30),
-                  ),
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      color: Color.fromRGBO(51, 51, 51, 1),
-                      fontFamily: 'Roboto',
-                      fontSize: 17.47,
-                      fontWeight: FontWeight.w700,
+                    child: Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'Roboto',
+                        fontSize: screenWidth * 0.045, 
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
