@@ -19,7 +19,7 @@ class Gender(models.TextChoices):
 class User(models.Model):
     userid = models.AutoField(db_column='userID', primary_key=True)  # Field name made lowercase.
     username = models.CharField(unique=True, max_length=50)
-    email = models.CharField(unique=True, max_length=100)
+    email = models.EmailField(unique=True, max_length=100)
     phonenumber = models.CharField(db_column='phoneNumber', max_length=15)  # Field name made lowercase.
     joindate = models.DateTimeField(db_column='joinDate', auto_now_add=True)  # Field name made lowercase.
 
