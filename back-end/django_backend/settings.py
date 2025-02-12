@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/ShangHai'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 

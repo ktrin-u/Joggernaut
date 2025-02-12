@@ -1,0 +1,37 @@
+name: Back-end test
+
+on:
+  push:
+    paths:
+      - '!front-end/**'
+      - 'back-end/**'
+      - '!back-end/conf/**'
+      - '!back-end/*.lock'
+      - '!back-end/*.toml'
+      - '!backend/*.gitignore'
+  workflow_dispatch:
+
+jobs:
+   run-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+          sparse-checkout: |
+            back-end
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Install poetry
+      uses: snok/install-poetry@v1.3.1
+      with:
+        virtualenvs-in-project: true
+    - name: Install Dependencies
+      run: |
+        cd $GITHUB_WORKSPACE/back-end
+        poetry install
+    - name: Run Tests
+      run: |
+        cd $GITHUB_WORKSPACE/back-end
+        poetry run python manage.py test
+
