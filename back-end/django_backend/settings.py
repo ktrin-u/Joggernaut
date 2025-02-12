@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'oauth2_provider',
     'api.apps.ApiConfig',
-    'oauth2_provider'
 ]
 
 MIDDLEWARE = [
@@ -115,10 +115,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 ]
 
-# AUTHENTICATION_BACKENDS = [
-#     'oauth2_provider.backends.OAuth2Backend',
-# ]
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    'oauth2_provider.backends.OAuth2Backend',
+]
 
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope'}
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ]
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
