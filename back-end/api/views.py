@@ -1,8 +1,14 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework import permissions
 from rest_framework import status
+from rest_framework.generics import CreateAPIView
 from .models import User
+from django.core.validators import validate_email
+from django.contrib.auth import get_user_model
+from .validators import validate_phoneNumber
+from .serializers import RegisterFormSerializer
 
 
 # Create your views here.
@@ -17,9 +23,13 @@ def Api_overview(request: Request) -> Response:
 def check_taken_phonenumber(request: Request) -> Response:
     phone = request.query_params.get("phonenumber")
 
-    registered_phones = User.objects.values_list("phonenumber", flat=True)
+    if phone is None:
+        raise ValueError(f"phone number is {phone}")
 
-    if phone in registered_phones:
+    validate_phoneNumber(phone)
+    registered_phones = User.objects.filter(phonenumber=phone)
+
+    if registered_phones:
         return Response(
             {"msg": "taken"},
             status=status.HTTP_409_CONFLICT
@@ -35,9 +45,10 @@ def check_taken_phonenumber(request: Request) -> Response:
 def check_taken_email(request: Request) -> Response:
     email = request.query_params.get("email")
 
-    registered_emails = User.objects.values_list("email", flat=True)
+    validate_email(email)
+    registered_emails = User.objects.filter(email=email)
 
-    if email in registered_emails:
+    if registered_emails:
         return Response(
             {"msg": "taken"},
             status=status.HTTP_409_CONFLICT
@@ -47,3 +58,11 @@ def check_taken_email(request: Request) -> Response:
         {"msg": "valid"},
         status=status.HTTP_200_OK
     )
+
+
+class CreateUserView(CreateAPIView):
+    model = get_user_model()
+    permission_classes = [
+        permissions.AllowAny  # Or anon users can't register
+    ]
+    serializer_class = RegisterFormSerializer

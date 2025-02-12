@@ -2,6 +2,8 @@
 # You'll have to do the following manually to clean this up:
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from .validators import validate_phoneNumber
 
 
 class Status(models.TextChoices):
@@ -16,12 +18,51 @@ class Gender(models.TextChoices):
     OTHER = 'Other'
 
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, email, phonenumber, firstname, lastname, password=None):
+        if not email:
+            raise ValueError("users must have an email address")
+
+        if not phonenumber:
+            raise ValueError("users must have a phone number")
+
+        if not firstname and not lastname:
+            raise ValueError("users must have full name")
+
+        user = self.model(
+            email=self.normalize_email(email),
+            phonenumber=phonenumber,
+            firstname=firstname,
+            lastname=lastname
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, phonenumber, firstname, lastname, password=None):
+        user = self.create_user(email, phonenumber, firstname, lastname, password)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractUser):
     userid = models.AutoField(db_column='userID', primary_key=True)  # Field name made lowercase.
-    username = models.CharField(unique=True, max_length=50)
     email = models.EmailField(unique=True, max_length=100)
-    phonenumber = models.CharField(db_column='phoneNumber', max_length=15)  # Field name made lowercase.
+    phonenumber = models.CharField(db_column='phoneNumber', max_length=15, validators=[validate_phoneNumber])  # Field name made lowercase.
+    firstname = models.CharField(max_length=50)
+    lastname = models.CharField(max_length=50)
     joindate = models.DateTimeField(db_column='joinDate', auto_now_add=True)  # Field name made lowercase.
+    first_name = None
+    last_name = None
+    username = None
+    date_joined = None
+
+    objects = UserManager()  # type: ignore
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["phonenumber", "firstname", "lastname"]
 
     class Meta:
         db_table = 'users'
@@ -48,23 +89,10 @@ class UserAuditLog(models.Model):
         db_table = 'user_audit_log'
 
 
-class UserAuth(models.Model):
-    authid = models.AutoField(db_column='authID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
-    oauth2token = models.TextField(db_column='Oauth2token')  # Field name made lowercase.
-    oauth2tokenexpiry = models.DateTimeField(db_column='Oauth2tokenExpiry', )  # Field name made lowercase.
-    refreshtoken = models.TextField(db_column='refreshToken')  # Field name made lowercase.
-    passwordhash = models.CharField(db_column='passwordHash', max_length=255)  # Field name made lowercase.
-
-    class Meta:
-        db_table = 'user_auth'
-
-
 class UserProfiles(models.Model):
     profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
     userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
-    firstname = models.CharField(max_length=50)
-    lastname = models.CharField(max_length=50)
+    accountname = models.CharField(unique=True, max_length=5)
     dateofbirth = models.DateField(db_column='dateOfBirth')  # Field name made lowercase.
     gender = models.CharField(choices=Gender, max_length=6)
     address = models.TextField()
