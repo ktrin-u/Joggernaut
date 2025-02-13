@@ -9,9 +9,9 @@ It was developed using [Python](https://github.com/python/) and [Django](https:/
 
 The database used is [MySQL](https://github.com/mysql).
 
-Authentication standard used is [OAuth2](https://auth0.com/intro-to-iam/what-is-oauth-2) thorugh the [Django-oauth2-provider](https://github.com/caffeinehit/django-oauth2-provider) module.
+Authentication standard used is [OAuth2](https://auth0.com/intro-to-iam/what-is-oauth-2) thorugh the [Django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) module.
 
-The API is designed to be [REST](https://docs.github.com/en/restful) through the use of the [Django Rest Framework](https://github.com/encode/django-rest-framework) module .
+The API is designed to be [REST](https://docs.github.com/en/restful) through the use of the [Django REST Framework (DRF)](https://github.com/encode/django-rest-framework) module .
 
 Detailed documentation is to follow.
 
@@ -26,3 +26,39 @@ Detailed documentation is to follow.
 7. To start the development server, run `poetry run python manage.py runserver`
 8. Refer to the terminal output for further guidance
 - Tests can be run by invoking `poetry run python manage.py test`
+
+
+## API Endpoints Guide(for Development server)
+- For Administration: http://localhost:8000/admin
+
+- For API: http://localhost:8000/api
+    - **GET** `/` for testing connection only
+    - **GET**  `/verify/phone/` for checking if a phone number is already taken, query params: `phonenumber`
+    - **GET**  `/verify/email/` for checking if an email is already taken, query params: `email`
+    - **POST** `/register/` for submitting a register form, expected data: `JSON`
+    ```
+    {
+        "firstname": "FIRSTNAME HERE",
+        "lastname": "LASTNAME HERE",
+        "email": "EMAIL HERE",
+        "phonenumber": "PHONENUMBER HERE",
+        "password": "PASSWORD HERE"
+    }
+    ```
+    See [DRF documentation](https://www.django-rest-framework.org/)
+
+- For Authentication: http://localhost:8000/api/auth
+    - **POST** `/token/` for acquiring a Oauth2 token, expected data: `JSON`
+    ```
+    {
+        "grant_type": "password",
+        "username": "USERNAME HERE",
+        "password": "PASSWORD HERE",
+        "client_id": "CLIENT_ID HERE",
+        "client_secret": "CLIENT_SECRET HERE"
+    }
+    ```
+
+
+    No custom view has been defined for the authentication endpoint for now.
+    See [Django-Oauth2-Toolkit documentation](https://test-oauth.readthedocs.io/en/latest/)
