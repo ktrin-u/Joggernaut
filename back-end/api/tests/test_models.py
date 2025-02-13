@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from api.models import User, UserManager, UserActivity, UserAuditLog, UserProfiles, UserSettings, Status, Gender
 from datetime import datetime, date
-
+from django.utils.timezone import make_aware
 
 class TestUserModel(TestCase):
     def test_create_user(self):
@@ -13,7 +13,7 @@ class TestUserModel(TestCase):
             lastname="Last",
             password="testPass1@"
         ) # type: ignore
-    
+
         self.assertEqual(self.user.email, "test@email.com")
         self.assertTrue(self.user.check_password("testPass1@"))
 
@@ -45,7 +45,7 @@ class TestUserActivity(TestCase):
     def test_activity_creation(self):
         self.user = User.objects.create_user("activity@email.com", "09181112222", "First", "Last", "testPass1@") # type: ignore
         self.activity = UserActivity.objects.create(userid=self.user, calories=500, steps=10000)
-    
+
         self.assertEqual(self.activity.calories, 500)
         self.assertEqual(self.activity.steps, 10000)
 
@@ -53,7 +53,7 @@ class TestUserActivity(TestCase):
 class TestUserAuditLog(TestCase):
     def test_audit_log_creation(self):
         self.user = User.objects.create_user("log@email.com", "09181112222", "First", "Last", "testPass1@") # type: ignore
-        self.log = UserAuditLog.objects.create(userid=self.user, action="Login", details="User logged in", timestamp=datetime.now())
+        self.log = UserAuditLog.objects.create(userid=self.user, action="Login", details="User logged in", timestamp=make_aware(datetime.now()))
 
         self.assertEqual(self.log.action, "Login")
         self.assertEqual(self.log.details, "User logged in")

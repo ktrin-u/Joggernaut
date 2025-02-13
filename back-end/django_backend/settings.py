@@ -88,6 +88,7 @@ DATABASES = {   # type: ignore
         "ENGINE": "django.db.backends.mysql",
         "OPTIONS": {
             "read_default_file": mysqlconf.resolve().as_posix(),
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }

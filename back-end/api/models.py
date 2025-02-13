@@ -92,7 +92,7 @@ class UserAuditLog(models.Model):
 class UserProfiles(models.Model):
     profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
     userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
-    accountname = models.CharField(unique=True, max_length=5)
+    accountname = models.CharField(unique=True, max_length=50)
     dateofbirth = models.DateField(db_column='dateOfBirth')  # Field name made lowercase.
     gender = models.CharField(choices=Gender, max_length=6)
     address = models.TextField()
