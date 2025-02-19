@@ -66,6 +66,8 @@ class User(AbstractUser):
 
     class Meta:
         db_table = 'users'
+        ordering = ["userid"]
+        verbose_name = "user"
 
 
 class UserActivity(models.Model):
@@ -76,6 +78,8 @@ class UserActivity(models.Model):
 
     class Meta:
         db_table = 'user_activity'
+        verbose_name = "user activity"
+        verbose_name_plural = "user activities"
 
 
 class UserAuditLog(models.Model):
@@ -87,6 +91,8 @@ class UserAuditLog(models.Model):
 
     class Meta:
         db_table = 'user_audit_log'
+        verbose_name = "user audit log"
+        verbose_name_plural = "user audit logs"
 
 
 class UserProfiles(models.Model):
@@ -101,6 +107,8 @@ class UserProfiles(models.Model):
 
     class Meta:
         db_table = 'user_profiles'
+        verbose_name = "user profile"
+        verbose_name_plural = "user profiles"
 
 
 class UserSettings(models.Model):
@@ -110,3 +118,5 @@ class UserSettings(models.Model):
 
     class Meta:
         db_table = 'user_settings'
+        verbose_name = "user settings"
+        verbose_name_plural = "user settings"
