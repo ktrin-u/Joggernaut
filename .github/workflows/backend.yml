@@ -33,5 +33,5 @@ jobs:
     - name: Run Tests
       run: |
         cd $GITHUB_WORKSPACE/back-end
-        poetry run python manage.py test
+        poetry run python manage.py test --noinput --failfast
 
