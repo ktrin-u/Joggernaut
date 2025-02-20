@@ -96,8 +96,9 @@ class UserAuditLog(models.Model):
 
 
 class UserProfiles(models.Model):
-    profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    # profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
+    # userid = models.ForeignKey(User, models.CASCADE, db_column='userID', unique=True)  # Field name made lowercase.
+    userid = models.OneToOneField(User, on_delete=models.CASCADE, db_column='userID', primary_key=True)
     accountname = models.CharField(unique=True, max_length=50)
     dateofbirth = models.DateField(db_column='dateOfBirth')  # Field name made lowercase.
     gender = models.CharField(choices=Gender, max_length=6)
@@ -112,8 +113,8 @@ class UserProfiles(models.Model):
 
 
 class UserSettings(models.Model):
-    settingid = models.AutoField(db_column='settingID', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
+    # settingid = models.AutoField(db_column='settingID', primary_key=True)  # Field name made lowercase.
+    userid = models.OneToOneField(User, models.CASCADE, db_column='userID', primary_key=True)  # Field name made lowercase.
     status = models.CharField(choices=Status, max_length=14)
 
     class Meta:
