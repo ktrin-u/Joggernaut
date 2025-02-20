@@ -45,6 +45,18 @@ Detailed documentation is to follow.
         "password": "PASSWORD HERE"
     }
     ```
+    - **GET, POST** `/user/profile` for submitting a user profile form and retrieving user profiles, query params: `userid` | expected data: `JSON`
+    ```
+    {
+        "userid": USERID HERE,
+        "accountname": ACCOUNTNAME HERE,
+        "dateofbirth": DATE OF BIRTH HERE,
+        "gender": GENDER HERE,
+        "address": ADDRESS HERE,
+        "height_cm": HEIGHT HERE,
+        "weight_kg": WEIGHT HERE
+    }
+```
     See [DRF documentation](https://www.django-rest-framework.org/)
 
 - For Authentication: http://localhost:8000/api/auth
