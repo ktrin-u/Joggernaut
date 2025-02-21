@@ -36,7 +36,7 @@ Detailed documentation is to follow.
     - **GET**  `/verify/phone/` for checking if a phone number is already taken, query params: `phonenumber`
     - **GET**  `/verify/email/` for checking if an email is already taken, query params: `email`
     - **POST** `/register/` for submitting a register form, expected data: `JSON`
-    ```
+    ```json
     {
         "firstname": "FIRSTNAME HERE",
         "lastname": "LASTNAME HERE",
@@ -46,8 +46,7 @@ Detailed documentation is to follow.
     }
     ```
     - **GET, POST** `/user/profile` for submitting a user profile form and retrieving user profiles, query params: `userid` | expected data: `JSON`
-    ```
-    {
+    ```json
         "userid": USERID HERE,
         "accountname": ACCOUNTNAME HERE,
         "dateofbirth": DATE OF BIRTH HERE,
@@ -56,21 +55,33 @@ Detailed documentation is to follow.
         "height_cm": HEIGHT HERE,
         "weight_kg": WEIGHT HERE
     }
-```
+    ```
     See [DRF documentation](https://www.django-rest-framework.org/)
 
 - For Authentication: http://localhost:8000/api/auth
-    - **POST** `/token/` for acquiring a Oauth2 token, expected data: `JSON`
-    ```
-    {
+    - **POST** `/auth/token/` for acquiring a Oauth2 token; a successful response should yield , expected data: `JSON`
+    ```json
+    {  // post data
         "grant_type": "password",
         "username": "USERNAME HERE",
         "password": "PASSWORD HERE",
         "client_id": "CLIENT_ID HERE",
         "client_secret": "CLIENT_SECRET HERE"
     }
+    {  // successful auth response
+        "access_token": ACCESS TOKEN HERE,
+        "expires_in": SOME NUMBER HERE,
+        "token_type": "Bearer",
+        "scope": "read write",
+        "refresh_token": REFRESH TOKEN HERE
+    }
+    {  // failed auth response
+        "error": "invalid_grant",
+        "error_description": SOMETHING HERE
+    }
     ```
 
+    To use the token, ensure all requests made by the client has the authorization header `Bearer <TOKEN HERE>`.
 
     No custom view has been defined for the authentication endpoint for now.
     See [Django-Oauth2-Toolkit documentation](https://test-oauth.readthedocs.io/en/latest/)
