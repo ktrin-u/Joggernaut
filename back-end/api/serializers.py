@@ -8,7 +8,7 @@ UserModel = get_user_model()
 
 class RegisterFormSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
-        model = get_user_model()
+        model = UserModel
         fields = ['firstname', 'lastname', 'email', 'phonenumber', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
@@ -52,3 +52,9 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
         if created:
             new_profile.save()
         return new_profile
+
+
+class UserModelSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = UserModel
+        fields = ["userid", "email", "firstname", "lastname", "phonenumber", "joindate", "last_login", "is_active", "is_staff"]
