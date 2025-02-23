@@ -4,6 +4,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from .validators import validate_phoneNumber
+import uuid
 
 
 class Status(models.TextChoices):
@@ -48,9 +49,9 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    userid = models.AutoField(db_column='userID', primary_key=True)  # Field name made lowercase.
+    userid = models.UUIDField(db_column='userID', primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, max_length=100)
-    phonenumber = models.CharField(db_column='phoneNumber', max_length=15, validators=[validate_phoneNumber])  # Field name made lowercase.
+    phonenumber = models.CharField(db_column='phoneNumber', max_length=15, validators=[validate_phoneNumber], unique=True)  # Field name made lowercase.
     firstname = models.CharField(max_length=50)
     lastname = models.CharField(max_length=50)
     joindate = models.DateTimeField(db_column='joinDate', auto_now_add=True)  # Field name made lowercase.

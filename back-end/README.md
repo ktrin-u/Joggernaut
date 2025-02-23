@@ -33,8 +33,6 @@ Detailed documentation is to follow.
 
 - For API: http://localhost:8000/api
     - **GET** `/` for testing connection only
-    - **GET**  `/verify/phone/` for checking if a phone number is already taken, query params: `phonenumber`
-    - **GET**  `/verify/email/` for checking if an email is already taken, query params: `email`
     - **POST** `/register/` for submitting a register form, expected data: `JSON`
     ```json
     {
