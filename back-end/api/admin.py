@@ -9,28 +9,49 @@ from django.contrib.auth.models import Group
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = SignupForm
-    list_display = ("userid", "email", "phonenumber", "firstname", "lastname", "joindate", "is_superuser", "is_staff", "is_active")
+    list_display = ("userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate")
     ordering = ["userid"]
+    readonly_fields = ["userid", "last_login", "joindate"]
+
+    fieldsets = [
+        (
+            "User Details",
+            {
+                "fields": ["userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate"]
+            }
+        )
+    ]
 
 
 @admin.register(UserActivity)
 class UserActivityAdmin(admin.ModelAdmin):
     list_display = ("activityid", "userid", "calories", "steps")
+    ordering = ["activityid"]
+    readonly_fields = ["activityid", "userid"]
     pass
 
 
 @admin.register(UserAuditLog)
 class UserAuditLogAdmin(admin.ModelAdmin):
+    list_display = ("timestamp", "logid", "userid", "action", "details")
+    ordering = ["timestamp"]
+    readonly_fields = ("timestamp", "logid", "userid")
     pass
 
 
 @admin.register(UserProfiles)
 class UserProfilesAdmin(admin.ModelAdmin):
+    list_display = ["userid", "accountname", "dateofbirth", "gender", "address", "height_cm", "weight_kg"]
+    ordering = ["userid"]
+    readonly_fields = ["userid"]
     pass
 
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
+    list_display = ["userid", "status"]
+    ordering = ["userid"]
+    readonly_fields = ["userid"]
     pass
 
 
