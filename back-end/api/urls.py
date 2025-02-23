@@ -7,5 +7,5 @@ urlpatterns = [
     path("user/profile/", views.UserProfileView.as_view(), name="retrieve user profile"),
     path("user/info/", views.UserView.as_view(), name="retrieve user info"),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui')
+    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='overview')
 ]

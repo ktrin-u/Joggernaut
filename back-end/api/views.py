@@ -53,14 +53,6 @@ def get_user_object(request: Request) -> User | None:
     return get_user_from_token(token)
 
 
-# Create your views here.
-@api_view(['GET'])
-def Api_overview(request: Request) -> Response:
-    return Response(
-        {"msg": "Welcome"}
-    )
-
-
 class CreateUserView(CreateAPIView):
     model = get_user_model()
     permission_classes = [
