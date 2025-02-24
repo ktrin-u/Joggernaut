@@ -1,4 +1,3 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import permissions
@@ -53,6 +52,13 @@ def get_user_object(request: Request) -> User | None:
     return get_user_from_token(token)
 
 
+def clean_request_data(request: Request) -> dict[str, Any]:
+    """
+    Function that removes empty values in the request data
+    """
+    return {k: v for k, v in request.data.items() if v != ""}  # filter all empty values
+
+
 class CreateUserView(CreateAPIView):
     model = get_user_model()
     permission_classes = [
@@ -87,9 +93,6 @@ class UserView(RetrieveUpdateAPIView):
             status=status.HTTP_200_OK
         )
 
-    def clean_request_data(self, request: Request) -> dict[str, Any]:
-        return {k: v for k, v in request.data.items() if v != ""}  # filter all empty values
-
     def put(self, request) -> Response:
         serialized = UserModelSerializer(self.get_object(), data=request.data)
         if serialized.is_valid():
@@ -98,7 +101,7 @@ class UserView(RetrieveUpdateAPIView):
         return Response(data=serialized.errors, status=status.HTTP_409_CONFLICT)
 
     def patch(self, request) -> Response:
-        serialized = UserModelSerializer(self.get_object(), data=self.clean_request_data(request), partial=True)
+        serialized = UserModelSerializer(self.get_object(), data=clean_request_data(request), partial=True)
         if serialized.is_valid():
             serialized.save()
             return Response(
@@ -125,7 +128,7 @@ class UserProfileView(GenericAPIView):
                 {
                     "msg": "unable to find user"
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
             )
 
         try:
@@ -155,3 +158,39 @@ class UserProfileView(GenericAPIView):
             data=serialized.errors,
             status=status.HTTP_406_NOT_ACCEPTABLE
         )
+
+    def patch(self, request: Request) -> Response:
+        user = get_user_object(request)
+
+        if user is None:
+            return Response(
+                {
+                    "msg": "unable to find user"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            profile = self.model.objects.get(userid=user.userid)
+            serializer = self.get_serializer_class()
+            serialized = serializer(instance=profile, data=clean_request_data(request), partial=True)
+
+            if serialized.is_valid():
+                serialized.save()
+                return Response(
+                    data=serialized.data,
+                    status=status.HTTP_201_CREATED
+                )
+
+            return Response(
+                data=serialized.errors,
+                status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        except UserProfiles.DoesNotExist:
+            return Response(
+                {
+                    "msg": "User profile does not exist"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
