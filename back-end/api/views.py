@@ -304,7 +304,8 @@ class TokenAPIView(TokenView, GenericAPIView):
     permission_classes = [isBanned]
 
     @extend_schema(
-        description="For acquiring an access token"
+        description="For acquiring an access token",
+        responses=custom_serializers.TokenResponseSerializer
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
