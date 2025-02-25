@@ -180,7 +180,11 @@ SPECTACULAR_SETTINGS = {
     'OAUTH2_AUTHORIZATION_URL': "/api/auth/authorize",
     'OAUTH2_TOKEN_URL': "/api/auth/token/",
     'OAUTH2_REFRESH_URL': "/api/auth/refresh",
-    'SERVE_AUTHENTICATION': None
+    'SERVE_AUTHENTICATION': None,
+    'PARSER_WHITELIST': [
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ]
 }
 
 # Internationalization
