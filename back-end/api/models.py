@@ -70,6 +70,12 @@ class User(AbstractUser):
         ordering = ["userid"]
         verbose_name = "user"
 
+    def ban(self):
+        self.is_active = False
+
+    def unban(self):
+        self.is_active = True
+
 
 class UserActivity(models.Model):
     activityid = models.AutoField(db_column='activityID', primary_key=True)  # Field name made lowercase.

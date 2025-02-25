@@ -142,6 +142,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "oauth2_provider.contrib.rest_framework.TokenHasScope",
+        'api.permissions.isBanned',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -159,6 +163,10 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": False,
+        "persistAuthorization": True,
+    },
     'SWAGGER_UI_OAUTH2_CONFIG': {
         "clientId": "EAdjk5dlE5ssgncPU8n4PeaQ1QYyqydhT0mPyyPi",
         "clientSecret": "VKsT4ne6eGiXpN6542Aw6b0WGEpYqV8DkeggumUTkYKccJK6qaj64vYpbImRQjus9v0PzHrfYndKH49NMoDPNaasSwJeEXbW63kOXkIf79Pz6Xq1E2x8q3bsL7xSxCJp",

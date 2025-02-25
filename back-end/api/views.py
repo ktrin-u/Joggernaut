@@ -1,55 +1,18 @@
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+from drf_spectacular.utils import extend_schema
+from oauth2_provider.views import TokenView, RevokeTokenView
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import permissions
-from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from .models import UserProfiles, User
-from django.contrib.auth import get_user_model
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-from oauth2_provider.models import AccessToken
-from .serializers import RegisterFormSerializer, UserProfileFormSerializer, UserModelSerializer
+from .permissions import isBanned
+from rest_framework import status
 from typing import Any
-
-
-def get_token_from_header(request: Request) -> tuple[str, str]:
-    """
-    This function gets the token type and token from the Authorization header.
-    It returns in the form (token_type, token)
-    """
-    authorization_header = request.headers.get("Authorization")
-
-    if authorization_header is not None:
-        split_header = authorization_header.split(" ")
-        if len(split_header) != 2:
-            return ("", "")
-        return tuple(split_header)  # type: ignore
-
-    return ("", "")
-
-
-def get_user_from_token(token: str) -> User | None:
-    """
-    This function gets the corresponding User object associated with the provided token
-    """
-    try:
-        access_token: AccessToken = AccessToken.objects.get(token=token)
-
-        user: User = User.objects.get(email=access_token.user)
-
-        return user
-
-    except AccessToken.DoesNotExist:
-        return None
-    except User.DoesNotExist:
-        return None
-
-
-def get_user_object(request: Request) -> User | None:
-    """
-    Wrapper function which combines get_user_from_token and get_token_from_header
-    """
-    _, token = get_token_from_header(request)
-    return get_user_from_token(token)
+from . import serializers as custom_serializers
+from django.db.models import Q
+from .helper import get_user_object
 
 
 def clean_request_data(request: Request) -> dict[str, Any]:
@@ -59,32 +22,84 @@ def clean_request_data(request: Request) -> dict[str, Any]:
     return {k: v for k, v in request.data.items() if v != ""}  # filter all empty values
 
 
+@extend_schema(
+    summary="Register new user account"
+)
 class CreateUserView(CreateAPIView):
     model = get_user_model()
     permission_classes = [
         permissions.AllowAny  # Or anon users can't register
     ]
-    serializer_class = RegisterFormSerializer
+    serializer_class = custom_serializers.RegisterFormSerializer
 
 
-class UserView(RetrieveUpdateAPIView):
-    serializer_class = UserModelSerializer
+@extend_schema(
+    summary="Change user password"
+)
+class UpdateUserPasswordView(GenericAPIView):
     model = get_user_model()
     permission_classes = [TokenHasScope]
-    required_scopes = ["read", "write"]
+    required_scopes = ["write"]
+    serializer_class = custom_serializers.UpdateUserPasswordSerializer
 
-    def get_object(self):
+    def get_object(self) -> User | None:
         return get_user_object(self.request)
 
-    def get(self, request: Request, format=None) -> Response:
-        user = get_user_object(request)
+    @extend_schema(
+        description="Supply the password and confirm_password in plaintext. The API will handle hashing and updating the database."
+    )
+    def patch(self, request: Request) -> Response:
+        user = self.get_object()
 
         if user is None:
             return Response(
                 {
                     "msg": "Failed to retrieve corresponding user"
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
+            )
+        request_data = clean_request_data(request)
+        serialized = self.get_serializer(data=request_data)  # type: ignore
+        if serialized.is_valid():
+            serialized.update(instance=user, validated_data=serialized.validated_data)
+            return Response(
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            data=serialized.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class AbstractUserView(GenericAPIView):
+    serializer_class = custom_serializers.UserModelSerializer
+    model = get_user_model()
+    permission_classes = [isBanned, TokenHasScope]
+    required_scopes = []
+
+
+@extend_schema(
+    summary="View user info",
+)
+class ViewUserInfoView(AbstractUserView):
+    required_scopes = ['read']
+
+    def get_object(self):
+        return get_user_object(self.request)
+
+    @extend_schema(
+        description="Retrieve the associated entry in the User table. This uses the Authentication Token as the identifier."
+    )
+    def get(self, request: Request, format=None) -> Response:
+        user = self.get_object()
+
+        if user is None:
+            return Response(
+                {
+                    "msg": "Failed to retrieve corresponding user"
+                },
+                status=status.HTTP_404_NOT_FOUND
             )
 
         serialized = self.get_serializer_class()(user)
@@ -93,15 +108,28 @@ class UserView(RetrieveUpdateAPIView):
             status=status.HTTP_200_OK
         )
 
+
+@extend_schema(
+    summary="Update user info"
+)
+class UpdateUserInfoView(AbstractUserView):
+    required_scopes = ["write"]
+
+    @extend_schema(
+        description="Update the associated entry in the User table. Expects all User Profile fields. This uses the Authentication Token as the identifier."
+    )
     def put(self, request) -> Response:
-        serialized = UserModelSerializer(self.get_object(), data=request.data)
+        serialized = custom_serializers.UserModelSerializer(self.get_object(), data=request.data)
         if serialized.is_valid():
             serialized.save()
             return Response(status=status.HTTP_202_ACCEPTED)
         return Response(data=serialized.errors, status=status.HTTP_409_CONFLICT)
 
+    @extend_schema(
+        description="Update the associated entry in the User table. Does not require all fields. This uses the Authentication Token as the identifier"
+    )
     def patch(self, request) -> Response:
-        serialized = UserModelSerializer(self.get_object(), data=clean_request_data(request), partial=True)
+        serialized = custom_serializers.UserModelSerializer(self.get_object(), data=clean_request_data(request), partial=True)
         if serialized.is_valid():
             serialized.save()
             return Response(
@@ -110,17 +138,27 @@ class UserView(RetrieveUpdateAPIView):
             )
 
         return Response(
-            data=serialized.error_messages,
+            data=serialized.errors,
             status=status.HTTP_409_CONFLICT
         )
 
 
-class UserProfileView(GenericAPIView):
-    serializer_class = UserProfileFormSerializer
+class AbstractUserProfileView(GenericAPIView):
+    serializer_class = custom_serializers.UserProfileFormSerializer
     model = UserProfiles
     permission_classes = [TokenHasScope]
-    required_scopes = ["read", "write"]
+    required_scopes = []
 
+
+@extend_schema(
+    summary="View user profile"
+)
+class UserProfileView(AbstractUserProfileView):
+    required_scopes = ["read"]
+
+    @extend_schema(
+        description="Uses the Authentication Token as identifier"
+    )
     def get(self, request: Request, format=None) -> Response:
         user = get_user_object(request)
         if user is None:
@@ -146,8 +184,18 @@ class UserProfileView(GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+
+@extend_schema(
+    summary="Create new user profile"
+)
+class CreateUserProfileView(AbstractUserProfileView):
+    required_scopes = ["write"]
+
+    @extend_schema(
+        description="TBA"
+    )
     def post(self, request: Request, format=None) -> Response:
-        serialized = UserProfileFormSerializer(data=request.data)
+        serialized = custom_serializers.UserProfileFormSerializer(data=request.data)
         if serialized.is_valid():
             serialized.save()
             return Response({
@@ -159,6 +207,16 @@ class UserProfileView(GenericAPIView):
             status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
+
+@extend_schema(
+    summary="Update user profile"
+)
+class UpdateUserProfileView(AbstractUserProfileView):
+    required_scopes = ["write"]
+
+    @extend_schema(
+        description="Updates the relevant entry in the database. Does not expect all fields. This uses the Authentication Token as the identifier."
+    )
     def patch(self, request: Request) -> Response:
         user = get_user_object(request)
 
@@ -194,3 +252,144 @@ class UserProfileView(GenericAPIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+@extend_schema(
+    summary="Delete user account"
+)
+class DeleteUserView(AbstractUserView):
+    serializer_class = custom_serializers.UserDeleteSerializer
+    required_scopes = ["write"]
+
+    def get_object(self) -> User | None:
+        return get_user_object(self.request)
+
+    @extend_schema(
+        description="Expect two matching booleans. The Authentication Token is used as the identifier"
+    )
+    def post(self, request: Request) -> Response:
+        serialized = self.get_serializer(data=request.data)
+
+        if serialized.is_valid():
+            user = self.get_object()
+
+            if user is not None:
+                deleted_userid = user.userid
+                user.delete()
+                return Response(
+                    {
+                        "msg": f"user {deleted_userid} has been deleted."
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            return Response(
+                {
+                    "msg": "user not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(
+            data=serialized.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@extend_schema(
+    summary="Alternative to /api/auth/token/"
+)
+class TokenAPIView(TokenView, GenericAPIView):
+    serializer_class = custom_serializers.TokenSerializer
+    permission_classes = [isBanned]
+
+    @extend_schema(
+        description="For acquiring an access token"
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+@extend_schema(
+    summary="Alternative to /api/auth/revoke_token/"
+)
+class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
+    serializer_class = custom_serializers.RevokeTokenSerializer
+    permission_classes = [isBanned]
+
+    @extend_schema(
+        description="Implements an endpoint to revoke access tokens",
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class AbstractUpdateUserUserPermissionsView(GenericAPIView):
+    serializer_class = custom_serializers.UpdateUserPermissionsSerializer
+    permission_classes = [permissions.IsAdminUser, TokenHasScope]
+    required_scopes = ["write"]
+
+    def find_target_user(self, request: Request):
+        serialized = self.get_serializer(data=request.data)
+        if serialized.is_valid():
+            email = serialized.validated_data.get("email")
+            uuid = serialized.validated_data.get("userid")
+            user = get_user_model().objects.filter(Q(email=email) | Q(userid=uuid)).first()
+
+            if user is None:
+                return Response(
+                    {
+                        "msg": "user not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            return user
+
+        return Response(
+            data=serialized.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@extend_schema(
+    summary="Ban a user"
+)
+class BanUserView(AbstractUpdateUserUserPermissionsView):
+    @extend_schema(
+        description="Give the userid or email of the user to be banned",
+    )
+    def post(self, request: Request) -> Response:
+        user = self.find_target_user(request)
+        if isinstance(user, Response):
+            return user
+
+        user.ban()  # type: ignore
+        user.save()
+        return Response(
+            {
+                "msg": f"{user.userid} has been banned"  # type: ignore
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+@extend_schema(
+    summary="Unban a user"
+)
+class UnbanUserView(AbstractUpdateUserUserPermissionsView):
+    @extend_schema(
+        description="Give the userid or email of the user to be banned",
+    )
+    def post(self, request: Request) -> Response:
+        user = self.find_target_user(request)
+        if isinstance(user, Response):
+            return user
+
+        user.unban()  # type: ignore
+        user.save()
+        return Response(
+            {
+                "msg": f"{user.userid} has been unbanned"  # type: ignore
+            },
+            status=status.HTTP_200_OK
+        )
