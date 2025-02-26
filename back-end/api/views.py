@@ -5,7 +5,7 @@ from oauth2_provider.views import TokenView, RevokeTokenView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework import permissions
+from rest_framework import permissions, views
 from .models import UserProfiles, User
 from .permissions import isBanned
 from rest_framework import status
@@ -72,9 +72,9 @@ class UpdateUserPasswordView(GenericAPIView):
         )
 
 
-class AbstractUserView(GenericAPIView):
+class AbstractUserView(views.APIView):
     serializer_class = custom_serializers.UserModelSerializer
-    model = get_user_model()
+    model = User
     permission_classes = [isBanned, TokenHasScope]
     required_scopes = []
 
@@ -102,7 +102,7 @@ class ViewUserInfoView(AbstractUserView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        serialized = self.get_serializer_class()(user)
+        serialized = self.serializer_class(user)
         return Response(
             data=serialized.data,
             status=status.HTTP_200_OK
@@ -119,7 +119,7 @@ class UpdateUserInfoView(AbstractUserView):
         description="Update the associated entry in the User table. Expects all User Profile fields. This uses the Authentication Token as the identifier."
     )
     def put(self, request) -> Response:
-        serialized = custom_serializers.UserModelSerializer(self.get_object(), data=request.data)
+        serialized = custom_serializers.UserModelSerializer(get_user_object(request), data=request.data)
         if serialized.is_valid():
             serialized.save()
             return Response(status=status.HTTP_202_ACCEPTED)
@@ -129,7 +129,7 @@ class UpdateUserInfoView(AbstractUserView):
         description="Update the associated entry in the User table. Does not require all fields. This uses the Authentication Token as the identifier"
     )
     def patch(self, request) -> Response:
-        serialized = custom_serializers.UserModelSerializer(self.get_object(), data=clean_request_data(request), partial=True)
+        serialized = custom_serializers.UserModelSerializer(get_user_object(request), data=clean_request_data(request), partial=True)
         if serialized.is_valid():
             serialized.save()
             return Response(
@@ -268,7 +268,7 @@ class DeleteUserView(AbstractUserView):
         description="Expect two matching booleans. The Authentication Token is used as the identifier"
     )
     def post(self, request: Request) -> Response:
-        serialized = self.get_serializer(data=request.data)
+        serialized = self.serializer_class(data=request.data)
 
         if serialized.is_valid():
             user = self.get_object()
