@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-de$2j#e9_qbyi(mmka8#y1rzszuv%)@z4xsxcn217)!&qg!u1-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'oauth2_provider',
     'api.apps.ApiConfig',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 
 MIDDLEWARE = [
@@ -121,14 +123,67 @@ AUTHENTICATION_BACKENDS = [
     'oauth2_provider.backends.OAuth2Backend',
 ]
 
+OAUTH_SCOPES = {
+    'read': 'Read scope',
+    'write': 'Write scope'
+},
+
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
-    'SCOPES': {'read': 'Read scope', 'write': 'Write scope'}
+    'SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope'
+    },
+    "ACCESS_TOKEN_EXPIRE_SCONDS": 36000,
+    "REFRESH_TOKEN_EXPIRE_SECONDS": 36000
 }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "oauth2_provider.contrib.rest_framework.TokenHasScope",
+        'api.permissions.isBanned',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+env = Path("./conf/.env")
+
+if not env.is_file():
+    raise FileNotFoundError("conf/mysql.conf is missing")
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Joggernaut API',
+    'DESCRIPTION': 'API for Joggernaut app',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'ENABLE_DJANGO_DEPLOY_CHECK': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": False,
+        "persistAuthorization": True,
+    },
+    'SWAGGER_UI_OAUTH2_CONFIG': {
+        "clientId": "EAdjk5dlE5ssgncPU8n4PeaQ1QYyqydhT0mPyyPi",
+        "clientSecret": "VKsT4ne6eGiXpN6542Aw6b0WGEpYqV8DkeggumUTkYKccJK6qaj64vYpbImRQjus9v0PzHrfYndKH49NMoDPNaasSwJeEXbW63kOXkIf79Pz6Xq1E2x8q3bsL7xSxCJp",
+        "appName": "api"
+    },
+    'OAUTH2_FLOWS': ["password"],
+    'OAUTH2_SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope'
+    },
+    'OAUTH2_AUTHORIZATION_URL': "/api/auth/authorize",
+    'OAUTH2_TOKEN_URL': "/api/auth/token/",
+    'OAUTH2_REFRESH_URL': "/api/auth/refresh",
+    'SERVE_AUTHENTICATION': None,
+    'PARSER_WHITELIST': [
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
     ]
 }
 

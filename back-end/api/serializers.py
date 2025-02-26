@@ -1,14 +1,16 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from .models import UserManager, UserProfiles
 from django.contrib.auth.password_validation import validate_password
+from typing import Any
 
 UserModel = get_user_model()
 
 
 class RegisterFormSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
-        model = get_user_model()
+        model = UserModel
         fields = ['firstname', 'lastname', 'email', 'phonenumber', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
@@ -33,6 +35,28 @@ class RegisterFormSerializer(serializers.ModelSerializer):
         return new_user
 
 
+class UpdateUserPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:  # type: ignore
+        model = UserModel
+
+    def validate(self, attrs) -> Any:
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise ValidationError("Passwords do not match.")
+        return attrs
+
+    def update(self, instance, validated_data):
+        assert isinstance(instance, UserModel)
+        new_password = validated_data.get("new_password", None)
+        if new_password is None:
+            return instance
+        instance.set_password(new_password)
+        instance.save()
+        return instance
+
+
 class UserProfileFormSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = UserProfiles
@@ -52,3 +76,55 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
         if created:
             new_profile.save()
         return new_profile
+
+
+class UserModelSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = UserModel
+        fields = ["userid", "email", "firstname", "lastname", "phonenumber", "joindate", "last_login", "is_active", "is_staff"]
+
+
+class UserDeleteSerializer(serializers.Serializer):
+    delete = serializers.BooleanField()
+    confirm_delete = serializers.BooleanField()
+
+    def validate(self, attrs):
+        delete = attrs["delete"]
+        confirm_delete = attrs["confirm_delete"]
+
+        if not delete:
+            raise ValidationError({"delete": "consent not received"})
+
+        if delete != confirm_delete:
+            raise ValidationError({"confirm_delete": "conflicting delete confirmation"})
+
+        return attrs
+
+    class Meta:
+        model = UserModel
+
+
+class UpdateUserPermissionsSerializer(serializers.Serializer):
+    userid = serializers.UUIDField(required=False)
+    email = serializers.EmailField(required=False)
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(default="email")
+    password = serializers.CharField(default="raw_password")
+    grant_type = serializers.CharField(default="password")
+    Scope = serializers.CharField(default="read write")
+    client_id = serializers.CharField(default="MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3")
+
+
+class TokenResponseSerializer(serializers.Serializer):
+    access_token = serializers.CharField(default="MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3")
+    token_type = serializers.CharField(default="Bearer")
+    expires_in = serializers.IntegerField(default="3600")
+    refresh_token = serializers.CharField(default="IwOGYzYTlmM2YxOTQ5MGE3YmNmMDFkNTVk")
+    scope = serializers.CharField(default="")
+
+
+class RevokeTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(default="MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3")
+    client_id = serializers.CharField(default="AAdjk4dlE7ssgbacPU8n4PeaQ1QYyqydhT2mPyyPi")
