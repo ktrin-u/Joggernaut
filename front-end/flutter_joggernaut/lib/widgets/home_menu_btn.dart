@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 class MenuButton extends StatelessWidget {
   final IconData icon;
   final String label;
-
-  const MenuButton({super.key, required this.icon, required this.label});
+  final VoidCallback onTap;
+  const MenuButton({super.key, required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class MenuButton extends StatelessWidget {
           color: Colors.white,
           elevation: 2,
           child: InkWell(
-            onTap: (){},
+            onTap: onTap,
             customBorder: CircleBorder(),
             splashColor: Colors.black12,
             child: Padding(

@@ -1,14 +1,66 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/home_page.dart';
+import 'package:flutter_application_1/services/api_services.dart';
+import 'package:flutter_application_1/widgets/snackbar.dart';
+import 'package:go_router/go_router.dart';
 
-class SignUpForm extends StatelessWidget {
+class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
+
+  @override
+  State<SignUpForm> createState() => _SignUpFormState();
+}
+
+class _SignUpFormState extends State<SignUpForm> {
+  bool isLoading = false;
+
+  final firstnameController = TextEditingController();
+  final lastnameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phonenumberController = TextEditingController();  
+  final passwordController = TextEditingController();
+
+  String? firstNameError;
+  String? lastNameError;
+  String? emailError;
+  String? phoneError;
+  String? passwordError;
+  
+  Future createUser(context) async {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    setState(() {
+      isLoading = true;
+      firstNameError = null;
+      lastNameError = null;
+      emailError = null;
+      phoneError = null;
+      passwordError = null;
+    });
+
+    var response = await ApiService().createUser(firstnameController.text, lastnameController.text, emailController.text, phonenumberController.text, passwordController.text);
+    var responseData = json.decode((response).body);
+    if (response.statusCode == 201) {
+      Navigator.pop(context);
+      GoRouter.of(context).go("/");
+      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: "Account created successfully!", screenHeight: screenHeight, screenWidth: screenWidth));
+    }
+
+    setState(() {
+      firstNameError = responseData["firstname"]?.join(", ");
+      lastNameError = responseData["lastname"]?.join(", ");
+      emailError = responseData["email"]?.join(", ");
+      phoneError = responseData["phonenumber"]?.join(", ");
+      passwordError = responseData["password"]?.join(", ");
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
+    
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.03),
       child: Column(
@@ -46,6 +98,7 @@ class SignUpForm extends StatelessWidget {
             ),
           ),
           TextField(
+            controller: firstnameController,
             decoration: InputDecoration(
               hintText: "Enter your first name",
               hintStyle: TextStyle(
@@ -65,7 +118,22 @@ class SignUpForm extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
+          firstNameError!= null ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              firstNameError!,
+              style: TextStyle(
+                color: const Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ) : Padding(
+            padding: EdgeInsets.only(bottom: screenHeight*0.01),
+            child: Row()
+          ),
+          SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Row(
@@ -84,6 +152,7 @@ class SignUpForm extends StatelessWidget {
             ),
           ),
           TextField(
+            controller: lastnameController,
             decoration: InputDecoration(
               hintText: "Enter your last name",
               hintStyle: TextStyle(
@@ -103,7 +172,22 @@ class SignUpForm extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
+          lastNameError!= null ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              lastNameError!,
+              style: TextStyle(
+                color: const Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ) : Padding(
+            padding: EdgeInsets.only(bottom: screenHeight*0.01),
+            child: Row()
+          ),
+          SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Row(
@@ -118,19 +202,11 @@ class SignUpForm extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Text(
-                  "Email is taken.",
-                  style: TextStyle(
-                    color: const Color.fromRGBO(255, 92, 92, 1),
-                    fontSize: screenWidth * 0.030, 
-                    fontFamily: 'Roboto',
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
               ],
             ),
           ),
           TextField(
+            controller: emailController,
             decoration: InputDecoration(
               hintText: "Enter your email",
               hintStyle: TextStyle(
@@ -150,7 +226,22 @@ class SignUpForm extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
+          emailError!= null ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              emailError!,
+              style: TextStyle(
+                color: const Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ) : Padding(
+            padding: EdgeInsets.only(bottom: screenHeight*0.01),
+            child: Row()
+          ),
+          SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Row(
@@ -165,19 +256,11 @@ class SignUpForm extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Text(
-                  "Phone number is taken.",
-                  style: TextStyle(
-                    color: const Color.fromRGBO(255, 92, 92, 1),
-                    fontSize: screenWidth * 0.030, 
-                    fontFamily: 'Roboto',
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
               ],
             ),
           ),
           TextField(
+            controller: phonenumberController,
             decoration: InputDecoration(
               hintText: "Enter your phone number",
               hintStyle: TextStyle(
@@ -197,7 +280,22 @@ class SignUpForm extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.02),
+          phoneError!= null ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              phoneError!,
+              style: TextStyle(
+                color: const Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ) : Padding(
+            padding: EdgeInsets.only(bottom: screenHeight*0.01),
+            child: Row()
+          ),
+          SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Row(
@@ -216,6 +314,7 @@ class SignUpForm extends StatelessWidget {
             ),
           ),
           TextField(
+            controller: passwordController,
             obscureText: true,
             decoration: InputDecoration(
               hintText: "Enter your password",
@@ -236,29 +335,29 @@ class SignUpForm extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
+          passwordError!= null ? Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                "Password must be at least 7 characters and a mix of uppercase and lowercase letters, numbers, and special characters.",
-                style: TextStyle(
-                  fontSize: screenWidth * 0.030,
-                  color: Color.fromRGBO(255, 92, 92, 1),
-                  fontFamily: 'Roboto',
-                  fontStyle: FontStyle.italic,
-                ),
+            child: Text(
+              passwordError!,
+              style: TextStyle(
+                color: const Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
               ),
             ),
+          ) : Padding(
+            padding: EdgeInsets.only(bottom: screenHeight*0.01),
+            child: Row()
           ),
-          SizedBox(height: screenHeight * 0.01),
+          SizedBox(height: screenHeight * 0.02),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton.icon(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => GoRouter.of(context).pop(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),
@@ -278,27 +377,41 @@ class SignUpForm extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                      (route) => false, 
-                    );
+                    createUser(context);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
                     backgroundColor: Color.fromRGBO(245, 245, 245, 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 1),
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      color: Color.fromRGBO(51, 51, 51, 1),
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      fontSize: screenWidth * 0.045
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Opacity(
+                        opacity: isLoading ? 0.0 : 1.0, 
+                        child: Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            color: Color.fromRGBO(51, 51, 51, 1),
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+                      ),
+                      if (isLoading)
+                        SizedBox(
+                          height: screenWidth * 0.045, 
+                          width: screenWidth * 0.045, 
+                          child: CircularProgressIndicator(
+                            color: Color.fromRGBO(51, 51, 51, 1),
+                            strokeWidth: 2.5,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
