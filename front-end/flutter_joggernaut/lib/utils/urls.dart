@@ -1,4 +1,4 @@
-const hostURL = "http://10.0.2.2:8000/";
+const hostURL = "http://192.168.254.189:8000/";
 
 const registerURL = "${hostURL}api/register/";
 const loginURL = "${hostURL}api/login/";
