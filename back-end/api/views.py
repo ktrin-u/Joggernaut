@@ -58,11 +58,13 @@ class UpdateUserPasswordView(GenericAPIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-        request_data = clean_request_data(request)
-        serialized = self.get_serializer(data=request_data)  # type: ignore
+        serialized = self.get_serializer(data=request.data)  # type: ignore
         if serialized.is_valid():
             serialized.update(instance=user, validated_data=serialized.validated_data)
             return Response(
+                {
+                    "msg": f"{user.email}'s password has been changed",
+                },
                 status=status.HTTP_200_OK
             )
 

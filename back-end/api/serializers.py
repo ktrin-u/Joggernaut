@@ -42,14 +42,17 @@ class UpdateUserPasswordSerializer(serializers.Serializer):
     class Meta:  # type: ignore
         model = UserModel
 
-    def validate_confirm_password(self, value) -> Any:
-        if value != self.data["new_password"]:
+    def validate(self, attrs) -> Any:
+        if attrs["new_password"] != attrs["confirm_password"]:
             raise ValidationError("Passwords do not match.")
-        return value
+        return attrs
 
     def update(self, instance, validated_data):
         assert isinstance(instance, UserModel)
-        instance.set_password(validated_data.get('password', instance.password))
+        new_password = validated_data.get("new_password", None)
+        if new_password is None:
+            return instance
+        instance.set_password(new_password)
         instance.save()
         return instance
 
