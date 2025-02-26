@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/utils/routes.dart';
-import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -14,7 +13,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future logout(context) async {
     await AuthService().logout();
-    GoRouter.of(context).goNamed('landingpage');
+    router.goNamed('landingpage');
   }
 
   @override

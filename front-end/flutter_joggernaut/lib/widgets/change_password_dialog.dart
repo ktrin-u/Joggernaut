@@ -96,7 +96,7 @@ class ChangePassword {
             foregroundColor: Color.fromRGBO(51, 51, 51, 1),
           ),
           child: Text(
-            "Cancel",
+            "No",
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w400,
@@ -114,7 +114,7 @@ class ChangePassword {
             foregroundColor: Color.fromRGBO(51, 51, 51, 1),
           ),
           child: Text(
-            "Save",
+            "Yes",
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w400,

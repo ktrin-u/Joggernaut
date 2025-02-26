@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 import '../widgets/home_menu_btn.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isLoading = false;
+  bool isStaff = false;
   late Future name;
 
   Future logout(context) async {
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
       isLoading = false;
     });
     
-    GoRouter.of(context).goNamed('landingpage');
+    router.goNamed('landingpage');
   }
 
   Future getName() async{
@@ -36,6 +37,9 @@ class _HomePageState extends State<HomePage> {
     var data = jsonDecode(response.body);
     String firstname = data["firstname"];
     String lastname = data["lastname"];
+    setState(() {
+      isStaff = data["is_staff"];
+    });
     return firstname.isNotEmpty
       ? firstname[0].toUpperCase() + firstname.substring(1) +
       (lastname.isNotEmpty ? " ${lastname[0].toUpperCase()}." : "")
@@ -88,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                             fontFamily: 'Big Shoulders Display',
                             fontSize: screenWidth * 0.13,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromRGBO(90, 155, 212, 1),
+                            color: (!isStaff) ? Color.fromRGBO(90, 155, 212, 1) : Color.fromRGBO(75, 0, 130, 1),
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.03),
@@ -96,8 +100,8 @@ class _HomePageState extends State<HomePage> {
                           spacing: screenWidth * 0.1,
                           alignment: WrapAlignment.center,
                           children: [
-                            MenuButton(icon: Icons.fitness_center, label: "Workout", onTap: () => GoRouter.of(context).push('/workout')),
-                            MenuButton(icon: Icons.videogame_asset, label: "Play", onTap: () => GoRouter.of(context).push('/game')),
+                            MenuButton(icon: Icons.fitness_center, label: "Workout", onTap: () => router.push('/workout')),
+                            MenuButton(icon: Icons.videogame_asset, label: "Play", onTap: () => router.push('/game')),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.02),
@@ -105,16 +109,23 @@ class _HomePageState extends State<HomePage> {
                           spacing: screenWidth * 0.1,
                           alignment: WrapAlignment.center,
                           children: [
-                            MenuButton(icon: Icons.people, label: "Social", onTap: () => GoRouter.of(context).push('/social')),
-                            MenuButton(icon: Icons.person, label: "Profile", onTap: () => GoRouter.of(context).push('/profile')),
+                            MenuButton(icon: Icons.people, label: "Social", onTap: () => router.push('/social')),
+                            MenuButton(icon: Icons.person, label: "Profile", onTap: () => router.push('/profile')),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.02),
-                        Wrap(
+                        (isStaff) ? Wrap(
                           spacing: screenWidth * 0.1,
                           alignment: WrapAlignment.center,
                           children: [
-                            MenuButton(icon: Icons.settings, label: "Settings", onTap: () => GoRouter.of(context).push('/settings')),
+                            MenuButton(icon: Icons.settings, label: "Settings", onTap: () => router.push('/settings')),
+                            MenuButton(icon: Icons.admin_panel_settings, label: "Admin", onTap: () => router.push('/admin'))
+                          ],
+                        ) : Wrap(
+                          spacing: screenWidth * 0.1,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            MenuButton(icon: Icons.settings, label: "Settings", onTap: () => router.push('/settings')),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.08),

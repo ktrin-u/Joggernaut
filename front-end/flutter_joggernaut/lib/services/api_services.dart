@@ -217,4 +217,54 @@ class ApiService {
       throw Exception("Error: $e");
     }
   }
+
+  Future banAccount (email) async{
+    var uri = Uri.parse(banURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "email": email,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+      if (response.statusCode == 200) {
+        print("User has been banned!");
+      } else {
+        print("Failed to ban user. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future unbanAccount (email) async{
+    var uri = Uri.parse(unbanURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "email": email,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+      if (response.statusCode == 200) {
+        print("User has been unbanned!");
+      } else {
+        print("Failed to unban user. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+
 }

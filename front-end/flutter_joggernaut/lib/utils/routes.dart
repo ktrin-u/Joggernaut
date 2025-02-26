@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/account_settings_page.dart';
+import 'package:flutter_application_1/screens/admin_page.dart';
+import 'package:flutter_application_1/screens/admin_user_profiles.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_application_1/screens/landing_page.dart';
@@ -51,7 +53,7 @@ final GoRouter router = GoRouter(
           },
           child: Scaffold(
             body: navigationShell,
-            bottomNavigationBar: CustomNavigationBar(navigationShell),
+            bottomNavigationBar: CustomNavigationBar(navigationShell)
           )
         );
       },
@@ -73,7 +75,13 @@ final GoRouter router = GoRouter(
             GoRoute(path: '/settings', builder: (context, state) => SettingsPage()),
             GoRoute(path: '/settings/account', builder: (context, state) => AccountSettingsPage()),
           ],
-        )
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/admin', builder: (context, state) => AdminPage()),
+            GoRoute(path: '/admin/users', builder: (context, state) => AdminUserProfilesPage())
+          ],
+        ),
       ]
     )
   ]
