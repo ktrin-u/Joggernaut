@@ -1,16 +1,22 @@
-# flutter_joggernaut
+# Joggernaut Front-End
 
-A new Flutter project.
+## Setup guide to run app on a virtual device
 
-## Getting Started
+1. Install Flutter and Set Up Android Studio
+  - Follow the official Flutter installation guide based on your operating system:  
+    - [Flutter Installation](https://docs.flutter.dev/get-started/install/windows/mobile)
 
-This project is a starting point for a Flutter application.
+2. Set Up a Virtual Device in Android Studio
+  - Open **Android Studio**
+  - Navigate to **AVD Manager** (Android Virtual Device Manager)
+  - Create and configure an emulator 
 
-A few resources to get you started if this is your first Flutter project:
+3. Run the Virtual Device and Connect to VS Code
+  - Start the virtual device from **AVD Manager** or **VS Code** (sa right corner ng screen) or run:
+  - Open your Flutter project in **VS Code**
+  - Once virtual device is open and connected, run without debugging main.dart
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+4. Start the Backend Server
+  - App should be good to go
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
