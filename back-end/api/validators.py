@@ -21,14 +21,33 @@ class CustomPasswordValidator:
     def validate(self, password: str, user=None) -> None:
         SPECIALCHARS = "{}()[]#:;^,.?!|&_`~@$%/\\=+-*\"\'"
 
+        if len(password) < 7:
+            raise ValidationError(
+                {
+                    "password": "password must have at least 7 characters"
+                }
+            )
+
         if not any(char.isupper() for char in password):
-            raise ValidationError("password must have at least one capital letter")
+            raise ValidationError(
+                {
+                    "password": "password must have at least one capital letter"
+                }
+            )
 
         if not any(char.isdigit() for char in password):
-            raise ValidationError("password must have at least one number")
+            raise ValidationError(
+                {
+                    "password": "password must have at least one number letter"
+                }
+            )
 
         if not any(char in SPECIALCHARS for char in password):
-            raise ValidationError(f"password must have at least one of the following {SPECIALCHARS}")
+            raise ValidationError(
+                {
+                    "password": f"password must have at least one of the following {SPECIALCHARS}"
+                }
+            )
 
-    def get_help_test(self):
-        return "help text for custom password vlaidator"
+    def get_help_test(self) -> str:
+        return "The password must have at least: 7 characters, 1 capital letter, 1 number, 1 special character."

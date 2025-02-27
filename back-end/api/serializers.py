@@ -44,11 +44,12 @@ class UpdateUserPasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs) -> Any:
         if attrs["new_password"] != attrs["confirm_password"]:
-            raise ValidationError({
-                                   "new_password": "match failed", 
-                                   "confirm_password": "match failed",
-                                  }
-                                 )
+            raise ValidationError(
+                {
+                    "new_password": "match failed",
+                    "confirm_password": "match failed",
+                }
+            )
         return attrs
 
     def update(self, instance, validated_data):
