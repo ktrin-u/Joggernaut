@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/login_form.dart';
 import '../widgets/signup_form.dart';
 import '../utils/constants.dart';
+import '../widgets/form_sheet.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -27,56 +28,6 @@ class _LandingPageState extends State<LandingPage> {
       _titleMovedUpLogin = false;
       _titleMovedUpSignUp = false;
     });
-  }
-
-  void _showLoginSheet(BuildContext context, Widget form) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      barrierColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-      ),
-      backgroundColor: Colors.white,
-      builder: (context) {
-        return  ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.70,  
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20), 
-            child: SingleChildScrollView(
-              child: form,
-            )
-          )
-        );
-      },
-    ).whenComplete(() => _resetTitlePosition());
-  }
-
-  void _showSignupSheet(BuildContext context, Widget form) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      barrierColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-      ),
-      backgroundColor: Colors.white,
-      builder: (context) {
-        return  ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.80, 
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20),
-            child: SingleChildScrollView(
-              child: form,
-            )
-          )
-        );
-      },
-    ).whenComplete(() => _resetTitlePosition());
   }
 
   @override
@@ -122,7 +73,12 @@ class _LandingPageState extends State<LandingPage> {
                   child: OutlinedButton(
                     onPressed: () {
                       _moveTitleUpLogin();
-                      _showLoginSheet(context, const LoginForm());
+                      showFormBottomSheet(
+                        context: context, 
+                        maxHeight: 0.70, 
+                        form: LoginForm(), 
+                        onClose: _resetTitlePosition
+                      );
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white, width: 1.2),
@@ -151,7 +107,12 @@ class _LandingPageState extends State<LandingPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       _moveTitleUpSignUp();
-                      _showSignupSheet(context, const SignUpForm());
+                      showFormBottomSheet(
+                        context: context, 
+                        maxHeight: 0.80, 
+                        form: SignUpForm(), 
+                        onClose: _resetTitlePosition
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,

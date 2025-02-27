@@ -1,33 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/home_page.dart';
+import 'package:flutter_application_1/services/auth_service.dart';
+import 'package:flutter_application_1/widgets/form_sheet.dart';
 import 'package:flutter_application_1/widgets/recovery_form.dart';
+import 'package:go_router/go_router.dart';
 
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
-  void _showRecoverSheet(BuildContext context, Widget form) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      barrierColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-      ),
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      builder: (context) {
-        return  ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.70,  
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20), 
-            child: SingleChildScrollView(
-              child: form,
-            )
-          )
-        );
-      },
-    );
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  bool isLoading = false;
+
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  int? statusCode;
+
+  Future login(context) async {
+    setState(() {
+      isLoading = true;
+      statusCode = null;
+    });
+
+    var response = (await AuthService().login(usernameController.text, passwordController.text));
+
+    if (response.statusCode == 200) {
+      GoRouter.of(context).goNamed('homepage');
+    }
+
+    setState(() {
+      isLoading = false;
+      statusCode = response.statusCode;
+    });
   }
 
   @override
@@ -68,19 +75,26 @@ class LoginForm extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Text(
-                  "Email does not exist.",
-                  style: TextStyle(
-                    color: const Color.fromRGBO(255, 92, 92, 1),
-                    fontSize: screenWidth * 0.035, 
-                    fontFamily: 'Roboto',
-                    fontStyle: FontStyle.italic,
+                if (statusCode != null && statusCode != 200) Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                  child: Text(
+                    "Invalid email or password.",
+                    style: TextStyle(
+                      color: const Color.fromRGBO(255, 92, 92, 1),
+                      fontSize: screenWidth * 0.030, 
+                      fontFamily: 'Roboto',
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
+                ) else Padding(
+                  padding: EdgeInsets.only(bottom: screenHeight*0.01),
+                  child: Row()
                 ),
               ],
             ),
           ),
           TextField(
+            controller: usernameController,
             decoration: InputDecoration(
               hintText: "Enter your email",
               hintStyle: TextStyle(
@@ -114,6 +128,7 @@ class LoginForm extends StatelessWidget {
             ),
           ),
          TextField(
+            controller: passwordController,
             obscureText: true,
             decoration: InputDecoration(
               hintText: "Enter your password",
@@ -138,7 +153,12 @@ class LoginForm extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                _showRecoverSheet(context, const RecoverPasswordForm());
+                showFormBottomSheet(
+                  context: context, 
+                  maxHeight: 0.70, 
+                  form: RecoverPasswordForm(), 
+                  onClose: null
+                );
               },
               style: TextButton.styleFrom(
                 foregroundColor: Color.fromRGBO(51, 51, 51, 1),
@@ -161,7 +181,7 @@ class LoginForm extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton.icon(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => GoRouter.of(context).pop(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),
@@ -181,10 +201,7 @@ class LoginForm extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                      (route) => false, 
-                    );
+                    login(context);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
@@ -194,14 +211,31 @@ class LoginForm extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: Text(
-                    "Log in",
-                    style: TextStyle(
-                      color: Color.fromRGBO(51, 51, 51, 1),
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      fontSize: screenWidth * 0.045
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Opacity(
+                        opacity: isLoading ? 0.0 : 1.0, 
+                        child: Text(
+                          "Log in",
+                          style: TextStyle(
+                            color: Color.fromRGBO(51, 51, 51, 1),
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+                      ),
+                      if (isLoading)
+                        SizedBox(
+                          height: screenWidth * 0.045, 
+                          width: screenWidth * 0.045, 
+                          child: CircularProgressIndicator(
+                            color: Color.fromRGBO(51, 51, 51, 1),
+                            strokeWidth: 2.5,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
