@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/snackbar.dart';
-import 'package:go_router/go_router.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -42,7 +42,7 @@ class _SignUpFormState extends State<SignUpForm> {
     var responseData = json.decode((response).body);
     if (response.statusCode == 201) {
       Navigator.pop(context);
-      GoRouter.of(context).go("/");
+      router.go("/");
       ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: "Account created successfully!", screenHeight: screenHeight, screenWidth: screenWidth));
     }
 
@@ -79,277 +79,26 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.01),    
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "First Name",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, 
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextField(
-            controller: firstnameController,
-            decoration: InputDecoration(
-              hintText: "Enter your first name",
-              hintStyle: TextStyle(
-                fontSize: screenWidth * 0.04,
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
-              ),
-            ),
-          ),
-          firstNameError!= null ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Text(
-              firstNameError!,
-              style: TextStyle(
-                color: const Color.fromRGBO(255, 92, 92, 1),
-                fontSize: screenWidth * 0.030, 
-                fontFamily: 'Roboto',
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ) : Padding(
-            padding: EdgeInsets.only(bottom: screenHeight*0.01),
-            child: Row()
-          ),
           SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Last Name",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, 
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextField(
-            controller: lastnameController,
-            decoration: InputDecoration(
-              hintText: "Enter your last name",
-              hintStyle: TextStyle(
-                fontSize: screenWidth * 0.04,
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
-              ),
-            ),
-          ),
-          lastNameError!= null ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Text(
-              lastNameError!,
-              style: TextStyle(
-                color: const Color.fromRGBO(255, 92, 92, 1),
-                fontSize: screenWidth * 0.030, 
-                fontFamily: 'Roboto',
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ) : Padding(
-            padding: EdgeInsets.only(bottom: screenHeight*0.01),
-            child: Row()
-          ),
+          _buildFormText("First Name", screenWidth),
+          _buildFormField("Enter your first name", false, firstnameController, screenWidth, screenHeight),
+          _buildFormErrorMsg(firstNameError, screenWidth, screenHeight),
           SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Email",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, 
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextField(
-            controller: emailController,
-            decoration: InputDecoration(
-              hintText: "Enter your email",
-              hintStyle: TextStyle(
-                fontSize: screenWidth * 0.04,
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
-              ),
-            ),
-          ),
-          emailError!= null ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Text(
-              emailError!,
-              style: TextStyle(
-                color: const Color.fromRGBO(255, 92, 92, 1),
-                fontSize: screenWidth * 0.030, 
-                fontFamily: 'Roboto',
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ) : Padding(
-            padding: EdgeInsets.only(bottom: screenHeight*0.01),
-            child: Row()
-          ),
+          _buildFormText("Last Name", screenWidth),
+          _buildFormField("Enter your last name", false, lastnameController, screenWidth, screenHeight),
+          _buildFormErrorMsg(lastNameError, screenWidth, screenHeight),
           SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Phone Number",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, 
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextField(
-            controller: phonenumberController,
-            decoration: InputDecoration(
-              hintText: "Enter your phone number",
-              hintStyle: TextStyle(
-                fontSize: screenWidth * 0.04,
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
-              ),
-            ),
-          ),
-          phoneError!= null ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Text(
-              phoneError!,
-              style: TextStyle(
-                color: const Color.fromRGBO(255, 92, 92, 1),
-                fontSize: screenWidth * 0.030, 
-                fontFamily: 'Roboto',
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ) : Padding(
-            padding: EdgeInsets.only(bottom: screenHeight*0.01),
-            child: Row()
-          ),
+          _buildFormText("Email", screenWidth),
+          _buildFormField("Enter your email address", false, emailController, screenWidth, screenHeight),
+          _buildFormErrorMsg(emailError, screenWidth, screenHeight),
           SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Password",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, 
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextField(
-            controller: passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              hintText: "Enter your password",
-              hintStyle: TextStyle(
-                fontSize: screenWidth * 0.04,
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w400,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
-              ),
-            ),
-          ),
-          passwordError!= null ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-            child: Text(
-              passwordError!,
-              style: TextStyle(
-                color: const Color.fromRGBO(255, 92, 92, 1),
-                fontSize: screenWidth * 0.030, 
-                fontFamily: 'Roboto',
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ) : Padding(
-            padding: EdgeInsets.only(bottom: screenHeight*0.01),
-            child: Row()
-          ),
+          _buildFormText("Phone Number", screenWidth),
+          _buildFormField("Enter your phone number", false, phonenumberController, screenWidth, screenHeight),
+          _buildFormErrorMsg(phoneError, screenWidth, screenHeight),
+          SizedBox(height: screenHeight * 0.01),
+          _buildFormText("Password", screenWidth),
+          _buildFormField("Enter your password", true, passwordController, screenWidth, screenHeight),
+          _buildFormErrorMsg(passwordError, screenWidth, screenHeight),
           SizedBox(height: screenHeight * 0.02),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
@@ -357,7 +106,7 @@ class _SignUpFormState extends State<SignUpForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton.icon(
-                  onPressed: () => GoRouter.of(context).pop(),
+                  onPressed: () => router.pop(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),
@@ -421,4 +170,67 @@ class _SignUpFormState extends State<SignUpForm> {
       ),
     );
   }
+}
+
+Widget _buildFormText (String label, double screenWidth){
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: screenWidth * 0.05, 
+            color: Color.fromRGBO(51, 51, 51, 1),
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildFormField (String hint, bool isObscure, TextEditingController controller, double screenWidth, double screenHeight){
+  return TextField(
+    controller: controller,
+    obscureText: isObscure,
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        fontSize: screenWidth * 0.04,
+        color: Color.fromRGBO(51, 51, 51, 1),
+        fontFamily: 'Roboto',
+        fontWeight: FontWeight.w400,
+      ),
+      contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(50),
+        borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(50),
+        borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+      ),
+    ),
+  );
+}
+
+Widget _buildFormErrorMsg (String? error, double screenWidth, double screenHeight){
+  return error != null ? Padding(
+    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+    child: Text(
+      error,
+      style: TextStyle(
+        color: const Color.fromRGBO(255, 92, 92, 1),
+        fontSize: screenWidth * 0.030, 
+        fontFamily: 'Roboto',
+        fontStyle: FontStyle.italic,
+      ),
+    ),
+  ) : Padding(
+    padding: EdgeInsets.only(bottom: screenHeight*0.01),
+    child: Row()
+  );
 }

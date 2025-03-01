@@ -70,52 +70,26 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
               widget.navigationShell.goBranch(index, initialLocation: index == widget.navigationShell.currentIndex);
             },
             items: [
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005), 
-                  child: Icon(Icons.directions_run),
-                ),
-                label: "Workout",
-              ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
-                  child: Icon(Icons.sports_esports),
-                ),
-                label: "Game",
-              ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
-                  child: Icon(Icons.person),
-                ),
-                label: "Profile",
-              ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
-                  child: Icon(Icons.people),
-                ),
-                label: "Social",
-              ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
-                  child: Icon(Icons.settings),
-                ),
-                label: "Settings",
-              ),
-              if (isStaff) BottomNavigationBarItem(
-                icon: Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
-                  child: Icon(Icons.admin_panel_settings),
-                ),
-                label: "Admin",
-              ) 
+              _buildBottomNavBarItem("Workout", Icon(Icons.directions_run), screenWidth, screenHeight),
+              _buildBottomNavBarItem("Game", Icon(Icons.sports_esports), screenWidth, screenHeight),
+              _buildBottomNavBarItem("Profile", Icon(Icons.person), screenWidth, screenHeight),
+              _buildBottomNavBarItem("Social", Icon(Icons.people), screenWidth, screenHeight),
+              _buildBottomNavBarItem("Settings", Icon(Icons.settings), screenWidth, screenHeight),
+              if (isStaff) _buildBottomNavBarItem("Admin", Icon(Icons.admin_panel_settings), screenWidth, screenHeight)
             ]
           );
         }
       }
     );
   }
+}
+
+BottomNavigationBarItem _buildBottomNavBarItem (String label, Icon icon, double screenWidth, double screenHeight){
+  return BottomNavigationBarItem(
+    icon: Padding(
+      padding: EdgeInsets.symmetric(vertical: screenHeight *0.005, horizontal: screenWidth*0.005),
+      child: icon,
+    ),
+    label: label,
+  );
 }

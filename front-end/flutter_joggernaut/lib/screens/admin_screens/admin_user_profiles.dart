@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
-import 'package:go_router/go_router.dart';
 
 class AdminUserProfilesPage extends StatefulWidget {
   const AdminUserProfilesPage({super.key});
@@ -37,7 +37,7 @@ class _AdminUserProfilesPageState extends State<AdminUserProfilesPage> {
               children: [
                 TextButton.icon(
                   onPressed: (){
-                    GoRouter.of(context).pop();
+                    router.pop();
                   },
                   icon: const Icon(
                     Icons.arrow_back_ios,

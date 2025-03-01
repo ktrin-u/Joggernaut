@@ -7,7 +7,6 @@ import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/change_password_dialog.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
-import 'package:go_router/go_router.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -140,7 +139,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   children: [
                     TextButton.icon(
                       onPressed: (){
-                        GoRouter.of(context).pop();
+                        router.pop();
                       },
                       icon: const Icon(
                         Icons.arrow_back_ios,

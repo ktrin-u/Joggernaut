@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 
 class RecoverPasswordForm extends StatelessWidget {
   const RecoverPasswordForm({super.key});
@@ -106,7 +106,7 @@ class RecoverPasswordForm extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton.icon(
-                  onPressed: () => GoRouter.of(context).pop(),
+                  onPressed: () => router.pop(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),

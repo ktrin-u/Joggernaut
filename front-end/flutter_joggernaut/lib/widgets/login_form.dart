@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/form_sheet.dart';
 import 'package:flutter_application_1/widgets/recovery_form.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -28,7 +28,7 @@ class _LoginFormState extends State<LoginForm> {
     var response = (await AuthService().login(usernameController.text, passwordController.text));
 
     if (response.statusCode == 200) {
-      GoRouter.of(context).goNamed('homepage');
+      router.goNamed('homepage');
     }
 
     setState(() {
@@ -181,7 +181,7 @@ class _LoginFormState extends State<LoginForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton.icon(
-                  onPressed: () => GoRouter.of(context).pop(),
+                  onPressed: () => router.pop(),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),
