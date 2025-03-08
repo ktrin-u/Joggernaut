@@ -1,10 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/utils/routes.dart';
-import 'package:flutter_application_1/widgets/change_password_dialog.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
 
@@ -16,6 +17,15 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
+  late BuildContext _currentContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentContext = context;
+  }
+  
+  bool isLoading = false;
   bool isEditing = false;
   late Future gettingAccInfo;
   String? email;
@@ -44,8 +54,25 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Future updateUserInfo(context) async {
-    await ApiService().updateUserInfo(email, firstname, lastname, phonenumber);
-    setState(() {});
+    setState(() {
+      isLoading = true;
+    });
+    var response = await ApiService().updateUserInfo(email, firstname, lastname, phonenumber);
+    if (response.statusCode == 202){
+      ConfirmHelper.showResultDialog(_currentContext, "User Info updated successfully!", "Success");
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future getUserInfo() async {
@@ -75,14 +102,49 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Future deleteAccount (context) async{
-    await ApiService().deleteAccount();
-    await AuthService().logout();
-    router.goNamed('landingpage');
+    setState(() {
+      isLoading = true;
+    });
+    var response = await ApiService().deleteAccount();
+    if (response.statusCode == 200){
+      ConfirmHelper.showResultDialog(_currentContext, "Account deleted successfully!", "Success");
+      await AuthService().logout();
+      router.goNamed('landingpage');
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future changePassword () async{
-    await ApiService().changePassword(newPasswordController.text, confirmPasswordController.text);
-    setState(() {});
+    setState(() {
+      isLoading = true;
+    });
+    var response = await ApiService().changePassword(newPasswordController.text, confirmPasswordController.text);
+    if (response.statusCode == 200){
+      ConfirmHelper.showResultDialog(_currentContext, "Password changed successfully!", "Success");
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _saveEmail(){
@@ -158,16 +220,31 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: (){
-                        _toggleEdit(context);
-                      },
-                      icon: Icon(
-                        Icons.edit_square,
-                        color: (!isEditing) ? Color.fromRGBO(51, 51, 51, 1) : Color.fromRGBO(90, 155, 212, 1),
-                        size: screenWidth * 0.09,
+                    Opacity(
+                      opacity: isLoading ? 0.0 : 1.0, 
+                      child: IconButton(
+                        onPressed: (){
+                          _toggleEdit(context);
+                        },
+                        icon: Icon(
+                          Icons.edit_square,
+                          color: (!isEditing) ? Color.fromRGBO(51, 51, 51, 1) : Color.fromRGBO(90, 155, 212, 1),
+                          size: screenWidth * 0.09,
+                        ),
                       ),
                     ),
+                    if (isLoading)
+                      Padding(
+                        padding: EdgeInsets.only(right: screenWidth*0.03),
+                        child: SizedBox(
+                          height: screenWidth * 0.09, 
+                          width: screenWidth * 0.09, 
+                          child: CircularProgressIndicator(
+                            color: Color.fromRGBO(51, 51, 51, 1),
+                            strokeWidth: 2.5,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -194,12 +271,12 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       _buildListTileItem("Email", email!, context, emailController, isEditing, TextInputType.emailAddress, _saveEmail, "Enter your new email address", Icon(Icons.email)),
                       _buildListTileItem("First Name", firstname!, context, firstnameController, isEditing, TextInputType.text, _saveFirstname, "Enter your first name", Icon(Icons.account_circle)),
                       _buildListTileItem("Last Name", lastname!, context, lastnameController, isEditing, TextInputType.text, _saveLastname, "Enter your last name", Icon(Icons.account_circle)),
-                      _buildListTileItem("Phone Number", phonenumber!, context, phonenumberController, isEditing, TextInputType.datetime, _savePhonenumber, "Enter your new phonenumber", Icon(Icons.smartphone_rounded)),
+                      _buildListTileItem("Phone Number", phonenumber!, context, phonenumberController, isEditing, TextInputType.text, _savePhonenumber, "Enter your new phonenumber", Icon(Icons.smartphone_rounded)),
                       SizedBox(height: screenHeight*0.02),
                       Padding(padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07), child: Divider()),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07, vertical: screenHeight*0.005),
-                        child: _buildMenuItem("Change Password", screenWidth, screenHeight, Icon(Icons.key_rounded), (){ChangePassword.showChangePasswordDialog(context, newPasswordController, confirmPasswordController, onConfirmChangePassword);}, Color.fromRGBO(51, 51, 51, 1))
+                        child: _buildMenuItem("Change Password", screenWidth, screenHeight, Icon(Icons.key_rounded), (){InputHelper.showChangePasswordDialog(context, newPasswordController, confirmPasswordController, onConfirmChangePassword);}, Color.fromRGBO(51, 51, 51, 1))
                       ),
                       Padding(padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07), child: Divider()),
                       Padding(

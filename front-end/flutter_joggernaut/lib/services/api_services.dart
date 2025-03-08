@@ -50,8 +50,10 @@ class ApiService {
 
       if (response.statusCode == 200) {
         print("Account deleted succesfully!");
+        return response;
       } else {
         print("Account deletion failed: ${response.body}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -128,8 +130,10 @@ class ApiService {
       );
       if (response.statusCode == 201) {
         print("Account Profile created successfully!");
+        return response;
       } else {
         print("Failed to create profile. Status code: ${response.statusCode}. Response body: ${response.body}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -158,8 +162,10 @@ class ApiService {
       );
       if (response.statusCode == 201) {
         print("Account Profile updated successfully!");
+        return response;
       } else {
         print("Failed to update profile. Status code: ${response.statusCode}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -185,8 +191,10 @@ class ApiService {
       );
       if (response.statusCode == 202) {
         print("Account info updated successfully!");
+        return response;
       } else {
         print("Failed to update account info. Status code: ${response.statusCode}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -210,8 +218,10 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         print("Password has been changed successfully!");
+        return response;
       } else {
         print("Failed to change password. Status code: ${response.statusCode}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -234,8 +244,10 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         print("User has been banned!");
+        return response;
       } else {
         print("Failed to ban user. Status code: ${response.statusCode}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");
@@ -258,8 +270,10 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         print("User has been unbanned!");
+        return response;
       } else {
         print("Failed to unban user. Status code: ${response.statusCode}");
+        return response;
       }
     } catch (e) {
       throw Exception("Error: $e");

@@ -1,10 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
-import 'package:flutter_application_1/widgets/snackbar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,6 +15,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late BuildContext _currentContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentContext = context;
+  }
+
+  bool isLoading = false;
   bool isEditing = false;
   bool? isNewUser;
   late Future gettingProfile;
@@ -55,30 +65,47 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future createUserProfile(context) async {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    setState(() {
+      isLoading = true;
+    });
     var response = await ApiService().createUserProfile(accountName, dateofbirth, gender, address, height, weight);
     if (response.statusCode == 201){
-      setState((){
-        isNewUser = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: "Profile created successfully!", screenHeight: screenHeight, screenWidth: screenWidth));
+      ConfirmHelper.showResultDialog(_currentContext, "User Profile created successfully!", "Success");
     } 
     else {
-      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: response.body, screenHeight: screenHeight, screenWidth: screenWidth));      
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future updateUserProfile(context) async {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    setState(() {
+      isLoading = true;
+    });
     var response  = await ApiService().updateUserProfile(accountName, dateofbirth, gender, address, height, weight);
     if (response.statusCode == 201){
-      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: "Profile updated successfully!", screenHeight: screenHeight, screenWidth: screenWidth));
+      ConfirmHelper.showResultDialog(_currentContext, "User Profile updated successfully!", "Success");
     } 
     else {
-      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: response.body, screenHeight: screenHeight, screenWidth: screenWidth)); 
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _saveAccName(){
@@ -209,16 +236,31 @@ class _ProfilePageState extends State<ProfilePage> {
                                 color: Colors.white,
                               ),
                             ),
-                            IconButton(
-                              onPressed: (){
-                                 _toggleEdit(context);
-                              },
-                              icon: Icon(
-                                Icons.edit_square,
-                                color: (!isEditing) ? Colors.white : Color.fromRGBO(90, 155, 212, 1),
-                                size: screenWidth * 0.09,
+                            Opacity(
+                              opacity: isLoading ? 0.0 : 1.0, 
+                              child: IconButton(
+                                onPressed: (){
+                                   _toggleEdit(context);
+                                },
+                                icon: Icon(
+                                  Icons.edit_square,
+                                  color: (!isEditing) ? Colors.white : Color.fromRGBO(90, 155, 212, 1),
+                                  size: screenWidth * 0.09,
+                                ),
                               ),
                             ),
+                            if (isLoading)
+                              Padding(
+                                padding: EdgeInsets.only(right: screenWidth*0.03),
+                                child: SizedBox(
+                                  height: screenWidth * 0.09, 
+                                  width: screenWidth * 0.09, 
+                                  child: CircularProgressIndicator(
+                                    color: Color.fromRGBO(255, 255, 255, 1),
+                                    strokeWidth: 2.5,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

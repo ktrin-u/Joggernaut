@@ -1,6 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/utils/routes.dart';
+import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
 
 class AdminUserProfilesPage extends StatefulWidget {
@@ -11,15 +16,52 @@ class AdminUserProfilesPage extends StatefulWidget {
 }
 
 class _AdminUserProfilesPageState extends State<AdminUserProfilesPage> {
+  late BuildContext _currentContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentContext = context;
+  }
 
   TextEditingController emailController = TextEditingController();
 
   Future banAccount () async{
-    await ApiService().banAccount(emailController.text);
+    var response = await ApiService().banAccount(emailController.text);
+    if (response.statusCode == 200){
+      ConfirmHelper.showResultDialog(_currentContext, "User banned successfully!", "Success");
+    } 
+    else if (response.statusCode == 404){
+      ConfirmHelper.showResultDialog(_currentContext, "User not found!", "Failed");
+    }
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
   }
 
   Future unbanAccount () async{
-    await ApiService().unbanAccount(emailController.text);
+    var response = await ApiService().unbanAccount(emailController.text);
+    if (response.statusCode == 200){
+      ConfirmHelper.showResultDialog(_currentContext, "User unbanned successfully!", "Success");
+    } 
+    else if (response.statusCode == 404){
+      ConfirmHelper.showResultDialog(_currentContext, "User not found!", "Failed");
+    }
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
   }
 
   @override
