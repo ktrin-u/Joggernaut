@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-de$2j#e9_qbyi(mmka8#y1rzszuv%)@z4xsxcn217)!&qg!u1-'
+SECRET_KEY = os.environ["django_key"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -75,6 +76,9 @@ TEMPLATES = [   # type:ignore
 
 WSGI_APPLICATION = 'django_backend.wsgi.application'
 
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -89,7 +93,10 @@ DATABASES = {   # type: ignore
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "OPTIONS": {
-            "read_default_file": mysqlconf.resolve().as_posix(),
+            'host': os.environ["db_host"],
+            'database': os.environ["db_database"],
+            'user': os.environ["db_user"],
+            'password': os.environ["db_password"],
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
@@ -168,8 +175,8 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
     'SWAGGER_UI_OAUTH2_CONFIG': {
-        "clientId": "EAdjk5dlE5ssgncPU8n4PeaQ1QYyqydhT0mPyyPi",
-        "clientSecret": "VKsT4ne6eGiXpN6542Aw6b0WGEpYqV8DkeggumUTkYKccJK6qaj64vYpbImRQjus9v0PzHrfYndKH49NMoDPNaasSwJeEXbW63kOXkIf79Pz6Xq1E2x8q3bsL7xSxCJp",
+        "clientId": os.environ["client_id"],
+        "clientSecret": os.environ["client_secret"],
         "appName": "api"
     },
     'OAUTH2_FLOWS': ["password"],
