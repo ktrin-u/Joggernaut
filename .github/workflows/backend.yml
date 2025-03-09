@@ -13,6 +13,7 @@ on:
 
 jobs:
    run-tests:
+    environment: TEST_SECRET
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -34,4 +35,12 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/back-end
         poetry run python manage.py test --noinput --failfast
+      env:
+        client_id: ${{ secrets.CLIENT_ID }}
+        client_secret: ${{ secrets.CLIENT_SECRET }}
+        db_database: ${{ secrets.DB_DATABASE }}
+        db_host: ${{ secrets.DB_HOST }}
+        db_password: ${{ secrets.DB_PASSWORD }}
+        db_user: ${{ secrets.DB_USER }}
+        django_key: ${{ secrets.DJANGO_KEY }}
 
