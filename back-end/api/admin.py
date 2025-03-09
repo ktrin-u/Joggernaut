@@ -1,4 +1,6 @@
-from .models import User, UserActivity, UserAuditLog, UserProfiles, UserSettings
+from typing import Any
+from django.http import HttpRequest
+from .models import User, UserActivity, UserAuditLog, UserProfiles, UserSettings, FriendTable
 from django.contrib import admin
 from .forms import UserChangeForm, SignupForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -53,6 +55,19 @@ class UserSettingsAdmin(admin.ModelAdmin):
     ordering = ["userid"]
     readonly_fields = ["userid"]
     pass
+
+
+@admin.register(FriendTable)
+class FriendTableAdmin(admin.ModelAdmin):
+    list_display = ["lastUpdate", "fromUserid", "toUserid", "status", "creationDate"]
+    ordering = ["lastUpdate"]
+    # readonly_fields = ["fromUserid", "toUserid"]
+
+    def get_readonly_fields(self, request: HttpRequest, obj: Any | None = ...) -> list[str] | tuple[Any, ...]:
+        if obj:
+            return ["fromUserid", "toUserid"]
+        else:
+            return []
 
 
 admin.site.unregister(Group)  # remove the groups since oauth will be used for scoping

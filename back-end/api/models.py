@@ -3,6 +3,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from .validators import validate_phoneNumber
 import uuid
 
@@ -134,7 +135,6 @@ class FriendTable(models.Model):
 
     class FriendshipStatus(models.TextChoices):
         PENDING = "PEN"
-        REJECTED = "REJ"
         ACCEPTED = "ACC"
 
     friendid = models.BigAutoField(verbose_name="Friend ID", primary_key=True, unique=True)
@@ -143,3 +143,15 @@ class FriendTable(models.Model):
     status = models.CharField(max_length=3, choices=FriendshipStatus.choices, default=FriendshipStatus.PENDING)
     creationDate = models.DateField(auto_now_add=True)
     lastUpdate = models.DateField(auto_now=True)
+
+    def clean(self):
+        if self.fromUserid == self.toUserid:
+            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
+
+        if self.__class__.objects.filter(models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) | models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)):
+            raise ValidationError(
+                {
+                    "fromUserid": "friendship entry already exists",
+                    "toUserid": "friendship entry already exists",
+                }
+            )

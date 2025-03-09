@@ -1,18 +1,20 @@
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from oauth2_provider.contrib.rest_framework import TokenHasScope
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from oauth2_provider.views import TokenView, RevokeTokenView
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import permissions, views
-from .models import UserProfiles, User
+from .models import UserProfiles, User, FriendTable
 from .permissions import isBanned
 from rest_framework import status
 from typing import Any
-from . import serializers as custom_serializers
+from . import serializers as custom_serializers, schema_docs
 from django.db.models import Q
 from .helper import get_user_object
+from copy import deepcopy
 
 
 def clean_request_data(request: Request) -> dict[str, Any]:
@@ -20,6 +22,14 @@ def clean_request_data(request: Request) -> dict[str, Any]:
     Function that removes empty values in the request data
     """
     return {k: v for k, v in request.data.items() if v != ""}  # filter all empty values
+
+
+RESPONSE_USER_NOT_FOUND = Response(
+    {
+        "msg": "failed to identify user from auth token",
+    },
+    status=status.HTTP_404_NOT_FOUND,
+)
 
 
 @extend_schema(
@@ -392,7 +402,286 @@ class UnbanUserView(AbstractUpdateUserUserPermissionsView):
         user.save()
         return Response(
             {
-                "msg": f"{user.userid} has been unbanned"  # type: ignore
+                "200": f"{user.userid} has been unbanned"  # type: ignore
             },
             status=status.HTTP_200_OK
         )
+
+
+class AbstractFriendTableView(GenericAPIView):
+    model = FriendTable
+    permission_classes = [TokenHasScope]
+    required_scopes = ["write"]
+
+
+@extend_schema(
+    summary="Create a pending friend request"
+)
+class SendFriendRequestView(AbstractFriendTableView):
+    serializer_class = custom_serializers.CreateFriendSerializer
+
+    RESPONSE_SUCCESS = Response(
+        {
+            "msg": "friend request entry successfully added to database"
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+    @extend_schema(
+        description="Create an entry in the database with status as PENDING. The fromUserId field will be populated with  the user identified by the Auth Token",
+        request=custom_serializers.ToUserIdSerializer,
+        responses={
+            RESPONSE_SUCCESS.status_code: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="success",
+                        value=RESPONSE_SUCCESS.data,
+                        status_codes=[RESPONSE_SUCCESS.status_code]
+                    ),
+                ]
+            ),
+            RESPONSE_USER_NOT_FOUND.status_code: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="user not found",
+                        value=RESPONSE_USER_NOT_FOUND.data,
+                        status_codes=[RESPONSE_USER_NOT_FOUND.status_code]
+                    )
+                ]
+            )
+        }
+    )
+    def post(self, request: Request) -> Response:
+        user = get_user_object(request)
+
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        data = deepcopy(request.data)
+        data["fromUserid"] = user.userid
+
+        serialized = self.get_serializer(data=data)
+
+        if serialized.is_valid():
+            serialized.save()
+            return self.RESPONSE_SUCCESS
+
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Accept pending friend request"
+)
+class AcceptFriendView(AbstractFriendTableView):
+    serializer_class = custom_serializers.ToUserIdSerializer
+
+    @extend_schema(
+        description="Accept a pending request from the specified uuid",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="accepted",
+                        value={"msg": "fe316ad8-ccb4-48b7-823e-dab928ee3333 has accepted 3317d233-1d9e-4b75-b521-d9dc73b831c0's request"}
+                    )
+                ],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="not found",
+                        value={
+                            "msg": "No pending friend request from 6460710d-33c0-4c41-81f1-8a21b03b15e1 found."
+                        }
+                    )
+                ]
+            ),
+            status.HTTP_400_BAD_REQUEST: schema_docs.Response.SERIALIZER_VALIDTION_ERRORS,
+        }
+    )
+    def patch(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        serialized = self.get_serializer(data=request.data)
+
+        if serialized.is_valid():
+            fromUserid = serialized.validated_data["fromUserid"]
+            try:
+                friend_entry = self.model.objects.get(fromUserid=fromUserid, toUserid=user)
+
+                friend_entry.status = FriendTable.FriendshipStatus.ACCEPTED
+                friend_entry.save()
+                return Response(
+                    {
+                        "msg": f"{user.userid} has accepted {fromUserid}'s request"
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"No pending friend request from {fromUserid} found."
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Reject pending friend request"
+)
+class RejectFriendView(AbstractFriendTableView):
+    serializer_class = custom_serializers.ToUserIdSerializer
+
+    @extend_schema(
+        description="Reject a pending request from the specified uuid",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="accepted",
+                        value={"msg": "fe316ad8-ccb4-48b7-823e-dab928ee3333 has rejected 3317d233-1d9e-4b75-b521-d9dc73b831c0's request"}
+                    )
+                ],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="not found",
+                        value={
+                            "msg": "No pending friend request from 6460710d-33c0-4c41-81f1-8a21b03b15e1 found."
+                        }
+                    )
+                ]
+            ),
+            status.HTTP_400_BAD_REQUEST: schema_docs.Response.SERIALIZER_VALIDTION_ERRORS
+        }
+    )
+    def patch(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        serialized = self.get_serializer(data=request.data)
+
+        if serialized.is_valid():
+            fromUserid = serialized.validated_data["fromUserid"]
+            try:
+                friend_entry = self.model.objects.get(fromUserid=fromUserid, toUserid=user)
+                friend_entry.delete()
+
+                return Response(
+                    {
+                        "msg": f"{user.userid} has rejected {fromUserid}'s request. Friend Entry deleted."
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"No friend request from {fromUserid} found."
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Get list of friends"
+)
+class GetFriendsView(AbstractFriendTableView):
+    serializer_class = custom_serializers.FriendTableSerializer
+    required_scopes = ["read"]
+
+    @extend_schema(
+        description="Get all the friend entries for the user. It is separated between sent by the user and received by the user.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=custom_serializers.FriendsListResponseSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="no friends",
+                        description="user has no friend entries",
+                        value={"sent": [], "received": []}
+                    ),
+                    OpenApiExample(
+                        name="has friends",
+                        description="user has friend entries",
+                        value={
+                            "sent": [
+                                {
+                                    "friendid": 8,
+                                    "fromUserid": "6e0e71b1-f1cc-11ef-bcfe-06ec480f10f7",
+                                    "toUserid": "8ba815b6-f1cc-11ef-bcfe-03ec478f12f7",
+                                    "status": "PEN",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                },
+                                {
+                                    "friendid": 34,
+                                    "fromUserid": "6e0e72b1-f2cc-11ef-bcfe-011ec8014f7",
+                                    "toUserid": "728218a2-09dc-40c7-93f3-1f2a45c7824c",
+                                    "status": "PEN",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                }
+                            ],
+                            "received": [
+                                {
+                                    "friendid": 15,
+                                    "fromUserid": "43c18bc0-64d3-4d1e-8055-c797bbed13f4",
+                                    "toUserid": "6e0e71d1-f1xc-11ef-bcfe-06ec480f12f7",
+                                    "status": "PEN",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=custom_serializers.MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="user not found",
+                        description="failed to identify user based on auth token",
+                        value=RESPONSE_USER_NOT_FOUND.data,
+                    )
+                ]
+            )
+        }
+    )
+    def get(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        received = self.get_serializer(
+            self.model.objects.filter(toUserid=user),
+            many=True
+        )
+
+        sent = self.get_serializer(
+            self.model.objects.filter(fromUserid=user),
+            many=True
+        )
+
+        return Response(
+            {
+                "sent": sent.data,
+                "received": received.data,
+            },
+            status=status.HTTP_200_OK
+        )
+        ...
