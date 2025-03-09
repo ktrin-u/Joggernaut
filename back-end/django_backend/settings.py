@@ -83,12 +83,6 @@ SECURE_SSL_REDIRECT = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Check if mysql.conf exists
-mysqlconf = Path("./conf/mysql.conf")
-
-if not mysqlconf.is_file():
-    raise FileNotFoundError("conf/mysql.conf is missing")
-
 DATABASES = {   # type: ignore
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -155,11 +149,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
-
-env = Path("./conf/.env")
-
-if not env.is_file():
-    raise FileNotFoundError("conf/mysql.conf is missing")
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Joggernaut API',
