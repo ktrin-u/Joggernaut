@@ -128,3 +128,18 @@ class UserSettings(models.Model):
         db_table = 'user_settings'
         verbose_name = "user settings"
         verbose_name_plural = "user settings"
+
+
+class FriendTable(models.Model):
+
+    class FriendshipStatus(models.TextChoices):
+        PENDING = "PEN"
+        REJECTED = "REJ"
+        ACCEPTED = "ACC"
+
+    friendid = models.BigAutoField(verbose_name="Friend ID", primary_key=True, unique=True)
+    fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="fromUserid")
+    toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="toUserId")
+    status = models.CharField(max_length=3, choices=FriendshipStatus.choices, default=FriendshipStatus.PENDING)
+    creationDate = models.DateField(auto_now_add=True)
+    lastUpdate = models.DateField(auto_now=True)
