@@ -12,6 +12,7 @@ from .permissions import isBanned
 from rest_framework import status
 from typing import Any
 from . import serializers as custom_serializers, schema_docs
+from .schema_docs import Tags
 from django.db.models import Q
 from .helper import get_user_object
 from copy import deepcopy
@@ -33,7 +34,8 @@ RESPONSE_USER_NOT_FOUND = Response(
 
 
 @extend_schema(
-    summary="Register new user account"
+    summary="Register new user account",
+    tags=[Tags.AUTH],
 )
 class CreateUserView(CreateAPIView):
     model = get_user_model()
@@ -44,7 +46,8 @@ class CreateUserView(CreateAPIView):
 
 
 @extend_schema(
-    summary="Change user password"
+    summary="Change user password",
+    tags=[Tags.USER],
 )
 class UpdateUserPasswordView(GenericAPIView):
     model = get_user_model()
@@ -93,6 +96,7 @@ class AbstractUserView(views.APIView):
 
 @extend_schema(
     summary="View user info",
+    tags=[Tags.USER],
 )
 class ViewUserInfoView(AbstractUserView):
     required_scopes = ['read']
@@ -122,7 +126,8 @@ class ViewUserInfoView(AbstractUserView):
 
 
 @extend_schema(
-    summary="Update user info"
+    summary="Update user info",
+    tags=[Tags.USER],
 )
 class UpdateUserInfoView(AbstractUserView):
     required_scopes = ["write"]
@@ -163,7 +168,8 @@ class AbstractUserProfileView(GenericAPIView):
 
 
 @extend_schema(
-    summary="View user profile"
+    summary="View user profile",
+    tags=[Tags.PROFILE],
 )
 class UserProfileView(AbstractUserProfileView):
     required_scopes = ["read"]
@@ -198,7 +204,8 @@ class UserProfileView(AbstractUserProfileView):
 
 
 @extend_schema(
-    summary="Create new user profile"
+    summary="Create new user profile",
+    tags=[Tags.PROFILE],
 )
 class CreateUserProfileView(AbstractUserProfileView):
     required_scopes = ["write"]
@@ -221,7 +228,8 @@ class CreateUserProfileView(AbstractUserProfileView):
 
 
 @extend_schema(
-    summary="Update user profile"
+    summary="Update user profile",
+    tags=[Tags.PROFILE],
 )
 class UpdateUserProfileView(AbstractUserProfileView):
     required_scopes = ["write"]
@@ -267,7 +275,8 @@ class UpdateUserProfileView(AbstractUserProfileView):
 
 
 @extend_schema(
-    summary="Delete user account"
+    summary="Delete user account",
+    tags=[Tags.USER],
 )
 class DeleteUserView(AbstractUserView):
     serializer_class = custom_serializers.UserDeleteSerializer
@@ -309,7 +318,8 @@ class DeleteUserView(AbstractUserView):
 
 
 @extend_schema(
-    summary="Alternative to /api/auth/token/"
+    summary="Alternative to /api/auth/token/",
+    tags=[Tags.AUTH],
 )
 class TokenAPIView(TokenView, GenericAPIView):
     serializer_class = custom_serializers.TokenSerializer
@@ -324,7 +334,8 @@ class TokenAPIView(TokenView, GenericAPIView):
 
 
 @extend_schema(
-    summary="Alternative to /api/auth/revoke_token/"
+    summary="Alternative to /api/auth/revoke_token/",
+    tags=[Tags.AUTH],
 )
 class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
     serializer_class = custom_serializers.RevokeTokenSerializer
@@ -365,7 +376,8 @@ class AbstractUpdateUserUserPermissionsView(GenericAPIView):
 
 
 @extend_schema(
-    summary="Ban a user"
+    summary="Ban a user",
+    tags=[Tags.ADMIN],
 )
 class BanUserView(AbstractUpdateUserUserPermissionsView):
     @extend_schema(
@@ -387,7 +399,8 @@ class BanUserView(AbstractUpdateUserUserPermissionsView):
 
 
 @extend_schema(
-    summary="Unban a user"
+    summary="Unban a user",
+    tags=[Tags.ADMIN],
 )
 class UnbanUserView(AbstractUpdateUserUserPermissionsView):
     @extend_schema(
@@ -415,7 +428,8 @@ class AbstractFriendTableView(GenericAPIView):
 
 
 @extend_schema(
-    summary="Create a pending friend request"
+    summary="Create a pending friend request",
+    tags=[Tags.FRIENDS],
 )
 class SendFriendRequestView(AbstractFriendTableView):
     serializer_class = custom_serializers.CreateFriendSerializer
@@ -472,7 +486,8 @@ class SendFriendRequestView(AbstractFriendTableView):
 
 
 @extend_schema(
-    summary="Accept pending friend request"
+    summary="Accept pending friend request",
+    tags=[Tags.FRIENDS],
 )
 class AcceptFriendView(AbstractFriendTableView):
     serializer_class = custom_serializers.ToUserIdSerializer
@@ -535,7 +550,8 @@ class AcceptFriendView(AbstractFriendTableView):
 
 
 @extend_schema(
-    summary="Reject pending friend request"
+    summary="Reject pending friend request",
+    tags=[Tags.FRIENDS],
 )
 class RejectFriendView(AbstractFriendTableView):
     serializer_class = custom_serializers.ToUserIdSerializer
@@ -597,7 +613,8 @@ class RejectFriendView(AbstractFriendTableView):
 
 
 @extend_schema(
-    summary="Get list of friends"
+    summary="Get list of friends",
+    tags=[Tags.FRIENDS],
 )
 class GetFriendsView(AbstractFriendTableView):
     serializer_class = custom_serializers.FriendTableSerializer

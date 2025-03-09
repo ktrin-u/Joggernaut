@@ -1,5 +1,6 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
+from enum import StrEnum, auto
 
 
 class Response:
@@ -15,3 +16,11 @@ class Response:
             )
         ]
     )
+
+
+class Tags(StrEnum):
+    ADMIN = auto()
+    AUTH = auto()
+    USER = auto()
+    FRIENDS = auto()
+    PROFILE = auto()
