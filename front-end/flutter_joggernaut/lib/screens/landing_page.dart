@@ -81,7 +81,7 @@ class _LandingPageState extends State<LandingPage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white, width: 1.2),
+                      side: BorderSide(color: Colors.white, width: 1.2),
                       padding: EdgeInsets.symmetric(
                         horizontal: screenWidth * 0.05,
                         vertical: screenHeight * 0.01,
