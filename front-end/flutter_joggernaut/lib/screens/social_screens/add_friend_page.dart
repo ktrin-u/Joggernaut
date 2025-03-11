@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/utils/routes.dart';
 
-class SocialPage extends StatefulWidget {
-  const SocialPage({super.key});
+class AddFriendPage extends StatefulWidget {
+  const AddFriendPage({super.key});
 
   @override
-  State<SocialPage> createState() => _SocialPageState();
+  State<AddFriendPage> createState() => _AddFriendPageState();
 }
 
-class _SocialPageState extends State<SocialPage> {
+class _AddFriendPageState extends State<AddFriendPage> {
   final searchController = TextEditingController();
 
   List<String> names = [
@@ -26,19 +26,13 @@ class _SocialPageState extends State<SocialPage> {
   void filterSearch(String query) {
     setState(() {
       if (query.isEmpty) {
-        filteredNames = List.from(names);
+        filteredNames = [];
       } else {
         filteredNames = names
           .where((name) => name.toLowerCase().contains(query.toLowerCase()))
           .toList();
       }
     });
-  }
-  
-  @override
-  void initState() {
-    super.initState();
-    filteredNames = List.from(names); 
   }
 
   @override
@@ -54,33 +48,21 @@ class _SocialPageState extends State<SocialPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Friends",
+                "Add Friend",
                 style: TextStyle(
                   fontFamily: 'Big Shoulders Display',
-                  fontSize: screenWidth * 0.13,
+                  fontSize: screenWidth * 0.1,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: (){router.push('/social/notifications');},
-                    icon: Icon(
-                      Icons.notifications,
-                      color: Colors.black87,
-                      size: screenWidth * 0.09,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: (){router.push('/social/add');},
-                    icon: Icon(
-                      Icons.add_circle,
-                      color: Colors.black87,
-                      size: screenWidth * 0.09,
-                    ),
-                  ),
-                ],
+              IconButton(
+                onPressed: (){router.pop();},
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.black87,
+                  size: screenWidth * 0.07,
+                ),
               ),
             ],
           ),
@@ -102,9 +84,11 @@ class _SocialPageState extends State<SocialPage> {
             ),
             child: TextField(
               controller: searchController,
-              onChanged: filterSearch,
+              onSubmitted: (value) {
+                filterSearch(value); 
+              },
               decoration: InputDecoration(
-                hintText: "Search a friend",
+                hintText: "Search a new friend",
                 hintStyle: TextStyle(
                   fontSize: screenWidth * 0.04,
                   color: Color.fromRGBO(51, 51, 51, 1),

@@ -205,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
         } else if (snapshot.hasError) {
             return Center(child: Text("Error loading profile"));
         } else {
-            return  Column(
+            return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(

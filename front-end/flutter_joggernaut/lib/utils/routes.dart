@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/settings_screens/account_settings_page.dart';
 import 'package:flutter_application_1/screens/admin_screens/admin_page.dart';
 import 'package:flutter_application_1/screens/admin_screens/admin_user_profiles.dart';
+import 'package:flutter_application_1/screens/social_screens/notifications_page.dart';
+import 'package:flutter_application_1/screens/social_screens/add_friend_page.dart';
+import 'package:flutter_application_1/screens/social_screens/social_user_profiles.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_application_1/screens/landing_page.dart';
@@ -68,7 +71,15 @@ final GoRouter router = GoRouter(
           routes: [GoRoute(path: '/profile', builder: (context, state) => ProfilePage())],
         ),
         StatefulShellBranch(
-          routes: [GoRoute(path: '/social', builder: (context, state) => SocialPage())],
+          routes: [
+            GoRoute(path: '/social', builder: (context, state) => SocialPage()),
+            GoRoute(path: '/social/notifications', builder: (context, state) => NotificationsPage()),
+            GoRoute(path: '/social/profile/:name', builder: (context, state) {
+              final name = state.pathParameters['name'] ?? 'Unknown';
+              return SocialUserProfilePage(name: name);
+            }),
+            GoRoute(path: '/social/add', builder: (context, state) => AddFriendPage())
+          ],
         ),
         StatefulShellBranch(
            routes: [
