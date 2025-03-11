@@ -1,6 +1,6 @@
 from typing import Any
 from rest_framework import serializers
-from api.models import User, UserManager
+from api.models import User, UserManager, UserProfiles
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 
@@ -88,3 +88,24 @@ class UserDeleteSerializer(serializers.Serializer):
 class UpdateUserPermissionsSerializer(serializers.Serializer):
     userid = serializers.UUIDField(required=False)
     email = serializers.EmailField(required=False)
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    firstname = serializers.CharField(source="userid.firstname")
+
+    class Meta:  # type: ignore
+        model = UserProfiles
+        fields = ["userid", "firstname", "accountname", "gender"]
+
+
+class PublicUserResponseSerializer(serializers.Serializer):
+    users = serializers.ListField(allow_empty=True)
+
+    def validate_users(self, value):
+        if not all(isinstance(x, UserProfiles) for x in value):
+            raise ValidationError(
+                {
+                    "users": "list contents must be of type UserProfile"
+                }
+            )
+        return value
