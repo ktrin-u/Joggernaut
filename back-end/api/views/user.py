@@ -1,6 +1,6 @@
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 from django.contrib.auth import get_user_model
 
@@ -9,11 +9,11 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from api.models import User
+from api.models import User, UserProfiles
 from api.schema_docs import Tags
 from api.permissions import isBanned
 from api.helper import get_user_object, clean_request_data
-from api.serializers.user import UserModelSerializer, UserDeleteSerializer, UpdateUserPasswordSerializer
+from api.serializers.user import UserModelSerializer, UserDeleteSerializer, UpdateUserPasswordSerializer, PublicUserSerializer, PublicUserResponseSerializer
 
 
 @extend_schema(
@@ -171,4 +171,55 @@ class DeleteUserView(AbstractUserView):
         return Response(
             data=serialized.errors,
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@extend_schema(
+    summary="Get list of users and their non-confidential data",
+    tags=[Tags.USER]
+)
+class GetUsersView(GenericAPIView):
+    serializer_class = PublicUserSerializer
+    permission_classes = [TokenHasScope]
+    required_scopes = ["read"]
+
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PublicUserResponseSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="success",
+                        value={
+                            "users": [
+                                {
+                                    "userid": "ecd4aa4a-ae97-4d58-befe-80981e9e8d78",
+                                    "firstname": "Jane",
+                                    "accountname": "RedApple",
+                                    "gender": "Female"
+                                },
+                                {
+                                    "userid": "8e7fbd98-dc33-4d01-80fe-db4a2e4a0cd0",
+                                    "firstname": "John",
+                                    "accountname": "Destroyer1",
+                                    "gender": "Male"
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
+    def get(self, request: Request) -> Response:
+
+        pub_user = UserProfiles.objects.select_related("userid")
+
+        serialized = self.get_serializer(pub_user, many=True)
+
+        return Response(
+            {
+                "users": serialized.data
+            },
+            status=status.HTTP_200_OK
         )

@@ -19,6 +19,7 @@ urlpatterns = [
     path("user/profile/new", user_profile.CreateUserProfileView.as_view(), name="create new user profile"),
     path("user/profile/update", user_profile.UpdateUserProfileView.as_view(), name="update user profile"),
 
+    path("user/", user.GetUsersView.as_view(), name="get list of users"),
     path("user/info/", user.ViewUserInfoView.as_view(), name="retrieve user info"),
     path("user/delete", user.DeleteUserView.as_view(), name="delete user account"),
     path("user/info/update", user.UpdateUserInfoView.as_view(), name="update user info"),
