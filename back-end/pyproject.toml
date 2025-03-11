@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cs192-joggernaut-backend"
-version = "0.1.0"
+version = "0.3.0"
 description = ""
 authors = ["Enduro Team"]
 license = "GNU General Public License"
@@ -17,6 +17,7 @@ tzdata = "^2025.1"
 pytz = "^2025.1"
 django-oauth-toolkit = "^3.0.1"
 drf-spectacular = {extras = ["sidecar"], version = "^0.28.0"}
+uvicorn = "^0.34.0"
 
 
 [build-system]

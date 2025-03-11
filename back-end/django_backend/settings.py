@@ -156,8 +156,8 @@ if not env.is_file():
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Joggernaut API',
-    'DESCRIPTION': 'API for Joggernaut app',
-    'VERSION': '0.1.0',
+    'DESCRIPTION': "This API serves as the backend layer of the project [Joggernaut](https://github.com/ktrin-u/CS192-Joggernaut). \n\n The available endpoints can be found below.",
+    'VERSION': '0.3.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'ENABLE_DJANGO_DEPLOY_CHECK': False,
     'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead

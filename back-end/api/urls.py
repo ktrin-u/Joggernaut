@@ -7,7 +7,7 @@ urlpatterns = [
     path("user/profile/", views.UserProfileView.as_view(), name="retrieve user profile"),
     path("user/profile/new", views.CreateUserProfileView.as_view(), name="create new user profile"),
     path("user/profile/update", views.UpdateUserProfileView.as_view(), name="update user profile"),
-    path("user/delete", views.DeleteUserView.as_view(), name="delete user account"),    
+    path("user/delete", views.DeleteUserView.as_view(), name="delete user account"),
     path("user/info/", views.ViewUserInfoView.as_view(), name="retrieve user info"),
     path("user/info/update", views.UpdateUserInfoView.as_view(), name="update user info"),
     path("user/password/change", views.UpdateUserPasswordView.as_view(), name="change user password"),
@@ -17,4 +17,8 @@ urlpatterns = [
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='overview'),
     path('login/', views.TokenAPIView.as_view(), name="login and acquire token"),
     path('logout/', views.RevokeTokenAPIView.as_view(), name="logout and revoke token"),
+    path('user/friends/', views.GetFriendsView.as_view(), name="get friend list"),
+    path('user/friends/add', views.SendFriendRequestView.as_view(), name="send friend request"),
+    path('user/friends/accept', views.AcceptFriendView.as_view(), name="accept friend request"),
+    path('user/friends/reject', views.RejectFriendView.as_view(), name="reject friend request"),
 ]
