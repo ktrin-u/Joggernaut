@@ -5,6 +5,7 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -17,7 +18,7 @@ from api.models import FriendTable
 from api.helper import get_user_object
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.serializers.general import MsgSerializer
-from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, FriendsListResponseSerializer, FriendTableSerializer
+from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, PendingFriendsListResponseSerializer, FriendTableSerializer, FriendsListResponseSerializer
 
 
 class AbstractFriendTableView(GenericAPIView):
@@ -212,18 +213,18 @@ class RejectFriendView(AbstractFriendTableView):
 
 
 @extend_schema(
-    summary="Get list of friends",
+    summary="Get list of pending friends",
     tags=[Tags.FRIENDS],
 )
-class GetFriendsView(AbstractFriendTableView):
+class GetPendingFriendsView(AbstractFriendTableView):
     serializer_class = FriendTableSerializer
     required_scopes = ["read"]
 
     @extend_schema(
-        description="Get all the friend entries for the user. It is separated between sent by the user and received by the user.",
+        description="Get all the pending friend entries for the user. It is separated between sent by the user and received by the user.",
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=FriendsListResponseSerializer,
+                response=PendingFriendsListResponseSerializer,
                 examples=[
                     OpenApiExample(
                         name="no friends",
@@ -284,12 +285,12 @@ class GetFriendsView(AbstractFriendTableView):
             return RESPONSE_USER_NOT_FOUND
 
         received = self.get_serializer(
-            self.model.objects.filter(toUserid=user),
+            self.model.objects.filter(toUserid=user, status=FriendTable.FriendshipStatus.PENDING),
             many=True
         )
 
         sent = self.get_serializer(
-            self.model.objects.filter(fromUserid=user),
+            self.model.objects.filter(fromUserid=user, status=FriendTable.FriendshipStatus.PENDING),
             many=True
         )
 
@@ -297,6 +298,81 @@ class GetFriendsView(AbstractFriendTableView):
             {
                 "sent": sent.data,
                 "received": received.data,
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+@extend_schema(
+    summary="Get list of friends",
+    tags=[Tags.FRIENDS],
+)
+class GetFriendsView(AbstractFriendTableView):
+    serializer_class = FriendTableSerializer
+    required_scopes = ["read"]
+
+    @extend_schema(
+        description="Get all the friends of the user identified by the auth token whose status is accepted",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=FriendsListResponseSerializer,
+                description="sucessfully acquired user friend list",
+                examples=[
+                    OpenApiExample(
+                        name="no friends",
+                        description="user has no friend entries",
+                        value={"friends:[]"}
+                    ),
+                    OpenApiExample(
+                        name="has friends",
+                        description="user has friend entries",
+                        value={
+                            "friends": [
+                                {
+                                    "friendid": 8,
+                                    "fromUserid": "6e0e71b1-f1cc-11ef-bcfe-06ec480f10f7",
+                                    "toUserid": "8ba815b6-f1cc-11ef-bcfe-03ec478f12f7",
+                                    "status": "ACC",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                },
+                                {
+                                    "friendid": 34,
+                                    "fromUserid": "6e0e72b1-f2cc-11ef-bcfe-011ec8014f7",
+                                    "toUserid": "728218a2-09dc-40c7-93f3-1f2a45c7824c",
+                                    "status": "ACC",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                },
+                                {
+                                    "friendid": 15,
+                                    "fromUserid": "43c18bc0-64d3-4d1e-8055-c797bbed13f4",
+                                    "toUserid": "6e0e71d1-f1xc-11ef-bcfe-06ec480f12f7",
+                                    "status": "ACC",
+                                    "creationDate": "2025-03-09",
+                                    "lastUpdate": "2025-03-09"
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            status.HTTP_404_NOT_FOUND: schema_docs.Response.AUTH_TOKEN_USER_NOT_FOUND
+        }
+    )
+    def get(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        friends = self.get_serializer(
+            self.model.objects.filter(Q(toUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED) | Q(fromUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)),
+            many=True
+        )
+
+        return Response(
+            {
+                "friends": friends.data,
             },
             status=status.HTTP_200_OK
         )

@@ -18,6 +18,19 @@ class FriendTableSerializer(serializers.ModelSerializer):
 
 
 class FriendsListResponseSerializer(serializers.Serializer):
+    friends = serializers.ListField(allow_empty=True)
+
+    def validate_friends(self, value):
+        if not all(isinstance(x, FriendTable) for x in value):
+            raise ValidationError(
+                {
+                    "friends": "list contents must be of type FriendTable"
+                }
+            )
+        return value
+
+
+class PendingFriendsListResponseSerializer(serializers.Serializer):
     sent = serializers.ListField(allow_empty=True)
     received = serializers.ListField(allow_empty=True)
 
