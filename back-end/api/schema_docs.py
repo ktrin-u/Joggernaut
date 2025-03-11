@@ -1,7 +1,7 @@
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse
-from drf_spectacular.types import OpenApiTypes
 from enum import StrEnum, auto
-from . import serializers as custom_serializers
+from drf_spectacular.types import OpenApiTypes
+from api.serializers.general import MsgSerializer
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse
 
 
 class Response:
@@ -21,7 +21,7 @@ class Response:
 
     # 404 NOT FOUND
     AUTH_TOKEN_USER_NOT_FOUND = OpenApiResponse(
-        response=custom_serializers.MsgSerializer,
+        response=MsgSerializer,
         description="failed to identify user using auth token",
         examples=[
             OpenApiExample(

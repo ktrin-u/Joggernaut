@@ -1,20 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.exceptions import ValidationError
-from api.serializers import (
+from api.serializers.user import (
+    UserDeleteSerializer,
     RegisterFormSerializer,
     UpdateUserPasswordSerializer,
-    UserProfileFormSerializer,
-    UserDeleteSerializer,
-    UpdateUserPermissionsSerializer,
-    TokenSerializer,
-    TokenResponseSerializer,
-    RevokeTokenSerializer
 )
-from api.models import UserProfiles
+from api.serializers.user_profile import UserProfileFormSerializer
+
+
 from unittest.mock import MagicMock, patch
 from decimal import Decimal
-import uuid
 import datetime
 
 UserModel = get_user_model()
@@ -77,12 +72,9 @@ class TestUpdateUserPasswordSerializer(TestCase):
             firstname="first",
             lastname="last",
             password="oldPass1@",
-            phonenumber="09270001111"
-        ) # type: ignore
-        self.valid_data = {
-            "new_password": "NewPass1@",
-            "confirm_password": "NewPass1@"
-        }
+            phonenumber="09270001111",
+        )  # type: ignore
+        self.valid_data = {"new_password": "NewPass1@", "confirm_password": "NewPass1@"}
 
     def test_valid_serializer(self):
         serializer = UpdateUserPasswordSerializer(data=self.valid_data)
@@ -99,7 +91,9 @@ class TestUpdateUserPasswordSerializer(TestCase):
         self.assertEqual(serializer.errors["confirm_password"][0], "match failed")
 
     def test_update_user_password(self):
-        serializer = UpdateUserPasswordSerializer(instance=self.user, data=self.valid_data)
+        serializer = UpdateUserPasswordSerializer(
+            instance=self.user, data=self.valid_data
+        )
         self.assertTrue(serializer.is_valid())
 
         updated_user = serializer.update(self.user, serializer.validated_data)
@@ -113,8 +107,8 @@ class TestUserProfileFormSerializer(TestCase):
             firstname="First",
             lastname="Last",
             password="oldPass1@",
-            phonenumber="09270001111"
-        ) # type: ignore
+            phonenumber="09270001111",
+        )  # type: ignore
         self.valid_data = {
             "userid": self.user.userid,
             "accountname": "TestAccount",
@@ -128,6 +122,7 @@ class TestUserProfileFormSerializer(TestCase):
     def test_create_user_profile(self):
         serializer = UserProfileFormSerializer(data=self.valid_data)
         self.assertTrue(serializer.is_valid())
+
 
 class TestUserDeleteSerializer(TestCase):
     def test_valid_delete(self):
