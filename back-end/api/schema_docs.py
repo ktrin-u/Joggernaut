@@ -1,10 +1,12 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from enum import StrEnum, auto
+from . import serializers as custom_serializers
 
 
 class Response:
-    SERIALIZER_VALIDTION_ERRORS = OpenApiResponse(
+    # 400 BAD REQUEST
+    SERIALIZER_VALIDATION_ERRORS = OpenApiResponse(
         response=OpenApiTypes.OBJECT,
         examples=[
             OpenApiExample(
@@ -17,6 +19,20 @@ class Response:
         ]
     )
 
+    # 404 NOT FOUND
+    AUTH_TOKEN_USER_NOT_FOUND = OpenApiResponse(
+        response=custom_serializers.MsgSerializer,
+        description="failed to identify user using auth token",
+        examples=[
+            OpenApiExample(
+                name="user not found",
+                value={
+                    "msg": "failed to identify user from auth token",
+                },
+            )
+        ],
+    )
+
 
 class Tags(StrEnum):
     ADMIN = auto()
@@ -24,3 +40,4 @@ class Tags(StrEnum):
     USER = auto()
     FRIENDS = auto()
     PROFILE = auto()
+    WORKOUT = auto()

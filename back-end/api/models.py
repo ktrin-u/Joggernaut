@@ -78,16 +78,24 @@ class User(AbstractUser):
         self.is_active = True
 
 
-class UserActivity(models.Model):
-    activityid = models.AutoField(db_column='activityID', primary_key=True)  # Field name made lowercase.
+class WorkoutRecord(models.Model):
+    workoutid = models.BigAutoField(primary_key=True, unique=True)  # Field name made lowercase.
     userid = models.ForeignKey(User, models.CASCADE, db_column='userID')  # Field name made lowercase.
-    calories = models.IntegerField()
-    steps = models.IntegerField()
+    calories = models.PositiveIntegerField(default=0)
+    steps = models.PositiveIntegerField(default=0)
+    creationDate = models.DateTimeField(auto_now_add=True)
+    lastUpdate = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'user_activity'
-        verbose_name = "user activity"
-        verbose_name_plural = "user activities"
+        db_table = 'workout_Record'
+        verbose_name = "Workout Record"
+        verbose_name_plural = "Workout Records"
+        constraints = [
+            models.CheckConstraint(
+                name="non-zero calories or steps",
+                check=~models.Q(models.Q(calories=0) & models.Q(steps=0)),
+            )
+        ]
 
 
 class UserAuditLog(models.Model):
@@ -141,8 +149,8 @@ class FriendTable(models.Model):
     fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="fromUserid")
     toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="toUserId")
     status = models.CharField(max_length=3, choices=FriendshipStatus.choices, default=FriendshipStatus.PENDING)
-    creationDate = models.DateField(auto_now_add=True)
-    lastUpdate = models.DateField(auto_now=True)
+    creationDate = models.DateTimeField(auto_now_add=True)
+    lastUpdate = models.DateTimeField(auto_now=True)
 
     def clean(self):
         if self.fromUserid == self.toUserid:
@@ -155,3 +163,4 @@ class FriendTable(models.Model):
                     "toUserid": "friendship entry already exists",
                 }
             )
+
