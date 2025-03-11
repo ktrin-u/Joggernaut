@@ -87,7 +87,7 @@ class WorkoutRecord(models.Model):
     lastUpdate = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'workout_Record'
+        db_table = 'workout_record'
         verbose_name = "Workout Record"
         verbose_name_plural = "Workout Records"
         constraints = [
