@@ -15,4 +15,7 @@ class Migration(migrations.Migration):
             name='status',
             field=models.CharField(choices=[('PEN', 'Pending'), ('ACC', 'Accepted')], default='PEN', max_length=3),
         ),
+        migrations.DeleteModel(
+            name='UserActivity',
+        ),
     ]
