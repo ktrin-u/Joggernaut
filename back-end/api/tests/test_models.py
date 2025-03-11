@@ -1,8 +1,16 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
-from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings, Status, Gender
+from api.models import (
+    User,
+    WorkoutRecord,
+    UserAuditLog,
+    UserProfiles,
+    UserSettings,
+    Status,
+    Gender,
+)
 from datetime import datetime, date
 from django.utils.timezone import make_aware
+
 
 class TestUserModel(TestCase):
     def setUp(self):
@@ -11,8 +19,8 @@ class TestUserModel(TestCase):
             phonenumber="09171112222",
             firstname="First",
             lastname="Last",
-            password="testPass1@"
-        ) # type: ignore
+            password="testPass1@",
+        )  # type: ignore
 
     def test_create_user(self):
         self.assertEqual(self.user.email, "test@email.com")
@@ -24,22 +32,22 @@ class TestUserModel(TestCase):
             phonenumber="09151112222",
             firstname="Admin",
             lastname="Last",
-            password="adminPass1@"
-        ) # type: ignore
+            password="adminPass1@",
+        )  # type: ignore
         self.assertTrue(admin.is_superuser)
         self.assertTrue(admin.is_staff)
 
     def test_missing_email(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="", phonenumber="09171112222", firstname="First", lastname="Last") # type: ignore
+            User.objects.create_user(email="", phonenumber="09171112222", firstname="First", lastname="Last")  # type: ignore
 
     def test_missing_phone(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="test2@email.com", phonenumber="", firstname="First", lastname="Last") # type: ignore
+            User.objects.create_user(email="test2@email.com", phonenumber="", firstname="First", lastname="Last")  # type: ignore
 
     def test_missing_name(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="test2@email.com", phonenumber="09171112222", firstname="", lastname="") # type: ignore
+            User.objects.create_user(email="test2@email.com", phonenumber="09171112222", firstname="", lastname="")  # type: ignore
 
     def test_ban_user(self):
         self.user.ban()
@@ -61,6 +69,7 @@ class TestUserModel(TestCase):
         self.user.unban()
         self.assertTrue(self.user.is_active)
 
+
 class TestWorkoutRecord(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -68,9 +77,11 @@ class TestWorkoutRecord(TestCase):
             phonenumber="09181112222",
             firstname="First",
             lastname="Last",
-            password="testPass1@"
+            password="testPass1@",
         )  # type: ignore
-        self.workout = WorkoutRecord.objects.create(userid=self.user, calories=500, steps=10000)
+        self.workout = WorkoutRecord.objects.create(
+            userid=self.user, calories=500, steps=10000
+        )
 
     def test_workout_creation(self):
         self.assertEqual(self.workout.calories, 500)
@@ -79,6 +90,7 @@ class TestWorkoutRecord(TestCase):
     def test_workout_belongs_to_user(self):
         self.assertEqual(self.workout.userid, self.user)
 
+
 class TestUserAuditLog(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -86,13 +98,13 @@ class TestUserAuditLog(TestCase):
             phonenumber="09181112222",
             firstname="First",
             lastname="Last",
-            password="testPass1@"
-        ) # type: ignore
+            password="testPass1@",
+        )  # type: ignore
         self.log = UserAuditLog.objects.create(
             userid=self.user,
             action="Login",
             details="User logged in",
-            timestamp=make_aware(datetime.now())
+            timestamp=make_aware(datetime.now()),
         )
 
     def test_audit_log_creation(self):
@@ -102,6 +114,7 @@ class TestUserAuditLog(TestCase):
     def test_log_belongs_to_user(self):
         self.assertEqual(self.log.userid, self.user)
 
+
 class TestUserProfiles(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -109,8 +122,8 @@ class TestUserProfiles(TestCase):
             phonenumber="09181112222",
             firstname="First",
             lastname="Last",
-            password="testPass1@"
-        ) # type: ignore
+            password="testPass1@",
+        )  # type: ignore
         self.profile = UserProfiles.objects.create(
             userid=self.user,
             accountname="First Last",
@@ -118,8 +131,9 @@ class TestUserProfiles(TestCase):
             gender=Gender.MALE,
             address="",
             height_cm=999.9,
-            weight_kg=99.9
+            weight_kg=99.9,
         )
+
     def test_profile_creation(self):
         self.assertEqual(self.profile.accountname, "First Last")
         self.assertEqual(self.profile.gender, Gender.MALE)
@@ -131,6 +145,7 @@ class TestUserProfiles(TestCase):
         self.assertEqual(self.profile.height_cm, 999.9)
         self.assertEqual(self.profile.weight_kg, 99.9)
 
+
 class TestUserSettings(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -138,9 +153,11 @@ class TestUserSettings(TestCase):
             phonenumber="09181112222",
             firstname="First",
             lastname="Last",
-            password="testPass1@"
-        ) # type: ignore
-        self.setting = UserSettings.objects.create(userid=self.user, status=Status.ONLINE)
+            password="testPass1@",
+        )  # type: ignore
+        self.setting = UserSettings.objects.create(
+            userid=self.user, status=Status.ONLINE
+        )
 
     def test_settings_creation(self):
         self.assertEqual(self.setting.status, Status.ONLINE)

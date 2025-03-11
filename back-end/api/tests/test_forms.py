@@ -63,12 +63,12 @@ class TestSignupForm(TestCase):
 class TestUserChangeForm(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            email = "test@email.com",
-            phonenumber = "09171112222",
-            firstname = "First",
-            lastname = "Last",
-            password = "testPass1@",
-        ) # type: ignore
+            email="test@email.com",
+            phonenumber="09171112222",
+            firstname="First",
+            lastname="Last",
+            password="testPass1@",
+        )  # type: ignore
 
     def test_user_change_form(self):
         form = UserChangeForm(instance=self.user)
@@ -77,4 +77,4 @@ class TestUserChangeForm(TestCase):
         self.assertEqual(form.initial["phonenumber"], self.user.phonenumber)
 
         self.assertIn("password", form.fields)
-        self.assertEqual(form.fields["password"].help_text, '')
+        self.assertEqual(form.fields["password"].help_text, "")

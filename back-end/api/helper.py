@@ -1,8 +1,9 @@
-from oauth2_provider.models import AccessToken
-from rest_framework.request import Request
+from typing import Any
+from api.models import User
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
-from .models import User
+from oauth2_provider.models import AccessToken
 
 
 def get_token_from_header(request: Request) -> tuple[str, str]:
@@ -57,3 +58,10 @@ def get_user_object_or_404(request: Request) -> User | Response:
             status=status.HTTP_404_NOT_FOUND
         )
     return ret
+
+
+def clean_request_data(request: Request) -> dict[str, Any]:
+    """
+    Function that removes empty values in the request data
+    """
+    return {k: v for k, v in request.data.items() if v != ""}  # filter all empty values

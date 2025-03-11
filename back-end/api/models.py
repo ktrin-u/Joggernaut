@@ -163,4 +163,3 @@ class FriendTable(models.Model):
                     "toUserid": "friendship entry already exists",
                 }
             )
-
