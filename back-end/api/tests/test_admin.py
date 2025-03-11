@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.contrib.admin.sites import site
-from api.models import User, UserActivity, UserAuditLog, UserProfiles, UserSettings
+from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings
 from api.admin import (
-    UserAdmin, UserActivityAdmin, UserAuditLogAdmin, UserProfilesAdmin, UserSettingsAdmin
+    UserAdmin, WorkoutRecordAdmin, UserAuditLogAdmin, UserProfilesAdmin, UserSettingsAdmin
 )
 
 
@@ -12,8 +12,8 @@ class TestAdminRegistration(TestCase):
         self.assertIsInstance(site._registry[User], UserAdmin)
 
     def test_user_activity_admin_registered(self):
-        self.assertTrue(site.is_registered(UserActivity))
-        self.assertIsInstance(site._registry[UserActivity], UserActivityAdmin)
+        self.assertTrue(site.is_registered(WorkoutRecord))
+        self.assertIsInstance(site._registry[WorkoutRecord], WorkoutRecordAdmin)
 
     def test_user_audit_log_admin_registered(self):
         self.assertTrue(site.is_registered(UserAuditLog))

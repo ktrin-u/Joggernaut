@@ -21,4 +21,7 @@ urlpatterns = [
     path('user/friends/add', views.SendFriendRequestView.as_view(), name="send friend request"),
     path('user/friends/accept', views.AcceptFriendView.as_view(), name="accept friend request"),
     path('user/friends/reject', views.RejectFriendView.as_view(), name="reject friend request"),
+    path('user/workout/add', views.CreateWorkoutRecordView.as_view(), name="create new workout record"),
+    path('user/workout/', views.GetWorkoutRecordView.as_view(), name="get workout records"),
+    path('user/workout/update', views.UpdateWorkoutRecordView.as_view(), name="update workout records"),
 ]

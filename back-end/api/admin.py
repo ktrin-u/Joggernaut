@@ -1,6 +1,6 @@
 from typing import Any
 from django.http import HttpRequest
-from .models import User, UserActivity, UserAuditLog, UserProfiles, UserSettings, FriendTable
+from .models import User, UserAuditLog, UserProfiles, UserSettings, FriendTable, WorkoutRecord
 from django.contrib import admin
 from .forms import UserChangeForm, SignupForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -23,14 +23,6 @@ class UserAdmin(BaseUserAdmin):
             }
         )
     ]
-
-
-@admin.register(UserActivity)
-class UserActivityAdmin(admin.ModelAdmin):
-    list_display = ("activityid", "userid", "calories", "steps")
-    ordering = ["activityid"]
-    readonly_fields = ["activityid", "userid"]
-    pass
 
 
 @admin.register(UserAuditLog)
@@ -68,6 +60,13 @@ class FriendTableAdmin(admin.ModelAdmin):
             return ["fromUserid", "toUserid"]
         else:
             return []
+
+
+@admin.register(WorkoutRecord)
+class WorkoutRecordAdmin(admin.ModelAdmin):
+    list_display = ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"]
+    ordering = ["lastUpdate"]
+    readonly_fields = ["creationDate"]
 
 
 admin.site.unregister(Group)  # remove the groups since oauth will be used for scoping

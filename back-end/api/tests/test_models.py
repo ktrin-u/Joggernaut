@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from api.models import User, UserActivity, UserAuditLog, UserProfiles, UserSettings, Status, Gender
+from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings, Status, Gender
 from datetime import datetime, date
 from django.utils.timezone import make_aware
 
@@ -61,7 +61,7 @@ class TestUserModel(TestCase):
         self.user.unban()
         self.assertTrue(self.user.is_active)
 
-class TestUserActivity(TestCase):
+class TestWorkoutRecord(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="activity@email.com",
@@ -69,15 +69,15 @@ class TestUserActivity(TestCase):
             firstname="First",
             lastname="Last",
             password="testPass1@"
-        ) # type: ignore
-        self.activity = UserActivity.objects.create(userid=self.user, calories=500, steps=10000)
+        )  # type: ignore
+        self.workout = WorkoutRecord.objects.create(userid=self.user, calories=500, steps=10000)
 
-    def test_activity_creation(self):
-        self.assertEqual(self.activity.calories, 500)
-        self.assertEqual(self.activity.steps, 10000)
+    def test_workout_creation(self):
+        self.assertEqual(self.workout.calories, 500)
+        self.assertEqual(self.workout.steps, 10000)
 
-    def test_activity_belongs_to_user(self):
-        self.assertEqual(self.activity.userid, self.user)
+    def test_workout_belongs_to_user(self):
+        self.assertEqual(self.workout.userid, self.user)
 
 class TestUserAuditLog(TestCase):
     def setUp(self):
@@ -89,9 +89,9 @@ class TestUserAuditLog(TestCase):
             password="testPass1@"
         ) # type: ignore
         self.log = UserAuditLog.objects.create(
-            userid=self.user, 
-            action="Login", 
-            details="User logged in", 
+            userid=self.user,
+            action="Login",
+            details="User logged in",
             timestamp=make_aware(datetime.now())
         )
 

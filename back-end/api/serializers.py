@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from .models import UserManager, UserProfiles, FriendTable
+from .models import UserManager, UserProfiles, FriendTable, WorkoutRecord
 from django.contrib.auth.password_validation import validate_password
 from typing import Any
 
@@ -206,3 +206,39 @@ class FriendsListResponseSerializer(serializers.Serializer):
                 }
             )
         return value
+
+
+class NewWorkoutRecordRequestSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = WorkoutRecord
+        fields = ["calories", "steps"]
+
+
+class NewWorkoutRecordSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = WorkoutRecord
+        fields = ["userid", "calories", "steps"]
+
+
+class GetWorkoutRecordSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = WorkoutRecord
+        fields = ["workoutid", "calories", "steps", "lastUpdate", "creationDate"]
+
+
+class UpdateWorkoutRecordSerializer(serializers.ModelSerializer):
+    workoutid = serializers.IntegerField(min_value=1, required=True)
+
+    class Meta:  # type: ignore
+        model = WorkoutRecord
+        fields = ["workoutid", "calories", "steps"]
+
+    def validate(self, attrs):
+        if not attrs["calories"] and not attrs["steps"]:
+            raise ValidationError(
+                {
+                    "calories": "at least one of the two must be non zero",
+                    "steps": "at least one of the two must be non zero"
+                }
+            )
+        return attrs
