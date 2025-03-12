@@ -27,8 +27,10 @@ urlpatterns = [
 
     path('user/friends/', friends.GetFriendsView.as_view(), name="get friend list"),
     path('user/friends/add', friends.SendFriendRequestView.as_view(), name="send friend request"),
+    path('user/friends/cancel', friends.CancelPendingFriendView.as_view(), name="cancel sent pending friend request"),
     path('user/friends/accept', friends.AcceptFriendView.as_view(), name="accept friend request"),
     path('user/friends/reject', friends.RejectFriendView.as_view(), name="reject friend request"),
+    path('user/friends/remove', friends.RemoveFriendView.as_view(), name="unfriend a friend"),
     path('user/friends/pending', friends.GetPendingFriendsView.as_view(), name="get pending friend list"),
 
     path('user/workout/', workout.GetWorkoutRecordView.as_view(), name="get workout records"),
