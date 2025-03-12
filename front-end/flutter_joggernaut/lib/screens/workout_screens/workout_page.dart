@@ -30,6 +30,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   int? steps;
   int? calories;
   int? workoutID;
+  String? weight;
+  int currentDay =  DateTime.now().weekday;
+  List<int> weeklySteps = List.filled(7, 0);
 
   TextEditingController stepsController = TextEditingController();
   TextEditingController caloriesController = TextEditingController();
@@ -37,6 +40,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   void _saveSteps(){
     setState(() {
       steps = int.tryParse(stepsController.text);
+      weeklySteps[currentDay] = steps!;
     });
   }
   
@@ -49,7 +53,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   void _addWorkout(){
     ConfirmHelper.showConfirmDialog(
       context, 
-      "Are you sure you want to create your workout session?",
+      "Are you sure you want to create a new workout session?",
       (context) => _createWorkout()
     );
   }
@@ -113,6 +117,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future getWorkout() async {
+    await getUserProfile();
     var response = await ApiService().getWorkout();
     if (response.statusCode == 200){
       if (response.body == "[]"){
@@ -122,11 +127,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
           isFirstWorkout = true;
           stepsController.text = steps!.toString();
           caloriesController.text = calories!.toString();
+          weeklySteps[currentDay] = steps!;
         });
         return;
       }
       List<dynamic> jsonData = jsonDecode(response.body);
-      Map<String, dynamic> data = jsonData[0];
+      Map<String, dynamic> data = jsonData[-1];
 
       setState(() {
         steps = data["steps"];
@@ -134,6 +140,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         workoutID = data["workoutid"];
         stepsController.text = steps!.toString();
         caloriesController.text = calories!.toString();
+        weeklySteps[currentDay] = steps!;
       });
     }
     else if (response.statusCode == 404){
@@ -142,6 +149,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
         calories = 0;
         stepsController.text = steps!.toString();
         caloriesController.text = calories!.toString();
+        weeklySteps[currentDay] = steps!;
+      });
+    }
+  }
+
+  Future getUserProfile() async {
+    var response = await ApiService().getUserProfile();
+    if (response.statusCode == 200){
+      var data = jsonDecode(response.body);
+      setState(() {
+        weight = data["weight_kg"]?.toString() ?? "??";
+      });
+    }
+    else if (response.statusCode == 404){
+      setState(() {
+        weight =  "??";
       });
     }
   }
@@ -200,7 +223,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             ),
                           ),
                           Text(
-                            "80 kg",
+                            weight!,
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Roboto',
@@ -219,8 +242,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     aspectRatio: 0.95, 
                     child: BarChartWidget(
                       title: "Weekly Steps",
-                      weeklyData: [0, 0, 0, 0, steps!, 0, 0], 
-                      highlightDay: DateTime.now().weekday, 
+                      weeklyData: weeklySteps,
+                      highlightDay: currentDay, 
                     )
                   )
                 ),
