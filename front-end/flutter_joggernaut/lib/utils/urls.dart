@@ -12,3 +12,6 @@ const updateUserInfoURL = "${hostURL}api/user/info/update";
 const getUserProfileURL = "${hostURL}api/user/profile";
 const createUserProfileURL = "${hostURL}api/user/profile/new";
 const updateUserProfileURL = "${hostURL}api/user/profile/update";
+const getWorkoutURL = "${hostURL}api/user/workout";
+const createWorkoutURL = "${hostURL}api/user/workout/add";
+const updateWorkoutURL = "${hostURL}api/user/workout/update";

@@ -280,5 +280,80 @@ class ApiService {
     }
   }
 
+  Future getWorkout() async {
+    var uri = Uri.parse(getWorkoutURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
 
+      if (response.statusCode == 200) {
+        print("Workout obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load workout data. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+  
+  Future createWorkout (steps, calories) async {
+    var uri = Uri.parse(createWorkoutURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "calories": calories.toString(), 
+          "steps": steps.toString(),       
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+      if (response.statusCode == 200) {
+        print("Workout session created successfully!");
+        return response;
+      } else {
+        print("Failed to create workout session. Status code: ${response.statusCode}. Response body: ${response.body}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future updateWorkout (workoutID, steps, calories) async {
+    var uri = Uri.parse(updateWorkoutURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "workoutid": workoutID.toString(),
+          "calories": calories.toString(), 
+          "steps": steps.toString(),       
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+      if (response.statusCode == 201) {
+        print("Workout session updated successfully!");
+        return response;
+      } else {
+        print("Failed to update workout session. Status code: ${response.statusCode}. Response body: ${response.body}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
 }
