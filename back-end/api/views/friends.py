@@ -14,11 +14,11 @@ from rest_framework import status
 
 from api import schema_docs
 from api.schema_docs import Tags
-from api.models import FriendTable
+from api.models import FriendTable, FriendActivity, FriendActivityChoices
 from api.helper import get_user_object
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.serializers.general import MsgSerializer
-from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, PendingFriendsListResponseSerializer, FriendTableSerializer, FriendsListResponseSerializer, FromUserIdSerializer, TargetUserIdSerializer
+from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, PendingFriendsListResponseSerializer, FriendTableSerializer, FriendsListResponseSerializer, FromUserIdSerializer, TargetUserIdSerializer, PokeFriendSerializer, FriendActivitySerializer
 
 
 class AbstractFriendTableView(GenericAPIView):
@@ -246,7 +246,7 @@ class CancelPendingFriendView(AbstractFriendTableView):
             except ObjectDoesNotExist:
                 return Response(
                     {
-                        "msg": f"No pending friend request from {fromUserid} found."
+                        "msg": f"No pending friend request from {toUserid} found."
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
@@ -457,5 +457,115 @@ class RemoveFriendView(AbstractFriendTableView):
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
+
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="View user's activities with friends",
+    tags=[Tags.FRIENDS],
+)
+class GetFriendActivityView(GenericAPIView):
+    model = FriendActivity
+    serializer_class = FriendActivitySerializer
+    permission_classes = [TokenHasScope]
+    required_scopes = ["read"]
+
+    @extend_schema(
+        description="Get a list of activities between the user and friends.",
+    )
+    def get(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        activities = self.get_serializer(
+            FriendActivity.objects.filter(Q(fromUserid=user) | Q(toUserid=user)),
+            many=True
+        )
+
+        return Response(
+            {
+                "activities": activities.data
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(
+    summary="Create a friend poke entry",
+    tags=[Tags.FRIENDS],
+)
+class PokeFriendView(AbstractFriendTableView):
+    model = FriendActivity
+    serializer_class = PokeFriendSerializer
+
+    RESPONSE_SUCCESS = Response(
+        {
+            "msg": "Poke Friend Activity entry successfully added to database"
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+    @extend_schema(
+        description=f"Create a Friend Activity entry with activity set to {FriendActivityChoices.POKE}",
+        request=ToUserIdSerializer,
+        responses={
+            RESPONSE_SUCCESS.status_code: OpenApiResponse(
+                response=MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="success",
+                        value=RESPONSE_SUCCESS.data,
+                        status_codes=[RESPONSE_SUCCESS.status_code]
+                    ),
+                ]
+            ),
+            RESPONSE_USER_NOT_FOUND.status_code: OpenApiResponse(
+                response=MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="user not found",
+                        value=RESPONSE_USER_NOT_FOUND.data,
+                        status_codes=[RESPONSE_USER_NOT_FOUND.status_code]
+                    )
+                ]
+            )
+        }
+    )
+    def post(self, request: Request) -> Response:
+        user = get_user_object(request)
+
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        data = deepcopy(request.data)
+        data["fromUserid"] = user.userid
+
+        serialized = self.get_serializer(data=data)
+
+        if serialized.is_valid():
+            try:
+                FriendTable.objects.get(
+                    Q(
+                        fromUserid=serialized.validated_data["fromUserid"],
+                        toUserid=serialized.validated_data["toUserid"],
+                        status=FriendTable.FriendshipStatus.ACCEPTED,
+                    ) |
+                    Q(
+                        fromUserid=serialized.validated_data["toUserid"],
+                        toUserid=serialized.validated_data["fromUserid"],
+                        status=FriendTable.FriendshipStatus.ACCEPTED,
+                    )
+                )
+
+                serialized.save()
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"user is not friends with {serialized.validated_data["toUserid"]}"
+                    }
+                )
+            return self.RESPONSE_SUCCESS
 
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)

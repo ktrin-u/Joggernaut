@@ -146,8 +146,8 @@ class FriendTable(models.Model):
         ACCEPTED = "ACC"
 
     friendid = models.BigAutoField(verbose_name="Friend ID", primary_key=True, unique=True)
-    fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="fromUserid")
-    toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="toUserId")
+    fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="friend_fromUserid")
+    toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="friend_toUserid")
     status = models.CharField(max_length=3, choices=FriendshipStatus.choices, default=FriendshipStatus.PENDING)
     creationDate = models.DateTimeField(auto_now_add=True)
     lastUpdate = models.DateTimeField(auto_now=True)
@@ -163,3 +163,30 @@ class FriendTable(models.Model):
                     "toUserid": "friendship entry already exists",
                 }
             )
+
+
+class FriendActivityChoices(models.TextChoices):
+    POKE = "POK"
+    CHALLENGE = "CHA"
+
+
+class FriendActivity(models.Model):
+    activityid = models.BigAutoField(verbose_name="activity id", primary_key=True, unique=True)
+    fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="friendactivity_fromUserid")
+    toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="friendactivity_toUserid")
+    activity = models.CharField(max_length=3, choices=FriendActivityChoices)
+    creationDate = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.fromUserid == self.toUserid:
+            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
+
+    class Meta:
+        verbose_name = "Friend Activity"
+        verbose_name_plural = "Friend Activities"
+        constraints = [
+            models.CheckConstraint(
+                name="no self poke",
+                check=~models.Q(toUserid=models.F("fromUserid"))
+            )
+        ]

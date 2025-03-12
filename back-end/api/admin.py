@@ -1,6 +1,6 @@
 from typing import Any
 from django.http import HttpRequest
-from .models import User, UserAuditLog, UserProfiles, UserSettings, FriendTable, WorkoutRecord
+from .models import User, UserAuditLog, UserProfiles, UserSettings, FriendTable, WorkoutRecord, FriendActivity
 from django.contrib import admin
 from .forms import UserChangeForm, SignupForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -69,15 +69,11 @@ class WorkoutRecordAdmin(admin.ModelAdmin):
     readonly_fields = ["creationDate"]
 
 
+@admin.register(FriendActivity)
+class FriendActivityAdmin(admin.ModelAdmin):
+    list_display = ["activityid", "activity", "fromUserid", "toUserid", "creationDate"]
+    ordering = ["activityid", "creationDate"]
+    readonly_fields = ["creationDate"]
+
+
 admin.site.unregister(Group)  # remove the groups since oauth will be used for scoping
-
-
-# admin.site.register(
-#     [
-#         User,
-#         UserActivity,
-#         UserAuditLog,
-#         UserProfiles,
-#         UserSettings
-#     ]
-# )

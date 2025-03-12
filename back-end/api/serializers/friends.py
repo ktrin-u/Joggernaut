@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from api.models import FriendTable
+from api.models import FriendTable, FriendActivity, FriendActivityChoices
 from typing import Any
 from django.db.models import Q
 
@@ -94,3 +94,34 @@ class CreateFriendSerializer(serializers.ModelSerializer):
         )
         friendrequest.clean()
         return friendrequest
+
+
+class PokeFriendSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = FriendActivity
+        fields = ["fromUserid", "toUserid"]
+
+    def validate(self, attrs):
+        if attrs["fromUserid"] == attrs["toUserid"]:
+            raise ValidationError(
+                {
+                    "fromUserid": "cannot poke self",
+                    "toUserid": "cannot poke self",
+                }
+            )
+        return attrs
+
+    def create(self, validated_data) -> FriendActivity:
+        activity = FriendActivity.objects.create(
+            fromUserid=validated_data["fromUserid"],
+            toUserid=validated_data["toUserid"],
+            activity=FriendActivityChoices.POKE,
+        )
+        activity.clean()
+        return activity
+
+
+class FriendActivitySerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = FriendActivity
+        fields = ["fromUserid", "toUserid", "activity", "creationDate"]
