@@ -156,13 +156,25 @@ class FriendTable(models.Model):
         if self.fromUserid == self.toUserid:
             raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
 
-        if self.__class__.objects.filter(models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) | models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)):
-            raise ValidationError(
-                {
-                    "fromUserid": "friendship entry already exists",
-                    "toUserid": "friendship entry already exists",
-                }
+        # if self.__class__.objects.filter(models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) | models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)):
+        #     raise ValidationError(
+        #         {
+        #             "fromUserid": "friendship entry already exists",
+        #             "toUserid": "friendship entry already exists",
+        #         }
+        #     )
+
+    class Meta:  # type: ignore
+        constraints = [
+            models.UniqueConstraint(
+                name="two-way friendship",
+                fields=["fromUserid", "toUserid"],
+            ),
+            models.UniqueConstraint(
+                name="two-way friendship reverse",
+                fields=["toUserid", "fromUserid"]
             )
+        ]
 
 
 class FriendActivityChoices(models.TextChoices):
