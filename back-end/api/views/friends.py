@@ -18,7 +18,7 @@ from api.models import FriendTable
 from api.helper import get_user_object
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.serializers.general import MsgSerializer
-from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, PendingFriendsListResponseSerializer, FriendTableSerializer, FriendsListResponseSerializer
+from api.serializers.friends import CreateFriendSerializer, ToUserIdSerializer, PendingFriendsListResponseSerializer, FriendTableSerializer, FriendsListResponseSerializer, FromUserIdSerializer, TargetUserIdSerializer
 
 
 class AbstractFriendTableView(GenericAPIView):
@@ -90,7 +90,7 @@ class SendFriendRequestView(AbstractFriendTableView):
     tags=[Tags.FRIENDS],
 )
 class AcceptFriendView(AbstractFriendTableView):
-    serializer_class = ToUserIdSerializer
+    serializer_class = FromUserIdSerializer
 
     @extend_schema(
         description="Accept a pending request from the specified uuid",
@@ -154,7 +154,7 @@ class AcceptFriendView(AbstractFriendTableView):
     tags=[Tags.FRIENDS],
 )
 class RejectFriendView(AbstractFriendTableView):
-    serializer_class = ToUserIdSerializer
+    serializer_class = FromUserIdSerializer
 
     @extend_schema(
         description="Reject a pending request from the specified uuid",
@@ -206,6 +206,47 @@ class RejectFriendView(AbstractFriendTableView):
                 return Response(
                     {
                         "msg": f"No friend request from {fromUserid} found."
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Cancel sent pending friend request",
+    tags=[Tags.FRIENDS]
+)
+class CancelPendingFriendView(AbstractFriendTableView):
+    serializer_class = ToUserIdSerializer
+
+    @extend_schema(
+        description="Cancel a sent friend request which is still pending"
+    )
+    def patch(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        serialized = self.get_serializer(data=request.data)
+
+        if serialized.is_valid():
+            toUserid = serialized.validated_data["toUserid"]
+            try:
+                friend_entry = self.model.objects.get(toUserid=toUserid, fromUserid=user)
+
+                friend_entry.status = FriendTable.FriendshipStatus.ACCEPTED
+                friend_entry.save()
+                return Response(
+                    {
+                        "msg": f"pending request to {toUserid} has been canceled"
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"No pending friend request from {fromUserid} found."
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
@@ -376,3 +417,45 @@ class GetFriendsView(AbstractFriendTableView):
             },
             status=status.HTTP_200_OK
         )
+
+
+@extend_schema(
+    summary="Unfriend a friend",
+    tags=[Tags.FRIENDS]
+)
+class RemoveFriendView(AbstractFriendTableView):
+    serializer_class = TargetUserIdSerializer
+
+    @extend_schema(
+        description="Find the friendship entry with the given userid and then delete it"
+    )
+    def post(self, request: Request) -> Response:
+        user = get_user_object(request)
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        serialized = self.get_serializer(data=request.data)
+
+        if serialized.is_valid():
+            targetUserid = serialized.validated_data["targetid"]
+            try:
+                entry = FriendTable.objects.get(Q(fromUserid=targetUserid) | Q(toUserid=targetUserid))
+
+                entry.delete()
+
+                return Response(
+                    {
+                        "msg": f"succesfully unfriended {targetUserid}"
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"unable to find friendship entry with {targetUserid}"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)

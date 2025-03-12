@@ -11,6 +11,16 @@ class ToUserIdSerializer(serializers.ModelSerializer):
         fields = ['toUserid']
 
 
+class FromUserIdSerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = FriendTable
+        fields = ['fromUserid']
+
+
+class TargetUserIdSerializer(serializers.Serializer):
+    targetid = serializers.UUIDField()
+
+
 class FriendTableSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = FriendTable
