@@ -232,10 +232,9 @@ class CancelPendingFriendView(AbstractFriendTableView):
         if serialized.is_valid():
             toUserid = serialized.validated_data["toUserid"]
             try:
-                friend_entry = self.model.objects.get(toUserid=toUserid, fromUserid=user)
+                friend_entry = self.model.objects.get(toUserid=toUserid, fromUserid=user.userid)
 
-                friend_entry.status = FriendTable.FriendshipStatus.ACCEPTED
-                friend_entry.save()
+                friend_entry.delete()
                 return Response(
                     {
                         "msg": f"pending request to {toUserid} has been canceled"
