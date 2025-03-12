@@ -33,6 +33,9 @@ urlpatterns = [
     path('user/friends/remove', friends.RemoveFriendView.as_view(), name="unfriend a friend"),
     path('user/friends/pending', friends.GetPendingFriendsView.as_view(), name="get pending friend list"),
 
+    path('user/friends/poke', friends.PokeFriendView.as_view(), name="poke a friend list"),
+    path('user/friends/activity', friends.GetFriendActivityView.as_view(), name="get activities between user and friends"),
+
     path('user/workout/', workout.GetWorkoutRecordView.as_view(), name="get workout records"),
     path('user/workout/add', workout.CreateWorkoutRecordView.as_view(), name="create new workout record"),
     path('user/workout/update', workout.UpdateWorkoutRecordView.as_view(), name="update workout records"),
