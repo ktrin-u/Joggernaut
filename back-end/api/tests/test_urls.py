@@ -1,5 +1,7 @@
 from django.test import SimpleTestCase
 from django.urls import reverse, resolve
+from rest_framework.test import APIClient
+from rest_framework import status
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView  # type: ignore
 
@@ -75,3 +77,28 @@ class TestUrls(SimpleTestCase):
     def test_logout_url(self):
         url = reverse("logout and revoke token")
         self.assertEqual(resolve(url).func.view_class, RevokeTokenAPIView)  # type: ignore
+
+    def test_invalid_url(self):
+        client = APIClient()
+        response = client.get("/invalid/url/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_url_patterns(self):
+        urlpatterns = [
+            reverse("register new user"),
+            reverse("retrieve user profile"),
+            reverse("create new user profile"),
+            reverse("update user profile"),
+            reverse("delete user account"),
+            reverse("retrieve user info"),
+            reverse("update user info"),
+            reverse("change user password"),
+            reverse("ban a user"),
+            reverse("unban a user"),
+            reverse("schema"),
+            reverse("overview"),
+            reverse("login and acquire token"),
+            reverse("logout and revoke token"),
+        ]
+        for url in urlpatterns:
+            self.assertIsNotNone(resolve(url))
