@@ -439,7 +439,7 @@ class RemoveFriendView(AbstractFriendTableView):
         if serialized.is_valid():
             targetUserid = serialized.validated_data["targetid"]
             try:
-                entry = FriendTable.objects.get(Q(fromUserid=targetUserid) | Q(toUserid=targetUserid))
+                entry = FriendTable.objects.get(Q(fromUserid=targetUserid, toUserid=user.userid) | Q(toUserid=targetUserid, fromUserid=user.userid))
 
                 entry.delete()
 
