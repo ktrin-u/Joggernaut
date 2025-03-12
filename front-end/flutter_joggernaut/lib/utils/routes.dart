@@ -74,9 +74,10 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(path: '/social', builder: (context, state) => SocialPage()),
             GoRoute(path: '/social/notifications', builder: (context, state) => NotificationsPage()),
-            GoRoute(path: '/social/profile/:name', builder: (context, state) {
-              final name = state.pathParameters['name'] ?? 'Unknown';
-              return SocialUserProfilePage(name: name);
+            GoRoute(path: '/social/profile/:userid/:accountname', builder: (context, state) {
+              final String? friendID = state.pathParameters['userid'];
+              final String? friendName = state.pathParameters['accountname'];
+              return SocialUserProfilePage(userId: friendID!, userName: friendName!);
             }),
             GoRoute(path: '/social/add', builder: (context, state) => AddFriendPage())
           ],

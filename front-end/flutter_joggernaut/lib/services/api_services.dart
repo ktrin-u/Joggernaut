@@ -356,4 +356,254 @@ class ApiService {
       throw Exception("Error: $e");
     }
   }
+
+  Future getAllUsers() async {
+    var uri = Uri.parse(getAllUsersURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("All users obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load all users data. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future getFriends() async {
+    var uri = Uri.parse(getFriendsURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("All friends obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load all friends. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future getFriendActivity() async {
+    var uri = Uri.parse(getFriendActitvityURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Friend activities obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load friend activities. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future addFriend(friendId) async {
+    var uri = Uri.parse(addFriendURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "toUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 201) {
+        print("Friend Request sent successfully!");
+        return response;
+      } else {
+        print("Failed to send friend request. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future pokeFriend(friendId) async {
+    var uri = Uri.parse(pokeFriendURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "toUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 201) {
+        print("Friend poked successfully!");
+        return response;
+      } else {
+        print("Failed to poke friend. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future cancelRequest(friendId) async {
+    var uri = Uri.parse(cancelRequestURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "toUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Friend Request cancelled successfully!");
+        return response;
+      } else {
+        print("Failed to cancel friend request. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future acceptRequest(friendId) async {
+    var uri = Uri.parse(acceptRequestURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "fromUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Friend Request accepted successfully!");
+        return response;
+      } else {
+        print("Failed to accept friend request. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future rejectRequest(friendId) async {
+    var uri = Uri.parse(rejectRequestURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "fromUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Friend Request rejected successfully!");
+        return response;
+      } else {
+        print("Failed to reject friend request. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future unFriend(friendId) async {
+    var uri = Uri.parse(unFriendURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "targetid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Unfriended successfully!");
+        return response;
+      } else {
+        print("Failed to unfried. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future getPendingFriends() async {
+    var uri = Uri.parse(getPendingFriendsURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Pending friend requests obtained successfully!");
+        return response;
+      } else {
+        print("Failed to pending friend requests. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
 }
