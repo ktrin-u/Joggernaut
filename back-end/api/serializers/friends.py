@@ -69,7 +69,7 @@ class CreateFriendSerializer(serializers.ModelSerializer):
         fields = ['fromUserid', 'toUserid']  # status is set to default of PENDING
 
     def validate(self, attrs) -> Any:
-        if self.Meta.model.objects.filter(Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"]) | Q(fromUserid=attrs['toUserid'], toUserid=attrs["fromUserid"])):
+        if self.Meta.model.objects.filter(Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"]) | Q(fromUserid=attrs['toUserid'], toUserid=attrs["fromUserid"])).exists():
             raise ValidationError(
                 {
                     "fromUserid": "friendship entry already exists",
@@ -92,7 +92,6 @@ class CreateFriendSerializer(serializers.ModelSerializer):
             toUserid=validated_data["toUserid"],
             status=FriendTable.FriendshipStatus.PENDING,
         )
-        friendrequest.clean()
         return friendrequest
 
 
