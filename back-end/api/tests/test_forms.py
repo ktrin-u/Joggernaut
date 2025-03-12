@@ -1,64 +1,6 @@
 from django.test import TestCase
-from api.forms import SignupForm, UserChangeForm
+from api.forms import UserChangeForm
 from api.models import User
-
-
-class TestSignupForm(TestCase):
-    def test_valid_signup_form(self):
-        form_data = {
-            "phonenumber": "09171112222",
-            "firstname": "First",
-            "lastname": "Last",
-            "password1": "testPass1@",
-            "password2": "testPass1@",
-        }
-
-        form = SignupForm(data=form_data)
-        self.assertTrue(form.is_valid(), form.errors)
-
-    def test_password_mismatch(self):
-        form_data = {
-            "phonenumber": "09171112222",
-            "firstname": "First",
-            "lastname": "Last",
-            "password1": "testPass1@",
-            "password2": "wrongPass1@",
-        }
-
-        form = SignupForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn("password2", form.errors)
-        self.assertEqual(form.errors["password2"], ["Passwords don't match"])
-
-    def test_save_user_correctly(self):
-        form_data = {
-            "phonenumber": "09171112222",
-            "firstname": "First",
-            "lastname": "Last",
-            "password1": "testPass1@",
-            "password2": "testPass1@",
-        }
-
-        form = SignupForm(data=form_data)
-        self.assertTrue(form.is_valid())
-
-        user = form.save()
-        self.assertIsInstance(user, User)
-        self.assertTrue(user.check_password("testPass1@"))
-        self.assertEqual(user.firstname, "First")
-
-    def test_save_user_incorrectly(self):
-        form_data = {
-            "phonenumber": "",
-            "firstname": "",
-            "lastname": "",
-            "password1": "testPass1@",
-            "password2": "testPass1@",
-        }
-
-        form = SignupForm(data=form_data)
-        self.assertTrue(not form.is_valid())
-
 
 class TestUserChangeForm(TestCase):
     def setUp(self):
@@ -68,7 +10,7 @@ class TestUserChangeForm(TestCase):
             firstname="First",
             lastname="Last",
             password="testPass1@",
-        )  # type: ignore
+        )
 
     def test_user_change_form(self):
         form = UserChangeForm(instance=self.user)
@@ -77,4 +19,36 @@ class TestUserChangeForm(TestCase):
         self.assertEqual(form.initial["phonenumber"], self.user.phonenumber)
 
         self.assertIn("password", form.fields)
-        self.assertEqual(form.fields["password"].help_text, "")
+        self.assertEqual(form.fields["password"].help_text, '')
+
+    def test_update_user_information(self):
+        form_data = {
+            "email": "newemail@email.com",
+            "phonenumber": "09173334444",
+            "firstname": "NewFirst",
+            "lastname": "NewLast",
+            "is_superuser": False,
+        }
+
+        form = UserChangeForm(instance=self.user, data=form_data)
+        self.assertTrue(form.is_valid(), form.errors)
+
+        user = form.save()
+        self.assertEqual(user.email, "newemail@email.com")
+        self.assertEqual(user.phonenumber, "09173334444")
+        self.assertEqual(user.firstname, "NewFirst")
+        self.assertEqual(user.lastname, "NewLast")
+        self.assertFalse(user.is_superuser)
+
+    def test_invalid_email_format(self):
+        form_data = {
+            "email": "invalid-email",
+            "phonenumber": self.user.phonenumber,
+            "firstname": self.user.firstname,
+            "lastname": self.user.lastname,
+            "password": self.user.password,
+        }
+
+        form = UserChangeForm(instance=self.user, data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("email", form.errors)

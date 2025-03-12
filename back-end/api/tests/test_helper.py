@@ -10,11 +10,10 @@ from api.helper import (
     get_user_object,
     get_user_object_or_404,
 )
+from api.admin import WorkoutRecordAdmin
 from datetime import timedelta
 
-
 User = get_user_model()
-
 
 class TestHelperFuncs(TestCase):
     def setUp(self):
@@ -103,3 +102,12 @@ class TestHelperFuncs(TestCase):
         self.assertIsInstance(response, Response)
         self.assertEqual(response.status_code, 404)  # type: ignore
         self.assertEqual(response.data["msg"], "unable to find user")  # type: ignore
+
+    def test_user_activity_admin_list_display(self):
+        self.assertEqual(WorkoutRecordAdmin.list_display, ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"])
+
+    def test_user_activity_admin_ordering(self):
+        self.assertEqual(WorkoutRecordAdmin.ordering, ["lastUpdate"])
+
+    def test_user_activity_admin_readonly_fields(self):
+        self.assertEqual(WorkoutRecordAdmin.readonly_fields, ["creationDate"])
