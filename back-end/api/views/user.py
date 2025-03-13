@@ -13,7 +13,13 @@ from api.models import User, UserProfiles
 from api.schema_docs import Tags
 from api.permissions import isBanned
 from api.helper import get_user_object, clean_request_data
-from api.serializers.user import UserModelSerializer, UserDeleteSerializer, UpdateUserPasswordSerializer, PublicUserSerializer, PublicUserResponseSerializer
+from api.serializers.user import (
+    UserModelSerializer,
+    UserDeleteSerializer,
+    UpdateUserPasswordSerializer,
+    PublicUserSerializer,
+    PublicUserResponseSerializer,
+)
 
 
 @extend_schema(
@@ -37,10 +43,8 @@ class UpdateUserPasswordView(GenericAPIView):
 
         if user is None:
             return Response(
-                {
-                    "msg": "Failed to retrieve corresponding user"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "Failed to retrieve corresponding user"},
+                status=status.HTTP_404_NOT_FOUND,
             )
         serialized = self.get_serializer(data=request.data)  # type: ignore
         if serialized.is_valid():
@@ -49,13 +53,10 @@ class UpdateUserPasswordView(GenericAPIView):
                 {
                     "msg": f"{user.email}'s password has been changed",
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
-        return Response(
-            data=serialized.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AbstractUserView(views.APIView):
@@ -70,7 +71,7 @@ class AbstractUserView(views.APIView):
     tags=[Tags.USER],
 )
 class ViewUserInfoView(AbstractUserView):
-    required_scopes = ['read']
+    required_scopes = ["read"]
 
     def get_object(self):
         return get_user_object(self.request)
@@ -83,17 +84,12 @@ class ViewUserInfoView(AbstractUserView):
 
         if user is None:
             return Response(
-                {
-                    "msg": "Failed to retrieve corresponding user"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "Failed to retrieve corresponding user"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         serialized = self.serializer_class(user)
-        return Response(
-            data=serialized.data,
-            status=status.HTTP_200_OK
-        )
+        return Response(data=serialized.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -117,18 +113,14 @@ class UpdateUserInfoView(AbstractUserView):
         description="Update the associated entry in the User table. Does not require all fields. This uses the Authentication Token as the identifier"
     )
     def patch(self, request) -> Response:
-        serialized = UserModelSerializer(get_user_object(request), data=clean_request_data(request), partial=True)
+        serialized = UserModelSerializer(
+            get_user_object(request), data=clean_request_data(request), partial=True
+        )
         if serialized.is_valid():
             serialized.save()
-            return Response(
-                data=serialized.data,
-                status=status.HTTP_202_ACCEPTED
-            )
+            return Response(data=serialized.data, status=status.HTTP_202_ACCEPTED)
 
-        return Response(
-            data=serialized.errors,
-            status=status.HTTP_409_CONFLICT
-        )
+        return Response(data=serialized.errors, status=status.HTTP_409_CONFLICT)
 
 
 @extend_schema(
@@ -155,28 +147,17 @@ class DeleteUserView(AbstractUserView):
                 deleted_userid = user.userid
                 user.delete()
                 return Response(
-                    {
-                        "msg": f"user {deleted_userid} has been deleted."
-                    },
-                    status=status.HTTP_200_OK
+                    {"msg": f"user {deleted_userid} has been deleted."},
+                    status=status.HTTP_200_OK,
                 )
 
-            return Response(
-                {
-                    "msg": "user not found"
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"msg": "user not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(
-            data=serialized.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
-    summary="Get list of users and their non-confidential data",
-    tags=[Tags.USER]
+    summary="Get list of users and their non-confidential data", tags=[Tags.USER]
 )
 class GetUsersView(GenericAPIView):
     serializer_class = PublicUserSerializer
@@ -196,18 +177,18 @@ class GetUsersView(GenericAPIView):
                                     "userid": "ecd4aa4a-ae97-4d58-befe-80981e9e8d78",
                                     "firstname": "Jane",
                                     "accountname": "RedApple",
-                                    "gender": "Female"
+                                    "gender": "Female",
                                 },
                                 {
                                     "userid": "8e7fbd98-dc33-4d01-80fe-db4a2e4a0cd0",
                                     "firstname": "John",
                                     "accountname": "Destroyer1",
-                                    "gender": "Male"
-                                }
+                                    "gender": "Male",
+                                },
                             ]
-                        }
+                        },
                     )
-                ]
+                ],
             )
         }
     )
@@ -217,9 +198,4 @@ class GetUsersView(GenericAPIView):
 
         serialized = self.get_serializer(pub_user, many=True)
 
-        return Response(
-            {
-                "users": serialized.data
-            },
-            status=status.HTTP_200_OK
-        )
+        return Response({"users": serialized.data}, status=status.HTTP_200_OK)

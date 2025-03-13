@@ -5,7 +5,15 @@ from api.models import UserProfiles
 class UserProfileFormSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = UserProfiles
-        fields = ['userid', 'accountname', 'dateofbirth', 'gender', 'address', 'height_cm', 'weight_kg']
+        fields = [
+            "userid",
+            "accountname",
+            "dateofbirth",
+            "gender",
+            "address",
+            "height_cm",
+            "weight_kg",
+        ]
 
     def create(self, validated_data) -> UserProfiles:
         profile_manager = UserProfiles.objects
@@ -16,7 +24,7 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
             gender=validated_data["gender"],
             address=validated_data["address"],
             height_cm=validated_data["height_cm"],
-            weight_kg=validated_data["weight_kg"]
+            weight_kg=validated_data["weight_kg"],
         )
         if created:
             new_profile.save()

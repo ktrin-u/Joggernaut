@@ -21,21 +21,20 @@ class AbstractUpdateUserUserPermissionsView(GenericAPIView):
         if serialized.is_valid():
             email = serialized.validated_data.get("email")
             uuid = serialized.validated_data.get("userid")
-            user = get_user_model().objects.filter(Q(email=email) | Q(userid=uuid)).first()
+            user = (
+                get_user_model().objects.filter(Q(email=email) | Q(userid=uuid)).first()
+            )
 
             if user is None:
                 return Response(
                     {
                         "msg": "user not found",
                     },
-                    status=status.HTTP_404_NOT_FOUND
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             return user
 
-        return Response(
-            data=serialized.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
@@ -54,10 +53,8 @@ class BanUserView(AbstractUpdateUserUserPermissionsView):
         user.ban()  # type: ignore
         user.save()
         return Response(
-            {
-                "msg": f"{user.userid} has been banned"  # type: ignore
-            },
-            status=status.HTTP_200_OK
+            {"msg": f"{user.userid} has been banned"},  # type: ignore
+            status=status.HTTP_200_OK,
         )
 
 
@@ -77,8 +74,6 @@ class UnbanUserView(AbstractUpdateUserUserPermissionsView):
         user.unban()  # type: ignore
         user.save()
         return Response(
-            {
-                "200": f"{user.userid} has been unbanned"  # type: ignore
-            },
-            status=status.HTTP_200_OK
+            {"200": f"{user.userid} has been unbanned"},  # type: ignore
+            status=status.HTTP_200_OK,
         )

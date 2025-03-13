@@ -2,9 +2,10 @@ from django.test import TestCase
 from api.forms import UserChangeForm
 from api.models import User
 
+
 class TestUserChangeForm(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user(  # type: ignore
             email="test@email.com",
             phonenumber="09171112222",
             firstname="First",
@@ -19,7 +20,7 @@ class TestUserChangeForm(TestCase):
         self.assertEqual(form.initial["phonenumber"], self.user.phonenumber)
 
         self.assertIn("password", form.fields)
-        self.assertEqual(form.fields["password"].help_text, '')
+        self.assertEqual(form.fields["password"].help_text, "")
 
     def test_update_user_information(self):
         form_data = {

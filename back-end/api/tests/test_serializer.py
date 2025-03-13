@@ -13,6 +13,7 @@ import datetime
 
 UserModel = get_user_model()
 
+
 class TestRegisterFormSerializer(TestCase):
     def setUp(self):
         self.valid_data = {

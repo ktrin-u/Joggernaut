@@ -8,10 +8,8 @@ from django.contrib.auth.password_validation import validate_password
 class RegisterFormSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = User
-        fields = ['firstname', 'lastname', 'email', 'phonenumber', 'password']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        fields = ["firstname", "lastname", "email", "phonenumber", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_password(self, value):
         validate_password(value)
@@ -33,7 +31,9 @@ class RegisterFormSerializer(serializers.ModelSerializer):
 
 
 class UpdateUserPasswordSerializer(serializers.Serializer):
-    new_password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    new_password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
     confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:  # type: ignore
@@ -62,7 +62,17 @@ class UpdateUserPasswordSerializer(serializers.Serializer):
 class UserModelSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = User
-        fields = ["userid", "email", "firstname", "lastname", "phonenumber", "joindate", "last_login", "is_active", "is_staff"]
+        fields = [
+            "userid",
+            "email",
+            "firstname",
+            "lastname",
+            "phonenumber",
+            "joindate",
+            "last_login",
+            "is_active",
+            "is_staff",
+        ]
 
 
 class UserDeleteSerializer(serializers.Serializer):
@@ -104,8 +114,6 @@ class PublicUserResponseSerializer(serializers.Serializer):
     def validate_users(self, value):
         if not all(isinstance(x, UserProfiles) for x in value):
             raise ValidationError(
-                {
-                    "users": "list contents must be of type UserProfile"
-                }
+                {"users": "list contents must be of type UserProfile"}
             )
         return value

@@ -2,8 +2,13 @@ from django.test import TestCase
 from django.contrib.admin.sites import site
 from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings
 from api.admin import (
-    UserAdmin, WorkoutRecordAdmin, UserAuditLogAdmin, UserProfilesAdmin, UserSettingsAdmin
+    UserAdmin,
+    WorkoutRecordAdmin,
+    UserAuditLogAdmin,
+    UserProfilesAdmin,
+    UserSettingsAdmin,
 )
+
 
 class TestAdminRegistration(TestCase):
     def test_user_admin_registered(self):
@@ -27,16 +32,47 @@ class TestAdminRegistration(TestCase):
         self.assertIsInstance(site._registry[UserSettings], UserSettingsAdmin)
 
     def test_user_admin_list_display(self):
-        self.assertEqual(UserAdmin.list_display, ("userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate"))
+        self.assertEqual(
+            UserAdmin.list_display,
+            (
+                "userid",
+                "email",
+                "phonenumber",
+                "firstname",
+                "lastname",
+                "last_login",
+                "is_superuser",
+                "is_staff",
+                "is_active",
+                "joindate",
+            ),
+        )
 
     def test_user_activity_admin_list_display(self):
-        self.assertEqual(WorkoutRecordAdmin.list_display, ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"])
+        self.assertEqual(
+            WorkoutRecordAdmin.list_display,
+            ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"],
+        )
 
     def test_user_audit_log_admin_list_display(self):
-        self.assertEqual(UserAuditLogAdmin.list_display, ("timestamp", "logid", "userid", "action", "details"))
+        self.assertEqual(
+            UserAuditLogAdmin.list_display,
+            ("timestamp", "logid", "userid", "action", "details"),
+        )
 
     def test_user_profiles_admin_list_display(self):
-        self.assertEqual(UserProfilesAdmin.list_display, ["userid", "accountname", "dateofbirth", "gender", "address", "height_cm", "weight_kg"])
+        self.assertEqual(
+            UserProfilesAdmin.list_display,
+            [
+                "userid",
+                "accountname",
+                "dateofbirth",
+                "gender",
+                "address",
+                "height_cm",
+                "weight_kg",
+            ],
+        )
 
     def test_user_settings_admin_list_display(self):
         self.assertEqual(UserSettingsAdmin.list_display, ["userid", "status"])
@@ -57,13 +93,17 @@ class TestAdminRegistration(TestCase):
         self.assertEqual(UserSettingsAdmin.ordering, ["userid"])
 
     def test_user_admin_readonly_fields(self):
-        self.assertEqual(UserAdmin.readonly_fields, ["userid", "last_login", "joindate"])
+        self.assertEqual(
+            UserAdmin.readonly_fields, ["userid", "last_login", "joindate"]
+        )
 
     def test_user_activity_admin_readonly_fields(self):
         self.assertEqual(WorkoutRecordAdmin.readonly_fields, ["creationDate"])
 
     def test_user_audit_log_admin_readonly_fields(self):
-        self.assertEqual(UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid"))
+        self.assertEqual(
+            UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid")
+        )
 
     def test_user_profiles_admin_readonly_fields(self):
         self.assertEqual(UserProfilesAdmin.readonly_fields, ["userid"])

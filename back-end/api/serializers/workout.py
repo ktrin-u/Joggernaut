@@ -33,7 +33,7 @@ class UpdateWorkoutRecordSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 {
                     "calories": "at least one of the two must be non zero",
-                    "steps": "at least one of the two must be non zero"
+                    "steps": "at least one of the two must be non zero",
                 }
             )
         return attrs

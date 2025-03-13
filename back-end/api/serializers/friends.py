@@ -8,13 +8,13 @@ from django.db.models import Q
 class ToUserIdSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = FriendTable
-        fields = ['toUserid']
+        fields = ["toUserid"]
 
 
 class FromUserIdSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = FriendTable
-        fields = ['fromUserid']
+        fields = ["fromUserid"]
 
 
 class TargetUserIdSerializer(serializers.Serializer):
@@ -24,7 +24,14 @@ class TargetUserIdSerializer(serializers.Serializer):
 class FriendTableSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = FriendTable
-        fields = ['friendid', 'fromUserid', 'toUserid', 'status', 'creationDate', 'lastUpdate']
+        fields = [
+            "friendid",
+            "fromUserid",
+            "toUserid",
+            "status",
+            "creationDate",
+            "lastUpdate",
+        ]
 
 
 class FriendsListResponseSerializer(serializers.Serializer):
@@ -33,9 +40,7 @@ class FriendsListResponseSerializer(serializers.Serializer):
     def validate_friends(self, value):
         if not all(isinstance(x, FriendTable) for x in value):
             raise ValidationError(
-                {
-                    "friends": "list contents must be of type FriendTable"
-                }
+                {"friends": "list contents must be of type FriendTable"}
             )
         return value
 
@@ -46,19 +51,13 @@ class PendingFriendsListResponseSerializer(serializers.Serializer):
 
     def validate_sent(self, value):
         if not all(isinstance(x, FriendTable) for x in value):
-            raise ValidationError(
-                {
-                    "sent": "list contents must be of type FriendTable"
-                }
-            )
+            raise ValidationError({"sent": "list contents must be of type FriendTable"})
         return value
 
     def validate_received(self, value):
         if not all(isinstance(x, FriendTable) for x in value):
             raise ValidationError(
-                {
-                    "received": "list contents must be of type FriendTable"
-                }
+                {"received": "list contents must be of type FriendTable"}
             )
         return value
 
@@ -66,10 +65,13 @@ class PendingFriendsListResponseSerializer(serializers.Serializer):
 class CreateFriendSerializer(serializers.ModelSerializer):
     class Meta:  # type:ignore
         model = FriendTable
-        fields = ['fromUserid', 'toUserid']  # status is set to default of PENDING
+        fields = ["fromUserid", "toUserid"]  # status is set to default of PENDING
 
     def validate(self, attrs) -> Any:
-        if self.Meta.model.objects.filter(Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"]) | Q(fromUserid=attrs['toUserid'], toUserid=attrs["fromUserid"])).exists():
+        if self.Meta.model.objects.filter(
+            Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"])
+            | Q(fromUserid=attrs["toUserid"], toUserid=attrs["fromUserid"])
+        ).exists():
             raise ValidationError(
                 {
                     "fromUserid": "friendship entry already exists",
