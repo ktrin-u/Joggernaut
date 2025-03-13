@@ -7,7 +7,11 @@ from oauth2_provider.views import TokenView, RevokeTokenView
 
 from api.schema_docs import Tags
 from api.permissions import isBanned
-from api.serializers.token import TokenResponseSerializer, TokenSerializer, RevokeTokenSerializer
+from api.serializers.token import (
+    TokenResponseSerializer,
+    TokenSerializer,
+    RevokeTokenSerializer,
+)
 from api.serializers.user import RegisterFormSerializer
 from api.models import User
 
@@ -18,9 +22,7 @@ from api.models import User
 )
 class CreateUserView(CreateAPIView):
     model = User
-    permission_classes = [
-        permissions.AllowAny  # Or anon users can't register
-    ]
+    permission_classes = [permissions.AllowAny]  # Or anon users can't register
     serializer_class = RegisterFormSerializer
 
 
@@ -33,8 +35,7 @@ class TokenAPIView(TokenView, GenericAPIView):
     permission_classes = [isBanned]
 
     @extend_schema(
-        description="For acquiring an access token",
-        responses=TokenResponseSerializer
+        description="For acquiring an access token", responses=TokenResponseSerializer
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)

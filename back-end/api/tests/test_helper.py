@@ -15,6 +15,7 @@ from datetime import timedelta
 
 User = get_user_model()
 
+
 class TestHelperFuncs(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -104,7 +105,10 @@ class TestHelperFuncs(TestCase):
         self.assertEqual(response.data["msg"], "unable to find user")  # type: ignore
 
     def test_user_activity_admin_list_display(self):
-        self.assertEqual(WorkoutRecordAdmin.list_display, ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"])
+        self.assertEqual(
+            WorkoutRecordAdmin.list_display,
+            ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"],
+        )
 
     def test_user_activity_admin_ordering(self):
         self.assertEqual(WorkoutRecordAdmin.ordering, ["lastUpdate"])

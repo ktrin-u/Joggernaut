@@ -28,32 +28,21 @@ class AbstractUserProfileView(GenericAPIView):
 class UserProfileView(AbstractUserProfileView):
     required_scopes = ["read"]
 
-    @extend_schema(
-        description="Uses the Authentication Token as identifier"
-    )
+    @extend_schema(description="Uses the Authentication Token as identifier")
     def get(self, request: Request, format=None) -> Response:
         user = get_user_object(request)
         if user is None:
             return Response(
-                {
-                    "msg": "unable to find user"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND
             )
 
         try:
             profile = self.model.objects.get(userid=user.userid)
             serializer = self.get_serializer_class()(profile)
-            return Response(
-                data=serializer.data,
-                status=status.HTTP_200_OK
-            )
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
         except UserProfiles.DoesNotExist:
             return Response(
-                {
-                    "msg": "User profile does not exist"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "User profile does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -64,21 +53,16 @@ class UserProfileView(AbstractUserProfileView):
 class CreateUserProfileView(AbstractUserProfileView):
     required_scopes = ["write"]
 
-    @extend_schema(
-        description="TBA"
-    )
+    @extend_schema(description="TBA")
     def post(self, request: Request, format=None) -> Response:
         serialized = UserProfileFormSerializer(data=request.data)
         if serialized.is_valid():
             serialized.save()
-            return Response({
-                "msg": "user profile created"
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {"msg": "user profile created"}, status=status.HTTP_201_CREATED
+            )
 
-        return Response(
-            data=serialized.errors,
-            status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        return Response(data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @extend_schema(
@@ -96,33 +80,25 @@ class UpdateUserProfileView(AbstractUserProfileView):
 
         if user is None:
             return Response(
-                {
-                    "msg": "unable to find user"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND
             )
 
         try:
             profile = self.model.objects.get(userid=user.userid)
             serializer = self.get_serializer_class()
-            serialized = serializer(instance=profile, data=clean_request_data(request), partial=True)
+            serialized = serializer(
+                instance=profile, data=clean_request_data(request), partial=True
+            )
 
             if serialized.is_valid():
                 serialized.save()
-                return Response(
-                    data=serialized.data,
-                    status=status.HTTP_201_CREATED
-                )
+                return Response(data=serialized.data, status=status.HTTP_201_CREATED)
 
             return Response(
-                data=serialized.errors,
-                status=status.HTTP_406_NOT_ACCEPTABLE
+                data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
         except UserProfiles.DoesNotExist:
             return Response(
-                {
-                    "msg": "User profile does not exist"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                {"msg": "User profile does not exist"}, status=status.HTTP_404_NOT_FOUND
             )

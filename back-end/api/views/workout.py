@@ -17,7 +17,12 @@ from api.models import WorkoutRecord
 from api.serializers.general import MsgSerializer
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.helper import get_user_object, clean_request_data
-from api.serializers.workout import NewWorkoutRecordSerializer, UpdateWorkoutRecordSerializer, NewWorkoutRecordRequestSerializer, GetWorkoutRecordSerializer
+from api.serializers.workout import (
+    NewWorkoutRecordSerializer,
+    UpdateWorkoutRecordSerializer,
+    NewWorkoutRecordRequestSerializer,
+    GetWorkoutRecordSerializer,
+)
 
 
 @extend_schema(
@@ -30,17 +35,12 @@ class CreateWorkoutRecordView(GenericAPIView):
     required_scopes = ["write"]
 
     RESPONSE_SUCCESS = Response(
-        {
-            "msg": "successfully created workout record"
-        },
-        status=status.HTTP_200_OK
+        {"msg": "successfully created workout record"}, status=status.HTTP_200_OK
     )
 
     RESPONSE_BOTH_ZERO = Response(
-        {
-            "msg": "no entry made due to calories=0 and steps=0"
-        },
-        status=status.HTTP_406_NOT_ACCEPTABLE
+        {"msg": "no entry made due to calories=0 and steps=0"},
+        status=status.HTTP_406_NOT_ACCEPTABLE,
     )
 
     @extend_schema(
@@ -54,19 +54,18 @@ class CreateWorkoutRecordView(GenericAPIView):
                         name="success",
                         value=RESPONSE_SUCCESS.data,
                     ),
-                ]
+                ],
             ),
             RESPONSE_BOTH_ZERO.status_code: OpenApiResponse(
                 response=MsgSerializer,
                 description="calories=steps=0",
                 examples=[
                     OpenApiExample(
-                        name="accepted but no entry",
-                        value=RESPONSE_BOTH_ZERO.data
+                        name="accepted but no entry", value=RESPONSE_BOTH_ZERO.data
                     )
-                ]
+                ],
             ),
-            RESPONSE_USER_NOT_FOUND.status_code: schema_docs.Response.AUTH_TOKEN_USER_NOT_FOUND
+            RESPONSE_USER_NOT_FOUND.status_code: schema_docs.Response.AUTH_TOKEN_USER_NOT_FOUND,
         },
         request=NewWorkoutRecordRequestSerializer,
     )
@@ -80,7 +79,10 @@ class CreateWorkoutRecordView(GenericAPIView):
         serializer = self.get_serializer(data=data)
 
         if serializer.is_valid():
-            if serializer.validated_data["calories"] == 0 and serializer.validated_data["steps"] == 0:
+            if (
+                serializer.validated_data["calories"] == 0
+                and serializer.validated_data["steps"] == 0
+            ):
                 return self.RESPONSE_BOTH_ZERO
 
             serializer.save()
@@ -104,20 +106,13 @@ class GetWorkoutRecordView(GenericAPIView):
             return RESPONSE_USER_NOT_FOUND
 
         workouts = self.get_serializer(
-            self.model.objects.filter(userid=user.userid),
-            many=True
+            self.model.objects.filter(userid=user.userid), many=True
         )
 
-        return Response(
-            data=workouts.data,
-            status=status.HTTP_200_OK
-        )
+        return Response(data=workouts.data, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    summary="Update a workout record",
-    tags=[Tags.WORKOUT]
-)
+@extend_schema(summary="Update a workout record", tags=[Tags.WORKOUT])
 class UpdateWorkoutRecordView(GenericAPIView):
     serializer_class = UpdateWorkoutRecordSerializer
     permission_classes = [TokenHasScope]
@@ -128,9 +123,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
     _bad_request.examples.append(  # type: ignore
         OpenApiExample(
             name="no new values",
-            value={
-                "msg": "no new values supplied"
-            },
+            value={"msg": "no new values supplied"},
         )
     )
 
@@ -140,7 +133,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
             name="invalid workoutid",
             value={
                 "msg": "workout id 15 under eb28f55f-fd95-43ce-ba91-e279bcdc9e6f not found"
-            }
+            },
         )
     )
 
@@ -156,24 +149,22 @@ class UpdateWorkoutRecordView(GenericAPIView):
                         name="new calories",
                         value={
                             "msg": "success, calories updated to 1230, ",
-                        }
+                        },
                     ),
                     OpenApiExample(
                         name="new steps",
-                        value={
-                            "msg": "success, steps updated to 4540, "
-                        }
+                        value={"msg": "success, steps updated to 4540, "},
                     ),
                     OpenApiExample(
                         name="new calories and steps",
                         value={
                             "msg": "success, calories updated to 2340, steps updated to 8792, "
-                        }
-                    )
-                ]
+                        },
+                    ),
+                ],
             ),
-            status.HTTP_400_BAD_REQUEST: _bad_request
-        }
+            status.HTTP_400_BAD_REQUEST: _bad_request,
+        },
     )
     def patch(self, request: Request) -> Response:
         user = get_user_object(request)
@@ -185,16 +176,16 @@ class UpdateWorkoutRecordView(GenericAPIView):
 
         if serialized.is_valid():
             try:
-                workout = self.model.objects.get(userid=user.userid, workoutid=serialized.validated_data["workoutid"])
+                workout = self.model.objects.get(
+                    userid=user.userid, workoutid=serialized.validated_data["workoutid"]
+                )
                 new_calories = serialized.validated_data.get("calories")
                 new_steps = serialized.validated_data.get("steps")
 
                 if new_steps is None and new_steps is None:
                     return Response(
-                        {
-                            "msg": "no new values supplied"
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
+                        {"msg": "no new values supplied"},
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
 
                 msg = "success, "
@@ -211,7 +202,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
                     {
                         "msg": msg,
                     },
-                    status=status.HTTP_201_CREATED
+                    status=status.HTTP_201_CREATED,
                 )
 
             except ObjectDoesNotExist:
@@ -219,7 +210,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
                     {
                         "msg": f"workout id {serialized.validated_data["workoutid"]} under {user.userid} not found"
                     },
-                    status=status.HTTP_404_NOT_FOUND
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
