@@ -27,6 +27,7 @@ from api.serializers.friends import (
     FromUserIdSerializer,
     TargetUserIdSerializer,
     PokeFriendSerializer,
+    ChallengeFriendSerializer,
     FriendActivitySerializer,
 )
 
@@ -510,6 +511,83 @@ class PokeFriendView(AbstractFriendTableView):
 
     @extend_schema(
         description=f"Create a Friend Activity entry with activity set to {FriendActivityChoices.POKE}",
+        request=ToUserIdSerializer,
+        responses={
+            RESPONSE_SUCCESS.status_code: OpenApiResponse(
+                response=MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="success",
+                        value=RESPONSE_SUCCESS.data,
+                        status_codes=[RESPONSE_SUCCESS.status_code],
+                    ),
+                ],
+            ),
+            RESPONSE_USER_NOT_FOUND.status_code: OpenApiResponse(
+                response=MsgSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="user not found",
+                        value=RESPONSE_USER_NOT_FOUND.data,
+                        status_codes=[RESPONSE_USER_NOT_FOUND.status_code],
+                    )
+                ],
+            ),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        user = get_user_object(request)
+
+        if user is None:
+            return RESPONSE_USER_NOT_FOUND
+
+        data = deepcopy(request.data)
+        data["fromUserid"] = user.userid
+
+        serialized = self.get_serializer(data=data)
+
+        if serialized.is_valid():
+            try:
+                FriendTable.objects.get(
+                    Q(
+                        fromUserid=serialized.validated_data["fromUserid"],
+                        toUserid=serialized.validated_data["toUserid"],
+                        status=FriendTable.FriendshipStatus.ACCEPTED,
+                    )
+                    | Q(
+                        fromUserid=serialized.validated_data["toUserid"],
+                        toUserid=serialized.validated_data["fromUserid"],
+                        status=FriendTable.FriendshipStatus.ACCEPTED,
+                    )
+                )
+
+                serialized.save()
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"user is not friends with {serialized.validated_data["toUserid"]}"
+                    }
+                )
+            return self.RESPONSE_SUCCESS
+
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Create a challenge entry",
+    tags=[Tags.FRIENDS]
+)
+class ChallengeFriendView(AbstractFriendTableView):
+    model = FriendActivity
+    serializer_class = ChallengeFriendSerializer
+
+    RESPONSE_SUCCESS = Response(
+        {"msg": "Challenge Friend Activity entry successfully added to database"},
+        status=status.HTTP_201_CREATED,
+    )
+
+    @extend_schema(
+        description=f"Create a Friend Activity entry with activity set to {FriendActivityChoices.CHALLENGE}",
         request=ToUserIdSerializer,
         responses={
             RESPONSE_SUCCESS.status_code: OpenApiResponse(

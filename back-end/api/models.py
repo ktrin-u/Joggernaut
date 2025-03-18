@@ -2,6 +2,7 @@
 # You'll have to do the following manually to clean this up:
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from .validators import validate_phoneNumber
@@ -188,10 +189,17 @@ class FriendActivity(models.Model):
     toUserid = models.ForeignKey(User, models.CASCADE, db_column="toUserID", related_name="friendactivity_toUserid")
     activity = models.CharField(max_length=3, choices=FriendActivityChoices)
     creationDate = models.DateTimeField(auto_now_add=True)
+    accept = models.BooleanField(default=False)
+    acceptDate = models.DateTimeField(null=True)
 
     def clean(self):
         if self.fromUserid == self.toUserid:
             raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
+
+    def accept_activity(self) -> None:
+        self.accept = True
+        self.acceptDate = timezone.now()
+        self.save()
 
     class Meta:
         verbose_name = "Friend Activity"

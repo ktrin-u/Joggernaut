@@ -71,7 +71,7 @@ class WorkoutRecordAdmin(admin.ModelAdmin):
 
 @admin.register(FriendActivity)
 class FriendActivityAdmin(admin.ModelAdmin):
-    list_display = ["activityid", "activity", "fromUserid", "toUserid", "creationDate"]
+    list_display = ["activityid", "activity", "accept", "fromUserid", "toUserid", "acceptDate", "creationDate"]
     ordering = ["activityid", "creationDate"]
     readonly_fields = ["creationDate"]
 
