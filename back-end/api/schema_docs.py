@@ -39,5 +39,6 @@ class Tags(StrEnum):
     AUTH = auto()
     USER = auto()
     FRIENDS = auto()
+    ACTIVITY = auto()
     PROFILE = auto()
     WORKOUT = auto()
