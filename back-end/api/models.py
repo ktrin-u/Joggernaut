@@ -190,7 +190,7 @@ class FriendActivity(models.Model):
     activity = models.CharField(max_length=3, choices=FriendActivityChoices)
     creationDate = models.DateTimeField(auto_now_add=True)
     accept = models.BooleanField(default=False)
-    acceptDate = models.DateTimeField(null=True)
+    acceptDate = models.DateTimeField(null=True, blank=True)
 
     def clean(self):
         if self.fromUserid == self.toUserid:

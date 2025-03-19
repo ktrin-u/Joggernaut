@@ -48,3 +48,4 @@ class TestSchemaDocs(SimpleTestCase):
         self.assertEqual(Tags.FRIENDS.name, "FRIENDS")
         self.assertEqual(Tags.PROFILE.name, "PROFILE")
         self.assertEqual(Tags.WORKOUT.name, "WORKOUT")
+        self.assertEqual(Tags.ACTIVITY.name, "ACTIVITY")

@@ -61,12 +61,12 @@ class UserViewsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_view_user_profile(self):
-        response = self.client.get("/api/user/profile/")
+        response = self.client.get("/api/profile/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_user_profile(self):
         response = self.client.post(
-            "/api/user/profile/new",
+            "/api/profile/new",
             {
                 "userid": str(self.user.userid),
                 "accountname": "TestAccount",
@@ -91,7 +91,7 @@ class UserViewsTestCase(APITestCase):
         )
 
         response = self.client.patch(
-            "/api/user/profile/update",
+            "/api/profile/update",
             {
                 "userid": str(self.admin_user.userid),
                 "accountname": "UpdatedAccount",
