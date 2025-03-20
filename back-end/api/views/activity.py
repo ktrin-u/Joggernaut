@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 
-from api.schema_docs import Tags
+from api.schema_docs import Tags, Response as Schema_Response
 from api.models import FriendTable, FriendActivity
 from api.helper import get_user_object
 from api.responses import RESPONSE_USER_NOT_FOUND
@@ -250,4 +250,69 @@ class AcceptActivityFriendView(AbstractActivityView):
                 status=status.HTTP_200_OK,
             )
 
+        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    summary="Cancel an unaccepted activity", tags=[Tags.ACTIVITY]
+)
+class CancelActivityView(AbstractActivityView):
+    serializer_class = TargetActivitySerializer
+
+    @extend_schema(
+        description="Cancel the sent activity identified by activityid and the user auth token by deleting the entry.\n\n Accepted activities cannot be canceled.",
+        request=TargetActivitySerializer,
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=MsgSerializer,
+                description="Successful delete",
+                examples=[
+                    OpenApiExample(name="success", value={"msg": "successfully deleted activity identified by activityid 25 sent by user test@test.com"}),
+                ]
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=MsgSerializer,
+                description="no matching activity entry",
+                examples=[
+                    OpenApiExample(name="not found", value={"msg": "unable to find activity identified by activityid 64 sent by user test@test.com"})
+                ]
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=MsgSerializer,
+                description="bad user input",
+                examples=[
+                    OpenApiExample(name="already accepted", value={"msg": "cannot delete accepted activity identified by activityid 14 sent by user test@test.com"}),
+                    Schema_Response.SERIALIZER_VALIDATION_ERRORS.examples[0]
+                ]
+            )
+        }
+    )
+    def post(self, request: Request) -> Response:
+        serialized = self.get_serializer(request.data)
+        if serialized.is_valid():
+            activityid = serialized.validated_data["activityid"]
+            try:
+                activity = self.model.objects.get(activityid=activityid, fromUserid=request.user.userid)  # type: ignore
+                if activity.accept:
+                    return Response(
+                        {
+                            "msg": f"cannot delete accepted activity identified by activityid {activityid} sent by user {request.user}"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                activity.delete()
+                return Response(
+                    {
+                        "msg": f"successfully deleted activity identified by activityid {activityid} sent by user {request.user}"
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "msg": f"unable to find activity identified by activityid {activityid} sent by user {request.user}",
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
