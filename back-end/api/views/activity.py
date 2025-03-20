@@ -1,10 +1,12 @@
 from copy import deepcopy
+from datetime import timedelta
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from django.db.models import Q
 
 from rest_framework.generics import GenericAPIView
@@ -225,17 +227,22 @@ class AcceptActivityFriendView(AbstractActivityView):
         responses=MsgSerializer,
     )
     def patch(self, request: Request) -> Response:
-        user = get_user_object(request)
-
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
-
         serialized = self.get_serializer(data=request.data)
 
         if serialized.is_valid():
             activityid = serialized.validated_data["activityid"]
             try:
-                activity = self.model.objects.get(activityid=activityid)
+                activity = self.model.objects.get(activityid=activityid, toUserid=request.user.userid)  # type: ignore
+
+                delta = timezone.now() - activity.creationDate
+
+                if delta > timedelta(minutes=5):
+                    return Response(
+                        {
+                            "msg": f"Activity {activityid} has already expired",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 activity.accept_activity()
             except ObjectDoesNotExist:
