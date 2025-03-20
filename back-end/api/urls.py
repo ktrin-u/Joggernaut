@@ -37,6 +37,7 @@ urlpatterns = [
     path('activity/poke', activity.PokeFriendView.as_view(), name="poke a friend"),
     path('activity/accept', activity.AcceptActivityFriendView.as_view(), name="accept a friend activity"),
     path('activity/challenge', activity.ChallengeFriendView.as_view(), name="challenge a friend"),
+    path('activity/cancel', activity.CancelActivityView.as_view(), name="cancel an activity"),
 
 
     path('workout/', workout.GetWorkoutRecordView.as_view(), name="get workout records"),
