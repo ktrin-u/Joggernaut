@@ -65,8 +65,8 @@ class CreateFriendSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs) -> Any:
         if self.Meta.model.objects.filter(
-            Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"]) |
-            Q(fromUserid=attrs["toUserid"], toUserid=attrs["fromUserid"])
+            Q(fromUserid=attrs["fromUserid"], toUserid=attrs["toUserid"])
+            | Q(fromUserid=attrs["toUserid"], toUserid=attrs["fromUserid"])
         ).exists():
             raise ValidationError(
                 {

@@ -13,7 +13,7 @@ from rest_framework import status
 
 from api import schema_docs
 from api.schema_docs import Tags
-from api.models import WorkoutRecord
+from api.models.workout import WorkoutRecord
 from api.serializers.general import MsgSerializer
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.helper import get_user_object, clean_request_data
@@ -80,8 +80,8 @@ class CreateWorkoutRecordView(GenericAPIView):
 
         if serializer.is_valid():
             if (
-                serializer.validated_data["calories"] == 0
-                and serializer.validated_data["steps"] == 0
+                serializer.validated_data["calories"] == 0 and
+                serializer.validated_data["steps"] == 0
             ):
                 return self.RESPONSE_BOTH_ZERO
 

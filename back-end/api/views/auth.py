@@ -13,7 +13,7 @@ from api.serializers.token import (
     RevokeTokenSerializer,
 )
 from api.serializers.user import RegisterFormSerializer
-from api.models import User
+from api.models.user import User
 
 
 @extend_schema(
