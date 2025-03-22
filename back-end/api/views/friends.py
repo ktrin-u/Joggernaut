@@ -14,7 +14,7 @@ from rest_framework import status
 
 from api import schema_docs
 from api.schema_docs import Tags
-from api.models import FriendTable
+from api.models.friends import FriendTable
 from api.helper import get_user_object
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.serializers.general import MsgSerializer, TargetUserIdSerializer

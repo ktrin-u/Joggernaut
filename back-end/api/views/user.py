@@ -9,7 +9,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from api.models import User, UserProfiles
+from api.models.user import User, UserProfiles
 from api.schema_docs import Tags
 from api.permissions import isBanned
 from api.helper import get_user_object, clean_request_data

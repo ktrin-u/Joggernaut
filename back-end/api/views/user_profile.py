@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 
 from api.schema_docs import Tags
-from api.models import UserProfiles
+from api.models.user import UserProfiles
 from api.helper import get_user_object
 from api.helper import clean_request_data
 from api.serializers.user_profile import UserProfileFormSerializer
