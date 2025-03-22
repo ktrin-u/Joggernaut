@@ -1,14 +1,9 @@
 from django.test import TestCase
 from api.models import (
     User,
-    WorkoutRecord,
     UserAuditLog,
     UserProfiles,
-    UserSettings,
-    Status,
-    Gender,
-    FriendActivity,
-    FriendTable
+    Gender
 )
 from datetime import datetime, date
 from django.utils.timezone import make_aware

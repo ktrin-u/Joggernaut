@@ -24,11 +24,11 @@ class TestFriendTable(TestCase):
         friendship = FriendTable.objects.create(
             fromUserid=self.user1,
             toUserid=self.user2,
-            status=FriendTable.FriendshipStatus.PENDING,  
+            status=FriendTable.FriendshipStatus.PENDING,
         )
         self.assertEqual(friendship.fromUserid, self.user1)
         self.assertEqual(friendship.toUserid, self.user2)
-        self.assertEqual(friendship.status, FriendTable.FriendshipStatus.PENDING)  
+        self.assertEqual(friendship.status, FriendTable.FriendshipStatus.PENDING)
 
     def test_self_referencing_friendship(self):
         with self.assertRaises(ValidationError):
@@ -39,15 +39,19 @@ class TestFriendTable(TestCase):
             )
             self_referencing_friendship.full_clean()  # Trigger validation
 
-    def test_reject_friend_request(self):
-        friendship = FriendTable.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            status=FriendTable.FriendshipStatus.PENDING,
-        )
-        friendship.status = FriendTable.FriendshipStatus.REJECTED
-        friendship.save()  # Should not raise ValidationError
-        self.assertEqual(friendship.status, FriendTable.FriendshipStatus.REJECTED)
+    # Test case was removed due to a rejected friend request resulting in a deleted entry.
+    # This was to ensure that a constraint that friendships were to way was implemented
+    # Records of the rejection should appear in the audit log instead
+    # def test_reject_friend_request(self):
+    #     friendship = FriendTable.objects.create(
+    #         fromUserid=self.user1,
+    #         toUserid=self.user2,
+    #         status=FriendTable.FriendshipStatus.PENDING,
+    #     )
+    #     friendship.status = FriendTable.FriendshipStatus.REJECTED
+    #     friendship.save()  # Should not raise ValidationError
+    #     self.assertEqual(friendship.status, FriendTable.FriendshipStatus.REJECTED)
+
     def test_accept_friend_request(self):
         friendship = FriendTable.objects.create(
             fromUserid=self.user1,
