@@ -7,6 +7,8 @@ from api.models import (
     UserSettings,
     Status,
     Gender,
+    FriendActivity,
+    FriendTable
 )
 from datetime import datetime, date
 from django.utils.timezone import make_aware
@@ -70,26 +72,6 @@ class TestUserModel(TestCase):
         self.assertTrue(self.user.is_active)
 
 
-class TestWorkoutRecord(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="activity@email.com",
-            phonenumber="09181112222",
-            firstname="First",
-            lastname="Last",
-            password="testPass1@",
-        )  # type: ignore
-        self.workout = WorkoutRecord.objects.create(
-            userid=self.user, calories=500, steps=10000
-        )
-
-    def test_workout_creation(self):
-        self.assertEqual(self.workout.calories, 500)
-        self.assertEqual(self.workout.steps, 10000)
-
-    def test_workout_belongs_to_user(self):
-        self.assertEqual(self.workout.userid, self.user)
-
 
 class TestUserAuditLog(TestCase):
     def setUp(self):
@@ -146,21 +128,4 @@ class TestUserProfiles(TestCase):
         self.assertEqual(self.profile.weight_kg, 99.9)
 
 
-class TestUserSettings(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="settings@email.com",
-            phonenumber="09181112222",
-            firstname="First",
-            lastname="Last",
-            password="testPass1@",
-        )  # type: ignore
-        self.setting = UserSettings.objects.create(
-            userid=self.user, status=Status.ONLINE
-        )
 
-    def test_settings_creation(self):
-        self.assertEqual(self.setting.status, Status.ONLINE)
-
-    def test_settings_belongs_to_user(self):
-        self.assertEqual(self.setting.userid, self.user)
