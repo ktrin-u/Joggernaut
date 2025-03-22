@@ -1,6 +1,5 @@
 from django.test import TestCase
 from api.forms import SignupForm
-from api.models import User
 
 
 class TestSignupForm(TestCase):

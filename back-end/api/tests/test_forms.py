@@ -1,5 +1,5 @@
 from django.test import TestCase
-from api.forms import UserChangeForm, SignupForm
+from api.forms import UserChangeForm
 from api.models import User
 
 
