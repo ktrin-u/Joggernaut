@@ -7,3 +7,10 @@ RESPONSE_USER_NOT_FOUND = Response(
     },
     status=status.HTTP_404_NOT_FOUND,
 )
+
+RESPONSE_INVALID_REQUEST = Response(
+    {
+        "msg": "invalid request",
+    },
+    status=status.HTTP_400_BAD_REQUEST,
+)

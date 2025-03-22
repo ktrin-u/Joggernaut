@@ -145,6 +145,7 @@ class FriendTable(models.Model):
     class FriendshipStatus(models.TextChoices):
         PENDING = "PEN"
         ACCEPTED = "ACC"
+        REJECTED = "REJ"
 
     friendid = models.BigAutoField(verbose_name="Friend ID", primary_key=True, unique=True)
     fromUserid = models.ForeignKey(User, models.CASCADE, db_column="fromUserID", related_name="friend_fromUserid")
@@ -153,10 +154,31 @@ class FriendTable(models.Model):
     creationDate = models.DateTimeField(auto_now_add=True)
     lastUpdate = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="two-way friendship",
+                fields=["fromUserid", "toUserid"],
+            ),
+            models.UniqueConstraint(
+                name="two-way friendship reverse",
+                fields=["toUserid", "fromUserid"]
+            )
+        ]
     def clean(self):
         if self.fromUserid == self.toUserid:
-            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
-
+            raise ValidationError({"toUserid": "A user cannot send a friend request to themselves."})
+        
+        # Check for duplicate friendships (both directions), excluding the current instance
+        if FriendTable.objects.filter(
+            models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) |
+            models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)
+        ).exclude(friendid=self.friendid).exists():
+            raise ValidationError({"__all__": "Duplicate friendship is not allowed."})
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Ensure validation is triggered
+        super().save(*args, **kwargs)
+        
         # if self.__class__.objects.filter(models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) | models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)):
         #     raise ValidationError(
         #         {
