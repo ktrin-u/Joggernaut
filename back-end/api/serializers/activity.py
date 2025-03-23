@@ -1,53 +1,42 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from api.models.friends import FriendActivity, FriendActivityChoices, FriendActivityStatus
+from api.models.friends import (
+    FriendActivity,
+    FriendActivityStatus,
+)
 
 
-class PokeFriendSerializer(serializers.ModelSerializer):
+class NewActivitySerializer(serializers.ModelSerializer):
+    durationSecs = serializers.IntegerField(
+        min_value=0, default=0, help_text="0 means no expiry"
+    )
+
     class Meta:  # type: ignore
         model = FriendActivity
-        fields = ["fromUserid", "toUserid"]
+        fields = ["toUserid", "durationSecs"]
+
+
+class CreateActivitySerializer(serializers.ModelSerializer):
+    class Meta:  # type: ignore
+        model = FriendActivity
+        fields = ["fromUserid", "toUserid", "durationSecs"]
 
     def validate(self, attrs):
         if attrs["fromUserid"] == attrs["toUserid"]:
             raise ValidationError(
                 {
-                    "fromUserid": "cannot poke self",
-                    "toUserid": "cannot poke self",
+                    "fromUserid": "cannot target self",
+                    "toUserid": "cannot target self",
                 }
             )
         return attrs
 
-    def create(self, validated_data) -> FriendActivity:
+    def create(self, validated_data) -> FriendActivity:  # type: ignore
         activity = FriendActivity.objects.create(
             fromUserid=validated_data["fromUserid"],
             toUserid=validated_data["toUserid"],
-            activity=FriendActivityChoices.POKE,
-        )
-        activity.clean()
-        return activity
-
-
-class ChallengeFriendSerializer(serializers.ModelSerializer):
-    class Meta:  # type: ignore
-        model = FriendActivity
-        fields = ["fromUserid", "toUserid"]
-
-    def validate(self, attrs):
-        if attrs["fromUserid"] == attrs["toUserid"]:
-            raise ValidationError(
-                {
-                    "fromUserid": "cannot challenge self",
-                    "toUserid": "cannot challenge self",
-                }
-            )
-        return attrs
-
-    def create(self, validated_data) -> FriendActivity:
-        activity = FriendActivity.objects.create(
-            fromUserid=validated_data["fromUserid"],
-            toUserid=validated_data["toUserid"],
-            activity=FriendActivityChoices.CHALLENGE,
+            activity=validated_data["activity_type"],
+            durationSecs=validated_data["durationSecs"],
         )
         return activity
 

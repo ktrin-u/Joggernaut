@@ -11,7 +11,6 @@ from drf_spectacular.utils import (
 )
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
 from django.db.models import Q, QuerySet
 
 from rest_framework.generics import GenericAPIView
@@ -20,17 +19,21 @@ from rest_framework.request import Request
 from rest_framework import status
 
 from api.schema_docs import Tags, Response as Schema_Response
-from api.models import FriendTable, FriendActivity, FriendActivityStatus, User
-from api.helper import get_user_object
+from api.models import (
+    User,
+    FriendTable,
+    FriendActivity,
+    FriendActivityStatus,
+    FriendActivityChoices,
+)
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.serializers import (
     MsgSerializer,
     FriendActivitySerializer,
-    FriendActivityChoices,
-    PokeFriendSerializer,
-    ChallengeFriendSerializer,
+    CreateActivitySerializer,
     TargetActivitySerializer,
     FilterFriendActivitySerializer,
+    NewActivitySerializer,
 )
 
 
@@ -132,6 +135,9 @@ class GetFriendActivityView(AbstractActivityView):
             if not serialized.validated_data[activity_status.name]:
                 activities_qset = activities_qset.exclude(status=activity_status)
 
+        for activity in activities_qset:
+            activity.expired  # update status if expired
+
         activities = self.get_serializer(
             activities_qset,
             many=True,
@@ -149,7 +155,7 @@ class GetFriendActivityView(AbstractActivityView):
 )
 class PokeFriendView(AbstractActivityView):
     model = FriendActivity
-    serializer_class = PokeFriendSerializer
+    serializer_class = CreateActivitySerializer
 
     RESPONSE_SUCCESS = Response(
         {"msg": "Poke Friend Activity entry successfully added to database"},
@@ -158,7 +164,7 @@ class PokeFriendView(AbstractActivityView):
 
     @extend_schema(
         description=f"Create a Friend Activity entry with activity set to {FriendActivityChoices.POKE}",
-        request=TargetActivitySerializer,
+        request=NewActivitySerializer,
         responses={
             RESPONSE_SUCCESS.status_code: OpenApiResponse(
                 response=MsgSerializer,
@@ -183,13 +189,9 @@ class PokeFriendView(AbstractActivityView):
         },
     )
     def post(self, request: Request) -> Response:
-        user = get_user_object(request)
-
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
-
+        assert isinstance(request.user, User)
         data = deepcopy(request.data)
-        data["fromUserid"] = user.userid
+        data["fromUserid"] = request.user.userid
 
         serialized = self.get_serializer(data=data)
 
@@ -207,8 +209,7 @@ class PokeFriendView(AbstractActivityView):
                         status=FriendTable.FriendshipStatus.ACCEPTED,
                     )
                 )
-
-                serialized.save()
+                serialized.save(activity_type=FriendActivityChoices.POKE)
             except ObjectDoesNotExist:
                 return Response(
                     {
@@ -223,7 +224,7 @@ class PokeFriendView(AbstractActivityView):
 @extend_schema(summary="Create a challenge entry", tags=[Tags.ACTIVITY])
 class ChallengeFriendView(AbstractActivityView):
     model = FriendActivity
-    serializer_class = ChallengeFriendSerializer
+    serializer_class = CreateActivitySerializer
 
     RESPONSE_SUCCESS = Response(
         {"msg": "Challenge Friend Activity entry successfully added to database"},
@@ -255,7 +256,7 @@ class ChallengeFriendView(AbstractActivityView):
 
     @extend_schema(
         description=f"Create a Friend Activity entry with activity set to {FriendActivityChoices.CHALLENGE}",
-        request=TargetActivitySerializer,
+        request=NewActivitySerializer,
         responses=SCHEMA_RESPONSES,
     )
     def post(self, request: Request) -> Response:
@@ -264,7 +265,7 @@ class ChallengeFriendView(AbstractActivityView):
         data = deepcopy(request.data)
         data["fromUserid"] = request.user.userid
 
-        serialized = self.get_serializer(data)
+        serialized = self.get_serializer(data=data)
 
         if not serialized.is_valid():
             return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -281,7 +282,7 @@ class ChallengeFriendView(AbstractActivityView):
                     status=FriendTable.FriendshipStatus.ACCEPTED,
                 )
             )
-            serialized.save()
+            serialized.save(activity_type=FriendActivityChoices.CHALLENGE)
         except ObjectDoesNotExist:
             return Response(
                 {
@@ -301,27 +302,29 @@ class AcceptActivityFriendView(AbstractActivityView):
             examples=[
                 OpenApiExample(
                     name="ACCEPT",
-                    value= {"msg": MSG_PASS.format(12, FriendActivityStatus.ACCEPT)},
+                    value={"msg": MSG_PASS.format(12, FriendActivityStatus.ACCEPT)},
                 )
-            ]
+            ],
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
             response=MsgSerializer,
             examples=[
                 OpenApiExample(
                     name=activity_status.name,
-                    value= {"msg": MSG_FAIL.format(32, activity_status)},
-                ) for activity_status in FriendActivityStatus if activity_status != FriendActivityStatus.ACCEPT
-            ]
+                    value={"msg": MSG_FAIL.format(32, activity_status)},
+                )
+                for activity_status in FriendActivityStatus
+                if activity_status != FriendActivityStatus.ACCEPT
+            ],
         ),
         status.HTTP_404_NOT_FOUND: OpenApiResponse(
             response=MsgSerializer,
             examples=[
                 OpenApiExample(
                     name="NOT FOUND",
-                    value= {"msg": MSG_FAIL.format(54, "NOT FOUND")},
+                    value={"msg": MSG_FAIL.format(54, "NOT FOUND")},
                 )
-            ]
+            ],
         ),
     }
 
@@ -352,7 +355,7 @@ class AcceptActivityFriendView(AbstractActivityView):
                     status=status.HTTP_200_OK,
                 )
 
-            return Response({"msg": MSG_FAIL.format(activityid, activity.status)})
+            return Response({"msg": MSG_FAIL.format(activityid, activity.status)}, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
             return Response(
@@ -417,7 +420,7 @@ class CancelActivityView(AbstractActivityView):
         responses=RESPONSES,
     )
     def patch(self, request: Request) -> Response:
-        serialized = self.get_serializer(request.data)
+        serialized = self.get_serializer(data=request.data)
 
         if not serialized.is_valid():
             return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -472,7 +475,7 @@ class RejectActivityView(AbstractActivityView):
         request=TargetActivitySerializer,
     )
     def patch(self, request: Request) -> Response:
-        serialized = self.get_serializer(request.data)
+        serialized = self.get_serializer(data=request.data)
 
         if not serialized.is_valid():
             return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -493,7 +496,7 @@ class RejectActivityView(AbstractActivityView):
                     {"msg": MSG_PASS.format(activityid, FriendActivityStatus.REJECT)},
                     status=status.HTTP_200_OK,
                 )
-            return Response({"msg": MSG_FAIL.format(activityid, activity.status)})
+            return Response({"msg": MSG_FAIL.format(activityid, activity.status)}, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
             return Response(

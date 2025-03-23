@@ -85,17 +85,21 @@ class FriendActivity(models.Model):
     @property
     def expired(self) -> bool:
         time_elapsed = timezone.now() - self.creationDate
+        activity_duration = timedelta(seconds=self.durationSecs)
 
         if self.durationSecs == 0:  # 0 means cannot expire
             return False
 
-        if time_elapsed > timedelta(seconds=self.durationSecs):
-            self.status = FriendActivityStatus.EXPIRED
-            self.statusDate = timezone.now()
+        if time_elapsed > activity_duration:
+            if self.status != FriendActivityStatus.EXPIRED:
+                self.status = FriendActivityStatus.EXPIRED
+                self.statusDate = self.creationDate + activity_duration
+                self.save()
             return True
         return False
 
     def clean(self) -> None:
+        self.expired
         if self.fromUserid == self.toUserid:
             raise ValidationError(
                 {"toUserid": "not allowed to match with key fromUserid"}

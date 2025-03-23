@@ -1,10 +1,9 @@
 from .activity import (
-    ChallengeFriendSerializer,
-    FriendActivityChoices,
+    CreateActivitySerializer,
     FriendActivitySerializer,
-    PokeFriendSerializer,
     TargetActivitySerializer,
-    FilterFriendActivitySerializer
+    FilterFriendActivitySerializer,
+    NewActivitySerializer
 )
 from .friends import (
     CreateFriendSerializer,
