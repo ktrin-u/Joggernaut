@@ -1,18 +1,18 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from api.models import User, FriendActivity, FriendActivityChoices
+from api.models import User, FriendActivity, FriendActivityChoices, FriendActivityStatus
 
 
 class TestFriendActivity(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(
+        self.user1 = User.objects.create_user(  # type: ignore
             email="user1@email.com",
             phonenumber="09171112222",
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
         )
-        self.user2 = User.objects.create_user(
+        self.user2 = User.objects.create_user(  # type: ignore
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
@@ -46,8 +46,8 @@ class TestFriendActivity(TestCase):
             activity=FriendActivityChoices.POKE,
         )
         activity.accept_activity()
-        self.assertTrue(activity.accept)
-        self.assertIsNotNone(activity.acceptDate)
+        self.assertEqual(activity.status, FriendActivityStatus.ACCEPT)
+        self.assertIsNotNone(activity.statusDate)
 
     def test_duplicate_activity_creation(self):
         FriendActivity.objects.create(

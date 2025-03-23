@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from api.models.friends import FriendActivity, FriendActivityChoices
+from api.models.friends import FriendActivity, FriendActivityChoices, FriendActivityStatus
 
 
 class PokeFriendSerializer(serializers.ModelSerializer):
@@ -49,7 +49,6 @@ class ChallengeFriendSerializer(serializers.ModelSerializer):
             toUserid=validated_data["toUserid"],
             activity=FriendActivityChoices.CHALLENGE,
         )
-        activity.clean()
         return activity
 
 
@@ -61,15 +60,21 @@ class FriendActivitySerializer(serializers.ModelSerializer):
             "fromUserid",
             "toUserid",
             "activity",
-            "accept",
-            "acceptDate",
+            "status",
+            "statusDate",
+            "durationSecs",
             "creationDate",
         ]
 
 
 class TargetActivitySerializer(serializers.ModelSerializer):
-    activityid = serializers.IntegerField()
+    activityid = serializers.IntegerField(required=True)
 
     class Meta:  # type: ignore
         model = FriendActivity
         fields = ["activityid"]
+
+
+class FilterFriendActivitySerializer(serializers.Serializer):
+    for activity_status in FriendActivityStatus:
+        exec(f"{activity_status.name} = serializers.BooleanField(default=True)")
