@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from api.models.user import User
+from .user import User
 
 
 class FriendTable(models.Model):
@@ -31,14 +33,6 @@ class FriendTable(models.Model):
                 {"toUserid": "not allowed to match with key fromUserid"}
             )
 
-        # if self.__class__.objects.filter(models.Q(fromUserid=self.fromUserid, toUserid=self.toUserid) | models.Q(fromUserid=self.toUserid, toUserid=self.fromUserid)):
-        #     raise ValidationError(
-        #         {
-        #             "fromUserid": "friendship entry already exists",
-        #             "toUserid": "friendship entry already exists",
-        #         }
-        #     )
-
     class Meta:  # type: ignore
         constraints = [
             models.UniqueConstraint(
@@ -54,6 +48,14 @@ class FriendTable(models.Model):
 class FriendActivityChoices(models.TextChoices):
     POKE = "POK"
     CHALLENGE = "CHA"
+
+
+class FriendActivityStatus(models.TextChoices):
+    ACCEPT = "ACC"
+    REJECT = "REJ"
+    CANCEL = "CAN"
+    EXPIRED = "EXP"
+    PENDING = "PEN"
 
 
 class FriendActivity(models.Model):
@@ -74,19 +76,57 @@ class FriendActivity(models.Model):
     )
     activity = models.CharField(max_length=3, choices=FriendActivityChoices)
     creationDate = models.DateTimeField(auto_now_add=True)
-    accept = models.BooleanField(default=False)
-    acceptDate = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=3, choices=FriendActivityStatus, default=FriendActivityStatus.PENDING
+    )
+    statusDate = models.DateTimeField(null=True, blank=True)
+    durationSecs = models.PositiveIntegerField(default=3600)
 
-    def clean(self):
+    @property
+    def expired(self) -> bool:
+        time_elapsed = timezone.now() - self.creationDate
+
+        if self.durationSecs == 0:  # 0 means cannot expire
+            return False
+
+        if time_elapsed > timedelta(seconds=self.durationSecs):
+            self.status = FriendActivityStatus.EXPIRED
+            self.statusDate = timezone.now()
+            return True
+        return False
+
+    def clean(self) -> None:
         if self.fromUserid == self.toUserid:
             raise ValidationError(
                 {"toUserid": "not allowed to match with key fromUserid"}
             )
 
-    def accept_activity(self) -> None:
-        self.accept = True
-        self.acceptDate = timezone.now()
-        self.save()
+    def accept_activity(self) -> bool:
+        """
+        Returns True if success, False if fail since activity is already expired
+        """
+        if not self.expired:
+            self.status = FriendActivityStatus.ACCEPT
+            self.statusDate = timezone.now()
+            self.save()
+            return True
+        return False
+
+    def reject_activity(self) -> bool:
+        if not self.expired:
+            self.status = FriendActivityStatus.REJECT
+            self.statusDate = timezone.now()
+            self.save()
+            return True
+        return False
+
+    def cancel_activity(self)-> bool:
+        if not self.expired:
+            self.status = FriendActivityStatus.CANCEL
+            self.statusDate = timezone.now()
+            self.save()
+            return True
+        return False
 
     class Meta:
         verbose_name = "Friend Activity"

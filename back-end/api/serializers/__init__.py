@@ -4,6 +4,7 @@ from .activity import (
     FriendActivitySerializer,
     PokeFriendSerializer,
     TargetActivitySerializer,
+    FilterFriendActivitySerializer
 )
 from .friends import (
     CreateFriendSerializer,

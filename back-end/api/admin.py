@@ -1,6 +1,14 @@
 from typing import Any
 from django.http import HttpRequest
-from .models import User, UserAuditLog, UserProfiles, UserSettings, FriendTable, WorkoutRecord, FriendActivity
+from .models import (
+    User,
+    UserAuditLog,
+    UserProfiles,
+    UserSettings,
+    FriendTable,
+    WorkoutRecord,
+    FriendActivity,
+)
 from django.contrib import admin
 from .forms import UserChangeForm, SignupForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -11,7 +19,18 @@ from django.contrib.auth.models import Group
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = SignupForm
-    list_display = ("userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate")
+    list_display = (
+        "userid",
+        "email",
+        "phonenumber",
+        "firstname",
+        "lastname",
+        "last_login",
+        "is_superuser",
+        "is_staff",
+        "is_active",
+        "joindate",
+    )
     ordering = ["userid"]
     readonly_fields = ["userid", "last_login", "joindate"]
 
@@ -19,8 +38,19 @@ class UserAdmin(BaseUserAdmin):
         (
             "User Details",
             {
-                "fields": ["userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate"]
-            }
+                "fields": [
+                    "userid",
+                    "email",
+                    "phonenumber",
+                    "firstname",
+                    "lastname",
+                    "last_login",
+                    "is_superuser",
+                    "is_staff",
+                    "is_active",
+                    "joindate",
+                ]
+            },
         )
     ]
 
@@ -35,7 +65,15 @@ class UserAuditLogAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfiles)
 class UserProfilesAdmin(admin.ModelAdmin):
-    list_display = ["userid", "accountname", "dateofbirth", "gender", "address", "height_cm", "weight_kg"]
+    list_display = [
+        "userid",
+        "accountname",
+        "dateofbirth",
+        "gender",
+        "address",
+        "height_cm",
+        "weight_kg",
+    ]
     ordering = ["userid"]
     readonly_fields = ["userid"]
     pass
@@ -55,7 +93,9 @@ class FriendTableAdmin(admin.ModelAdmin):
     ordering = ["lastUpdate"]
     # readonly_fields = ["fromUserid", "toUserid"]
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Any | None = ...) -> list[str] | tuple[Any, ...]:
+    def get_readonly_fields(
+        self, request: HttpRequest, obj: Any | None = ...
+    ) -> list[str] | tuple[Any, ...]:
         if obj:
             return ["fromUserid", "toUserid"]
         else:
@@ -64,14 +104,30 @@ class FriendTableAdmin(admin.ModelAdmin):
 
 @admin.register(WorkoutRecord)
 class WorkoutRecordAdmin(admin.ModelAdmin):
-    list_display = ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"]
+    list_display = [
+        "workoutid",
+        "lastUpdate",
+        "userid",
+        "calories",
+        "steps",
+        "creationDate",
+    ]
     ordering = ["lastUpdate"]
     readonly_fields = ["creationDate"]
 
 
 @admin.register(FriendActivity)
 class FriendActivityAdmin(admin.ModelAdmin):
-    list_display = ["activityid", "activity", "accept", "fromUserid", "toUserid", "acceptDate", "creationDate"]
+    list_display = [
+        "activityid",
+        "activity",
+        "status",
+        "fromUserid",
+        "toUserid",
+        "statusDate",
+        "durationSecs",
+        "creationDate",
+    ]
     ordering = ["activityid", "creationDate"]
     readonly_fields = ["creationDate"]
 

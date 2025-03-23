@@ -1,4 +1,4 @@
-from .friends import FriendTable, FriendActivity, FriendActivityChoices
+from .friends import FriendTable, FriendActivity, FriendActivityChoices, FriendActivityStatus
 from .user import (
     User,
     UserManager,
