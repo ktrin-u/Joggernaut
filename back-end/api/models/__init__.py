@@ -9,3 +9,4 @@ from .user import (
     Gender,
 )
 from .workout import WorkoutRecord
+from .auth import PasswordResetToken

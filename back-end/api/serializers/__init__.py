@@ -3,7 +3,7 @@ from .activity import (
     FriendActivitySerializer,
     TargetActivitySerializer,
     FilterFriendActivitySerializer,
-    NewActivitySerializer
+    NewActivitySerializer,
 )
 from .friends import (
     CreateFriendSerializer,
@@ -25,3 +25,4 @@ from .user import (
     UserDeleteSerializer,
     UserModelSerializer,
 )
+from .auth import ForgotPasswordEmailSerializer, ForgotPasswordTokenSerializer

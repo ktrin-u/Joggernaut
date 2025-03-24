@@ -1,19 +1,34 @@
-from rest_framework.generics import GenericAPIView, CreateAPIView
+from rest_framework import status
 from rest_framework import permissions
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView, CreateAPIView
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse,
+    OpenApiExample,
+)
 
 from oauth2_provider.views import TokenView, RevokeTokenView
 
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.exceptions import ObjectDoesNotExist
+
 from api.schema_docs import Tags
 from api.permissions import isBanned
-from api.serializers.token import (
+from api.serializers import (
     TokenResponseSerializer,
     TokenSerializer,
     RevokeTokenSerializer,
+    ForgotPasswordEmailSerializer,
+    ForgotPasswordTokenSerializer,
+    MsgSerializer,
 )
-from api.serializers.user import RegisterFormSerializer
-from api.models.user import User
+from api.serializers import RegisterFormSerializer
+from api.models import User, PasswordResetToken
 
 
 @extend_schema(
@@ -54,3 +69,108 @@ class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+MSG_FAIL = "FAIL:user {0} is {1}"
+
+
+@extend_schema(
+    summary="Send OTP for forgotten password",
+    tags=[Tags.AUTH],
+)
+class ForgotPasswordOtpView(GenericAPIView):
+    serializer_class = ForgotPasswordEmailSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        description="Send an email containing a Token for verifying user identity so that they can reset password.",
+    )
+    def post(self, request: Request) -> Response:
+        serialized = self.get_serializer(data=request.data)
+
+        if not serialized.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serialized.errors)
+
+        email: str = serialized.validated_data["email"]
+        # Check if user is registered
+        try:
+            user = User.objects.get(email=email)
+            token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(user)
+            entry = PasswordResetToken(user_email=user, token=token)
+            entry.save()
+
+            send_mail(
+                subject="Reset Password Token",
+                message=f"Your reset token is: {token}",
+                from_email="noreply@trial-51ndgwv7w7dlzqx8.mlsender.net",
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+            return Response(
+                status=status.HTTP_200_OK,
+                data={"msg": f"PASS: Reset Token sent to {email}"},
+            )
+
+        except ObjectDoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"msg": MSG_FAIL.format(email, "NOT FOUND")},
+            )
+        except Exception as e:
+            return Response(
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                data={"msg": f"FAIL: error raised: {str(e)}"},
+            )
+
+    GET_PARAMS = [
+        OpenApiParameter(
+            name="email",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="The email of the user whose token is being validated",
+        ),
+        OpenApiParameter(
+            name="token",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="The token of the user being validated",
+        ),
+    ]
+
+    @extend_schema(
+        description="Verify the reset password token for a given user identified by email",
+        request=ForgotPasswordTokenSerializer,
+        responses=MsgSerializer,
+        parameters=GET_PARAMS,
+    )
+    def get(self, request: Request) -> Response:
+        serialized = ForgotPasswordTokenSerializer(data=request.query_params)
+
+        if not serialized.is_valid():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "FAIL: missing token in query params"},
+            )
+
+        email = serialized.validated_data["email"]
+        token = serialized.validated_data["token"]
+        try:
+            user = User.objects.get(email=email)
+            token_generator = PasswordResetTokenGenerator()
+            if token_generator.check_token(user=user, token=token):
+                return Response(
+                    status=status.HTTP_200_OK, data={"msg": "PASS: token is valid"}
+                )
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": "FAIL: token is invalid"},
+            )
+        except ObjectDoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"msg": MSG_FAIL.format(email, "NOT FOUND")},
+            )
