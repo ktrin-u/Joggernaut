@@ -20,7 +20,6 @@ import sys
 dotenv.load_dotenv()
 
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,49 +38,49 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'oauth2_provider',
-    'api.apps.ApiConfig',
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "oauth2_provider",
+    "api.apps.ApiConfig",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'oauth2_provider.middleware.OAuth2TokenMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",
 ]
 
-ROOT_URLCONF = 'django_backend.urls'
+ROOT_URLCONF = "django_backend.urls"
 
-TEMPLATES = [   # type:ignore
+TEMPLATES = [  # type:ignore
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'django_backend.wsgi.application'
+WSGI_APPLICATION = "django_backend.wsgi.application"
 
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
@@ -90,7 +89,12 @@ SECURE_SSL_REDIRECT = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+<<<<<<< HEAD
 DATABASES = {   # type: ignore
+=======
+
+DATABASES = {  # type: ignore
+>>>>>>> 1216fc8 (feat(backend): add forgot password email token endpoints)
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "HOST": os.getenv("db_host"),
@@ -99,28 +103,25 @@ DATABASES = {   # type: ignore
         "PASSWORD": os.getenv("db_password"),
         "PORT": os.getenv("db_port"),
         "OPTIONS": {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
 
 # use different database for testing to speed it up
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'test_db'
-    }
+if "test" in sys.argv:
+    DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3", "NAME": "test_db"}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'api.validators.CustomPasswordValidator',
-    }
+        "NAME": "api.validators.CustomPasswordValidator",
+    },
     # {
     #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     # },
@@ -130,79 +131,69 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     # },
-
 ]
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    'oauth2_provider.backends.OAuth2Backend',
+    "oauth2_provider.backends.OAuth2Backend",
 ]
 
-OAUTH_SCOPES = {
-    'read': 'Read scope',
-    'write': 'Write scope'
-},
+OAUTH_SCOPES = ({"read": "Read scope", "write": "Write scope"},)
 
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
-    'SCOPES': {
-        'read': 'Read scope',
-        'write': 'Write scope'
-    },
+    "SCOPES": {"read": "Read scope", "write": "Write scope"},
     "ACCESS_TOKEN_EXPIRE_SCONDS": 36000,
-    "REFRESH_TOKEN_EXPIRE_SECONDS": 36000
+    "REFRESH_TOKEN_EXPIRE_SECONDS": 36000,
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "oauth2_provider.contrib.rest_framework.TokenHasScope",
-        'api.permissions.isBanned',
+        "api.permissions.isBanned",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Joggernaut API',
-    'DESCRIPTION': "This API serves as the backend layer of the project [Joggernaut](https://github.com/ktrin-u/CS192-Joggernaut). \n\n The available endpoints can be found below.",
-    'VERSION': '0.3.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'ENABLE_DJANGO_DEPLOY_CHECK': False,
-    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
+    "TITLE": "Joggernaut API",
+    "DESCRIPTION": "This API serves as the backend layer of the project [Joggernaut](https://github.com/ktrin-u/CS192-Joggernaut). \n\n The available endpoints can be found below.",
+    "VERSION": "0.3.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "ENABLE_DJANGO_DEPLOY_CHECK": False,
+    "SWAGGER_UI_DIST": "SIDECAR",  # shorthand to use the sidecar instead
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
     "SWAGGER_UI_SETTINGS": {
         "deepLinking": False,
         "persistAuthorization": True,
     },
-    'SWAGGER_UI_OAUTH2_CONFIG': {
+    "SWAGGER_UI_OAUTH2_CONFIG": {
         "clientId": os.getenv("client_id"),
         "clientSecret": os.getenv("client_secret"),
-        "appName": "api"
+        "appName": "api",
     },
-    'OAUTH2_FLOWS': ["password"],
-    'OAUTH2_SCOPES': {
-        'read': 'Read scope',
-        'write': 'Write scope'
-    },
-    'OAUTH2_AUTHORIZATION_URL': "/api/auth/authorize",
-    'OAUTH2_TOKEN_URL': "/api/auth/token/",
-    'OAUTH2_REFRESH_URL': "/api/auth/refresh",
-    'SERVE_AUTHENTICATION': None,
-    'PARSER_WHITELIST': [
+    "OAUTH2_FLOWS": ["password"],
+    "OAUTH2_SCOPES": {"read": "Read scope", "write": "Write scope"},
+    "OAUTH2_AUTHORIZATION_URL": "/api/auth/authorize",
+    "OAUTH2_TOKEN_URL": "/api/auth/token/",
+    "OAUTH2_REFRESH_URL": "/api/auth/refresh",
+    "SERVE_AUTHENTICATION": None,
+    "PARSER_WHITELIST": [
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
-    ]
+    ],
 }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Asia/Manila'
+TIME_ZONE = "Asia/Manila"
 
 USE_I18N = True
 
@@ -212,10 +203,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "api.User"
+
+
+# Email SMTP Settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("smtp_host")
+EMAIL_USE_TLS = True
+EMAIL_PORT = os.getenv("smtp_port")
+EMAIL_HOST_USER = os.getenv("smtp_user")
+EMAIL_HOST_PASSWORD = os.getenv("smtp_password")

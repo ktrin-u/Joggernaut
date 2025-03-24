@@ -14,6 +14,7 @@ urlpatterns = [
     path("register/", auth.CreateUserView.as_view(), name="register new user"),
     path('login/', auth.TokenAPIView.as_view(), name="login and acquire token"),
     path('logout/', auth.RevokeTokenAPIView.as_view(), name="logout and revoke token"),
+    path('forgot/', auth.ForgotPasswordOtpView.as_view(), name="reset forgot password"),
 
     path("profile/", user_profile.UserProfileView.as_view(), name="retrieve user profile"),
     path("profile/new", user_profile.CreateUserProfileView.as_view(), name="create new user profile"),
