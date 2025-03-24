@@ -133,6 +133,8 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+PASSWORD_RESET_TIMEOUT = 360  # in secs; 360s = 1hr
+
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "oauth2_provider.backends.OAuth2Backend",
