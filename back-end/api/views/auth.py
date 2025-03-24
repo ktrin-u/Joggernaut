@@ -26,10 +26,19 @@ from api.serializers import (
     ForgotPasswordEmailSerializer,
     ForgotPasswordTokenSerializer,
     MsgSerializer,
+    UpdateUserPasswordSerializer,
 )
 from api.serializers import RegisterFormSerializer
 from api.models import User, PasswordResetToken
 
+
+MSG_FAIL = "FAIL:user {0} is {1}"
+
+def verify_reset_token(user: User, token: str):
+    try:
+        return PasswordResetToken.objects.get(user_email=user, token=token).expired
+    except Exception:
+        return False
 
 @extend_schema(
     summary="Register new user account",
@@ -71,11 +80,10 @@ class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
         return super().post(request, *args, **kwargs)
 
 
-MSG_FAIL = "FAIL:user {0} is {1}"
 
 
 @extend_schema(
-    summary="Send OTP for forgotten password",
+    summary="Use email-sent token to reset forgotten password",
     tags=[Tags.AUTH],
 )
 class ForgotPasswordOtpView(GenericAPIView):
@@ -83,7 +91,7 @@ class ForgotPasswordOtpView(GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
-        description="Send an email containing a Token for verifying user identity so that they can reset password.",
+        description="Send an email containing a token that is used to reset the password.",
     )
     def post(self, request: Request) -> Response:
         serialized = self.get_serializer(data=request.data)
@@ -160,15 +168,83 @@ class ForgotPasswordOtpView(GenericAPIView):
         token = serialized.validated_data["token"]
         try:
             user = User.objects.get(email=email)
-            token_generator = PasswordResetTokenGenerator()
-            if token_generator.check_token(user=user, token=token):
+            if verify_reset_token(user, token):
                 return Response(
-                    status=status.HTTP_200_OK, data={"msg": "PASS: token is valid"}
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"msg": "FAIL: token is invalid"},
                 )
             return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={"msg": "FAIL: token is invalid"},
+                status=status.HTTP_200_OK, data={"msg": "PASS: token is valid"}
             )
+        except ObjectDoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"msg": MSG_FAIL.format(email, "NOT FOUND")},
+            )
+
+
+@extend_schema(
+    summary="Use a valid token to reset forgotten password", tags=[Tags.AUTH]
+)
+class ResetForgotPasswordView(GenericAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    PARAMETERS = [
+        OpenApiParameter(
+            name="email",
+            type=str,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="email of the user",
+        ),
+        OpenApiParameter(
+            name="token",
+            type=str,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="valid reset password token of the user",
+        ),
+    ]
+
+    @extend_schema(
+        description="",
+        parameters=PARAMETERS,
+        request=UpdateUserPasswordSerializer,
+        responses=MsgSerializer,
+    )
+    def patch(self, request: Request) -> Response:
+        headers = ForgotPasswordTokenSerializer(data=request.headers)
+
+        if not headers.is_valid():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=headers.errors,
+            )
+
+        email = headers.validated_data["email"]
+        token = headers.validated_data["token"]
+        try:
+            user = User.objects.get(email=email)
+            if verify_reset_token(user, token):
+                return Response(
+                    status=status.HTTP_401_UNAUTHORIZED,
+                    data={"msg": f"FAIL: token {token} is invalid"},
+                )
+
+            serialized = UpdateUserPasswordSerializer(data=request.data)
+
+            if not serialized.is_valid():
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data=serialized.errors,
+                )
+
+            serialized.update(instance=user, validated_data=serialized.validated_data)
+            return Response(
+                status=status.HTTP_200_OK,
+                data={"msg": f"PASS: user {email}'s password has been changed."},
+            )
+
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
