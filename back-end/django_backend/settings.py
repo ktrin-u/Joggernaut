@@ -12,16 +12,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+import dotenv
+import os
+import sys
+
+# load .env file
+dotenv.load_dotenv()
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["django_key"]
+SECRET_KEY = os.getenv("django_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,16 +93,23 @@ SECURE_SSL_REDIRECT = True
 DATABASES = {   # type: ignore
     "default": {
         "ENGINE": "django.db.backends.mysql",
+        "HOST": os.getenv("db_host"),
+        "NAME": os.getenv("db_database"),
+        "USER": os.getenv("db_user"),
+        "PASSWORD": os.getenv("db_password"),
+        "PORT": os.getenv("db_port"),
         "OPTIONS": {
-            'host': os.environ["db_host"],
-            'database': os.environ["db_database"],
-            'user': os.environ["db_user"],
-            'password': os.environ["db_password"],
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
 
+# use different database for testing to speed it up
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test_db'
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -164,8 +178,8 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
     'SWAGGER_UI_OAUTH2_CONFIG': {
-        "clientId": os.environ["client_id"],
-        "clientSecret": os.environ["client_secret"],
+        "clientId": os.getenv("client_id"),
+        "clientSecret": os.getenv("client_secret"),
         "appName": "api"
     },
     'OAUTH2_FLOWS': ["password"],
