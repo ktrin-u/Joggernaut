@@ -11,16 +11,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import dotenv
+import os
+import sys
+
+# load .env file
+dotenv.load_dotenv()
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-de$2j#e9_qbyi(mmka8#y1rzszuv%)@z4xsxcn217)!&qg!u1-'
+SECRET_KEY = os.getenv("django_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -79,22 +86,27 @@ WSGI_APPLICATION = 'django_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Check if mysql.conf exists
-mysqlconf = Path("./conf/mysql.conf")
-
-if not mysqlconf.is_file():
-    raise FileNotFoundError("conf/mysql.conf is missing")
 
 DATABASES = {   # type: ignore
     "default": {
         "ENGINE": "django.db.backends.mysql",
+        "HOST": os.getenv("db_host"),
+        "NAME": os.getenv("db_database"),
+        "USER": os.getenv("db_user"),
+        "PASSWORD": os.getenv("db_password"),
+        "PORT": os.getenv("db_port"),
         "OPTIONS": {
-            "read_default_file": mysqlconf.resolve().as_posix(),
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
 
+# use different database for testing to speed it up
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test_db'
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -149,10 +161,6 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-env = Path("./conf/.env")
-
-if not env.is_file():
-    raise FileNotFoundError("conf/mysql.conf is missing")
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Joggernaut API',
@@ -168,8 +176,8 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
     'SWAGGER_UI_OAUTH2_CONFIG': {
-        "clientId": "EAdjk5dlE5ssgncPU8n4PeaQ1QYyqydhT0mPyyPi",
-        "clientSecret": "VKsT4ne6eGiXpN6542Aw6b0WGEpYqV8DkeggumUTkYKccJK6qaj64vYpbImRQjus9v0PzHrfYndKH49NMoDPNaasSwJeEXbW63kOXkIf79Pz6Xq1E2x8q3bsL7xSxCJp",
+        "clientId": os.getenv("client_id"),
+        "clientSecret": os.getenv("client_secret"),
         "appName": "api"
     },
     'OAUTH2_FLOWS': ["password"],

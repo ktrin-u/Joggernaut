@@ -84,19 +84,22 @@ class FriendActivity(models.Model):
 
     @property
     def expired(self) -> bool:
-        time_elapsed = timezone.now() - self.creationDate
-        activity_duration = timedelta(seconds=self.durationSecs)
+        try:
+            time_elapsed = timezone.now() - self.creationDate
+            activity_duration = timedelta(seconds=self.durationSecs)
 
-        if self.durationSecs == 0:  # 0 means cannot expire
+            if self.durationSecs == 0:  # 0 means cannot expire
+                return False
+
+            if time_elapsed > activity_duration:
+                if self.status != FriendActivityStatus.EXPIRED:
+                    self.status = FriendActivityStatus.EXPIRED
+                    self.statusDate = self.creationDate + activity_duration
+                    self.save()
+                return True
             return False
-
-        if time_elapsed > activity_duration:
-            if self.status != FriendActivityStatus.EXPIRED:
-                self.status = FriendActivityStatus.EXPIRED
-                self.statusDate = self.creationDate + activity_duration
-                self.save()
-            return True
-        return False
+        except Exception:
+            return False
 
     def clean(self) -> None:
         self.expired
