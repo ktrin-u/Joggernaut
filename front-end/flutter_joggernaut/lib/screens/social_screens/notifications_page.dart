@@ -13,6 +13,19 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   late Future gettingNotifications;
+  String formatTimeAgo(Duration difference) {
+    if (difference.inSeconds < 60) {
+      return "${difference.inSeconds} seconds ago";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} minutes ago";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} hours ago";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} days ago";
+    } else {
+      return "${(difference.inDays / 7).floor()} weeks ago";
+    }
+  }
   String? myUserID;
   List<Map<String, dynamic>> users = [];
   List<Map<String, dynamic>> friends = [];
@@ -43,7 +56,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (response.statusCode == 200){
       var data = jsonDecode(response.body);
       setState(() {
-        friendActivities = List<Map<String, dynamic>>.from(data["activities"]); 
+        friendActivities = List<Map<String, dynamic>>.from(data); 
       });
     }
   }
@@ -58,22 +71,38 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  void filterFriends () {
+  void filterFriends() {
     List requestIDs = receivedRequests.map((friend) {
       return friend["fromUserid"] == myUserID ? friend["toUserid"] : friend["fromUserid"];
     }).where((id) => id != myUserID).toList();
 
-    List friendIDs = friendActivities.map((friend) {
-      return friend["fromUserid"] == myUserID ? friend["toUserid"] : friend["fromUserid"];
-    }).where((id) => id != myUserID).toList();
+    Map<String, String> userMap = {
+      for (var user in users) user["userid"] as String: user["accountname"] as String
+    };
 
+    DateTime now = DateTime.now();
+    for (var activity in friendActivities) {
+      String toUserId = activity["toUserid"];
+      String fromUserId = activity["fromUserid"];
+      activity["friendName"] = toUserId == myUserID ? userMap[fromUserId] : userMap[toUserId];
+
+      DateTime creationDate = DateTime.parse(activity["creationDate"]);
+      Duration difference = now.difference(creationDate);
+      activity["timeAgo"] = formatTimeAgo(difference);
+    }
+
+    friendActivities.removeWhere((activity) =>
+      (activity["fromUserid"] == myUserID && (activity["status"] != "ACC" && activity["status"] != "REJ" && activity["status"] != "EXP")) ||
+      (activity["toUserid"] == myUserID && (activity["status"] == "ACC" || activity["status"] == "REJ")) ||
+      (activity["status"] == "CAN") ||
+      (activity["activity"] == "POK" && activity["status"] == "ACC") ||
+      (activity["activity"] == "CHA" && activity["status"] == "ACC" && activity["fromUserid"] != myUserID)
+    );
+
+    friendActivities.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
     setState(() {
       requests = users
       .where((user) => requestIDs.contains(user["userid"]))
-      .toList();
-
-      friends = users
-      .where((user) => friendIDs.contains(user["userid"]))
       .toList();
     });
   }
@@ -108,7 +137,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ) 
             ); 
           } else if (snapshot.hasError) {
-              return Center(child: Text("Error loading workout"));
+              return Center(child: Text("Error loading notifications"));
           } else {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -141,11 +170,33 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.only(top: 0, bottom: screenHeight * 0.01),
-                    itemCount: requests.length + friends.length, 
+                    itemCount: friendActivities.length, 
                     itemBuilder: (context, index) {
-                      bool isRequest = index < requests.length; 
-                      var item = isRequest ? requests[index] : friends[index - requests.length]; 
-                      String subtitleText = isRequest ? "sent you a friend request" : "poked you!"; 
+                      bool isExpired = false;
+                      var item = friendActivities[index];
+                      var friendID = item["fromUserid"] == myUserID ? item["toUserid"] : item["fromUserid"];
+                      String subtitleText;
+                      if (item["activity"] == "CHA") {
+                        if (item["status"] == "EXP" && item["toUserid"] == myUserID){
+                          isExpired = true;
+                          subtitleText = "challenge has expired!";
+                        } 
+                        else if (item["status"] == "EXP" && item["fromUserid"] == myUserID){
+                          isExpired = true;
+                          subtitleText = "challenge to ${item["friendName"]} has expired!";
+                        } 
+                        else if (item["status"] == "ACC" && item["fromUserid"] == myUserID){
+                          subtitleText = "accepted your challenge!";
+                        }
+                        else if (item["status"] == "REJ" && item["fromUserid"] == myUserID){
+                          subtitleText = "rejected your challenge!";
+                        }
+                        else {
+                          subtitleText = "challenged you!";
+                        }     
+                      } else {
+                        subtitleText = "poked you!"; 
+                      }
                       return Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.07,
@@ -159,34 +210,46 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           color: Colors.white,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(30),
-                            onTap: (){router.push('/social/profile/${item["userid"]}/${item["accountname"]}');},
+                            onTap: (){router.push('/social/profile/$friendID/${item["friendName"]}');},
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: screenHeight * 0.001),
                               child: ListTile(
-                                title: Text(
-                                  item["accountname"],
-                                  style: TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: screenWidth * 0.04,
-                                    color: Color.fromRGBO(51, 51, 51, 1),
+                                title: Padding(
+                                  padding: EdgeInsets.only(left: screenWidth*0.02),
+                                  child: Text(
+                                    !isExpired 
+                                      ? item["friendName"] 
+                                      : (item["toUserid"] == myUserID 
+                                        ? "${item["friendName"]}'s" 
+                                        : "Your"),
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: screenWidth * 0.04,
+                                      color: Color.fromRGBO(51, 51, 51, 1),
+                                    ),
                                   ),
                                 ),
-                                leading: Container(
-                                  width: screenWidth * 0.17,
-                                  height: screenWidth * 0.17,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color.fromRGBO(245, 245, 245, 1),
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  subtitleText, 
+                                trailing: Text(
+                                  item["timeAgo"], 
                                   style: TextStyle(
                                     fontFamily: 'Roboto',
                                     fontWeight: FontWeight.w400,
-                                    fontSize: screenWidth * 0.035,
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: screenWidth * 0.03,
                                     color: Color.fromRGBO(51, 51, 51, 1),
+                                  )
+                                ),
+                                subtitle: Padding(
+                                  padding: EdgeInsets.only(left: screenWidth*0.02),
+                                  child: Text(
+                                    subtitleText, 
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: screenWidth * 0.035,
+                                      color: Color.fromRGBO(51, 51, 51, 1),
+                                    ),
                                   ),
                                 ),
                               ),

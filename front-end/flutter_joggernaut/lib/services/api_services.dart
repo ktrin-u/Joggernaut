@@ -402,7 +402,7 @@ class ApiService {
   }
 
   Future getFriendActivity() async {
-    var uri = Uri.parse(getFriendActitvityURL);
+    var uri = Uri.parse(getActivitiesURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.get(uri, 
@@ -599,7 +599,116 @@ class ApiService {
         print("Pending friend requests obtained successfully!");
         return response;
       } else {
-        print("Failed to pending friend requests. Status code: ${response.statusCode}");
+        print("Failed to load pending friend requests. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future addChallenge(friendId) async {
+    var uri = Uri.parse(challengeFriendURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "durationSecs": "20",
+          "toUserid": friendId,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 201) {
+        print("Friend challenged successfully!");
+        return response;
+      } else {
+        print("Failed to challenge friend. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future acceptChallenge(friendId, activityId) async {
+    var uri = Uri.parse(acceptActivityURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "activityid": activityId.toString()
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Challenge accepted successfully!");
+        return response;
+      } else if (response.statusCode == 400){
+        print("Failed to accept challenge. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future rejectChallenge(friendId, activityId) async {
+    var uri = Uri.parse(rejectActivityURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "activityid": activityId.toString()
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Challenge rejected successfully!");
+        return response;
+      } else {
+        print("Failed to reject challenge. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future cancelChallenge(friendId, activityId) async {
+    var uri = Uri.parse(cancelActivityURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "activityid": activityId.toString()
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Challenge cancelled successfully!");
+        return response;
+      } else {
+        print("Failed to cancel challenge. Status code: ${response.statusCode}");
         return response;
       }
     } catch (e) {
