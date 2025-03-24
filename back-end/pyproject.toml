@@ -21,6 +21,7 @@ uvicorn = "^0.34.0"
 ruff = "^0.11.2"
 python-dotenv = "^1.0.1"
 tblib = "^3.0.0"
+coverage = "^7.7.1"
 
 
 [build-system]
@@ -52,3 +53,20 @@ skip-magic-trailing-comma = false
 
 # Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
+
+[tool.coverage.paths]
+source = ["."]
+
+[tool.coverage.run]
+command_line = "manage.py test --no-input"
+omit = [
+    "*/migrations/*",
+    "*/django_backend/*",
+    "*/manage.py",
+    "*/urls.py",
+    "*/__init__.py",
+    "*/tests/test_*.py"
+]
+
+[tool.coverage.html]
+directory = "api/tests/coverage/html"
