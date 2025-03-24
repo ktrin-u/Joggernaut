@@ -87,7 +87,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       String errorMessage = responseBody["msg"];
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
-    getWorkout();
     setState(() {
       isLoadingAdd = false;
     });
@@ -110,14 +109,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
       }).join("\n");
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
-    getWorkout();
     setState(() {
       isLoadingUpdate = false;
     });
   }
 
   Future getWorkout() async {
-    await getUserProfile();
     var response = await ApiService().getWorkout();
     if (response.statusCode == 200){
       if (response.body == "[]"){
@@ -132,7 +129,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return;
       }
       List<dynamic> jsonData = jsonDecode(response.body);
-      Map<String, dynamic> data = jsonData[-1];
+      Map<String, dynamic> data = (jsonData.length == 1) ? jsonData[0] : jsonData[-1];
 
       setState(() {
         steps = data["steps"];
@@ -169,10 +166,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
     }
   }
 
+  Future setup() async{
+    await getUserProfile();
+    await getWorkout();
+  }
+
   @override
   void initState(){
     super.initState();
-    gettingWorkout = getWorkout();
+    gettingWorkout = setup();
   }
 
   @override

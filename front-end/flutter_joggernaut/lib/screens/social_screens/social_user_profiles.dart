@@ -39,11 +39,20 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
   String? myUserID;
   List friendIDs = [];
   List<Map<String, dynamic>> pendingRequest = [];
+  List<Map<String, dynamic>> friendActivities = [];
+  Map<String, dynamic> latestChallenge = {};
   bool isPoking = false;
-  bool isLoading = false;
+  bool isLoadingCha = false;
+  bool isLoadingAccCha = false;
+  bool isLoadingRejCha = false;
+  bool isLoadingAccFr = false;
+  bool isLoadingRejFr = false;
+  bool isLoadingFr = false;
   bool isFriends = false;
   bool isPending = false;
   bool hasReceived = false;
+  bool hasChallenged = false;
+  bool isChallenged = false;
  
 
   Future pokeFriend() async {
@@ -70,7 +79,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
 
   Future addFriend() async {
     setState(() {
-      isLoading = true;
+      isLoadingFr = true;
     });
     var response = await ApiService().addFriend(userId);
     if (response.statusCode == 201){
@@ -90,13 +99,13 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
     setState(() {
-      isLoading = false;
+      isLoadingFr = false;
     });
   }
 
   Future unFriend() async {
     setState(() {
-      isLoading = true;
+      isLoadingFr = true;
     });
 
     var response = await ApiService().unFriend(userId);
@@ -117,13 +126,13 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
     setState(() {
-      isLoading = false;
+      isLoadingFr = false;
     });
   }
 
   Future cancelRequest() async {
     setState(() {
-      isLoading = true;
+      isLoadingFr = true;
     });
     var response = await ApiService().cancelRequest(userId);
     if (response.statusCode == 200){
@@ -143,13 +152,13 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
     setState(() {
-      isLoading = false;
+      isLoadingFr = false;
     });
   }
 
   Future acceptRequest() async {
     setState(() {
-      isLoading = true;
+      isLoadingAccFr = true;
     });
     var response = await ApiService().acceptRequest(userId);
     if (response.statusCode == 200){
@@ -169,13 +178,13 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
     setState(() {
-      isLoading = false;
+      isLoadingAccFr = false;
     });
   }
 
   Future rejectRequest() async {
     setState(() {
-      isLoading = true;
+      isLoadingRejFr = true;
     });
     var response = await ApiService().rejectRequest(userId);
     if (response.statusCode == 200){
@@ -195,7 +204,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
     setState(() {
-      isLoading = false;
+      isLoadingRejFr = false;
     });
   }
   
@@ -234,10 +243,155 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
     }
   }
 
+  Future addChallenge() async {
+    setState(() {
+      isLoadingCha = true;
+    });
+    var response = await ApiService().addChallenge(userId);
+    if (response.statusCode == 201){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = true;
+      });
+      await getFriendActivity();
+      getLatestChallenge();
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoadingCha = false;
+    });
+  }
+  
+  Future cancelChallenge() async {
+    setState(() {
+      isLoadingCha = true;
+    });
+    var response = await ApiService().cancelChallenge(userId, latestChallenge["activityid"]);
+    if (response.statusCode == 200){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = false;
+      });
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoadingCha = false;
+    });
+  }
+
+  Future acceptChallenge() async {
+    setState(() {
+      isLoadingAccCha = true;
+    });
+    var response = await ApiService().acceptChallenge(userId, latestChallenge["activityid"]);
+    if (response.statusCode == 200){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = false;
+      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenge accepted successfully", "Success");
+    } 
+    else if (response.statusCode == 400){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = false;
+      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenge is expired", "Failed");
+    }
+    setState(() {
+      isLoadingAccCha = false;
+    });
+  }
+
+  Future rejectChallenge() async {
+    setState(() {
+      isLoadingRejCha = true;
+    });
+    var response = await ApiService().rejectChallenge(userId, latestChallenge["activityid"]);
+    if (response.statusCode == 200){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = false;
+      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenge rejected successfully", "Success");
+    } 
+    else if (response.statusCode == 400){
+      setState(() {
+        isChallenged = false;
+        hasChallenged = false;
+      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenge is expired", "Failed");
+    }
+    setState(() {
+      isLoadingRejCha = false;
+    });
+  }
+  
+  Future getFriendActivity() async {
+    var response = await ApiService().getFriendActivity();
+    if (response.statusCode == 200){
+      var data = jsonDecode(response.body);
+      setState(() {
+        friendActivities = List<Map<String, dynamic>>.from(data); 
+      });
+    }
+  }
+
+  void getLatestChallenge() {
+    friendActivities = friendActivities.where((activity) {
+      return activity["activity"] == "CHA" && (activity["fromUserid"] == userId || activity["toUserid"] == userId);
+    }).toList();
+  
+    if (friendActivities.isNotEmpty){
+      setState(() {
+        latestChallenge = friendActivities.last;  
+      });
+    }
+
+    if (latestChallenge != {}){
+      if (latestChallenge['status'] == "EXP" && latestChallenge["fromUserid"] == userId){
+        ConfirmHelper.showResultDialog(_currentContext, "Latest Challenge from $userName has expired", "Notification");
+      }
+      if (latestChallenge['status'] == "EXP" && latestChallenge["fromUserid"] == myUserID){
+        ConfirmHelper.showResultDialog(_currentContext, "Your latest Challenge to $userName has expired", "Notification");
+      }
+      if (latestChallenge["fromUserid"] == userId && latestChallenge['status'] == "PEN"){
+        setState(() {
+          isChallenged = true;
+          hasChallenged = false;
+        });
+      }
+      else if (latestChallenge["fromUserid"] == myUserID && latestChallenge['status'] == "PEN"){
+        setState(() {
+          isChallenged = false;
+          hasChallenged = true;
+        });
+      }
+    }
+  }
+
   Future setup() async {
     await getUserId();
     await getFriends();
     await getPendingFriends();
+    await getFriendActivity();
+    getLatestChallenge();
   }
   
   @override
@@ -264,7 +418,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
               ) 
             ); 
           } else if (snapshot.hasError) {
-              return Center(child: Text("Error loading workout"));
+              return Center(child: Text("Error loading friend's profile"));
           } else {
               return Column(
                 children: [ 
@@ -326,8 +480,8 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      (isFriends) ? ElevatedButton(
-                        onPressed: () {},
+                      if (isFriends && hasChallenged) ElevatedButton(
+                        onPressed: () {cancelChallenge();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -340,46 +494,76 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           ),
                           minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
                         ),
-                        child: Text(
-                          "Challenge",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: 'Roboto',
-                            fontSize: screenWidth * 0.035, 
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ) : Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.05,
-                          vertical: screenHeight * 0.01,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                              offset: Offset(0, 2),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Opacity(
+                              opacity: isLoadingCha ? 0.0 : 1.0, 
+                              child: Text(
+                                "Cancel Challenge",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Roboto',
+                                  fontSize: screenWidth * 0.035, 
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Invite",
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 121, 119, 119),
-                              fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.035,
-                              fontWeight: FontWeight.w500,
+                            if (isLoadingCha)
+                            SizedBox(
+                              height: screenWidth * 0.045, 
+                              width: screenWidth * 0.045, 
+                              child: CircularProgressIndicator(
+                                color: Color.fromRGBO(51, 51, 51, 1),
+                                strokeWidth: 2.5,
+                              ),
                             ),
-                          ),
+                          ]  
                         ),
                       ),
-                      SizedBox(width: screenWidth*0.03),
-                      (isFriends) ? ElevatedButton(
+                      if (isFriends && !hasChallenged && !isChallenged) ElevatedButton(
+                        onPressed: () {addChallenge();},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenHeight * 0.01,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Opacity(
+                              opacity: isLoadingCha ? 0.0 : 1.0, 
+                              child: Text(
+                                "Challenge",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Roboto',
+                                  fontSize: screenWidth * 0.035, 
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (isLoadingCha)
+                            SizedBox(
+                              height: screenWidth * 0.045, 
+                              width: screenWidth * 0.045, 
+                              child: CircularProgressIndicator(
+                                color: Color.fromRGBO(51, 51, 51, 1),
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ]  
+                        ),
+                      ),
+                      if (isFriends && (hasChallenged || !isChallenged)) SizedBox(width: screenWidth*0.03),
+                      if (isFriends) ElevatedButton(
                         onPressed: () {ConfirmHelper.showConfirmDialog(context, "Are you sure you want to poke $userName?", (context) => pokeFriend());},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -419,39 +603,9 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                             ),
                           ]  
                         ),
-                      ) :
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.05,
-                          vertical: screenHeight * 0.01,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Poke",
-                            style: TextStyle(
-                              color:  Color.fromARGB(255, 121, 119, 119),
-                              fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.035,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
                       ),
-                      SizedBox(width: screenWidth*0.03),
-                      if (isPending)
-                      ElevatedButton(
+                      if (isFriends) SizedBox(width: screenWidth*0.03),
+                      if (isPending) ElevatedButton(
                         onPressed: () {cancelRequest();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -469,9 +623,9 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
+                              opacity: isLoadingFr ? 0.0 : 1.0, 
                               child: Text(
-                                "Cancel Request",
+                                "Cancel Friend Request",
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontFamily: 'Roboto',
@@ -480,7 +634,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                 ),
                               ),
                             ),
-                            if (isLoading)
+                            if (isLoadingFr)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -492,8 +646,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           ]  
                         ),
                       )  
-                      else if (isFriends)
-                      ElevatedButton(
+                      else if (isFriends) ElevatedButton(
                         onPressed: () {unFriend();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -511,7 +664,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
+                              opacity: isLoadingFr ? 0.0 : 1.0, 
                               child: Text(
                                 "Unfriend",
                                 style: TextStyle(
@@ -522,7 +675,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                 ),
                               ),
                             ),
-                            if (isLoading)
+                            if (isLoadingFr)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -534,8 +687,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           ]  
                         ),
                       )
-                      else if (hasReceived)
-                      ElevatedButton(
+                      else if (hasReceived) ElevatedButton(
                         onPressed: () {acceptRequest();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -553,11 +705,11 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
+                              opacity: isLoadingAccFr ? 0.0 : 1.0, 
                               child: Row(
                                 children: [
                                   Text(
-                                    "Accept",
+                                    "Accept Friend",
                                     style: TextStyle(
                                       color: Colors.green,
                                       fontFamily: 'Roboto',
@@ -568,7 +720,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                 ],
                               ),
                             ),
-                            if (isLoading)
+                            if (isLoadingAccFr)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -580,8 +732,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           ]  
                         ),
                       )
-                      else
-                      ElevatedButton(
+                      else ElevatedButton(
                         onPressed: () {addFriend();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -599,7 +750,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
+                              opacity: isLoadingFr ? 0.0 : 1.0, 
                               child: Text(
                                 "Add as friend",
                                 style: TextStyle(
@@ -610,7 +761,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                 ),
                               ),
                             ),
-                            if (isLoading)
+                            if (isLoadingFr)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -622,9 +773,8 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           ]  
                         ),
                       ), 
-                      SizedBox(width: screenWidth*0.03),
-                      if (hasReceived)
-                      ElevatedButton(
+                      if (hasReceived) SizedBox(width: screenWidth*0.03),
+                      if (hasReceived) ElevatedButton(
                         onPressed: () {rejectRequest();},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -642,11 +792,11 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
+                              opacity: isLoadingRejFr ? 0.0 : 1.0, 
                               child: Row(
                                 children: [
                                   Text(
-                                    "Reject",
+                                    "Reject Friend",
                                     style: TextStyle(
                                       color: Colors.red,
                                       fontFamily: 'Roboto',
@@ -657,7 +807,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                 ],
                               ),
                             ),
-                            if (isLoading)
+                            if (isLoadingRejFr)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -670,6 +820,105 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                         ),
                       )
                     ],
+                  ),
+                  if (isChallenged && isFriends) Padding(
+                    padding: EdgeInsets.only(top: screenHeight*0.005),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {acceptChallenge();},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: isLoadingAccCha ? 0.0 : 1.0, 
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Accept Challenge",
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontFamily: 'Roboto',
+                                        fontSize: screenWidth * 0.035, 
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isLoadingAccCha)
+                              SizedBox(
+                                height: screenWidth * 0.045, 
+                                width: screenWidth * 0.045, 
+                                child: CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ]  
+                          ),
+                        ),
+                        SizedBox(width: screenWidth*0.03),
+                        ElevatedButton(
+                          onPressed: () {rejectChallenge();},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: isLoadingRejCha ? 0.0 : 1.0, 
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Reject Challenge",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontFamily: 'Roboto',
+                                        fontSize: screenWidth * 0.035, 
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isLoadingRejCha)
+                              SizedBox(
+                                height: screenWidth * 0.045, 
+                                width: screenWidth * 0.045, 
+                                child: CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ]  
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: screenWidth*0.1, vertical: screenHeight*0.02),
