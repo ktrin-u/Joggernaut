@@ -1,6 +1,7 @@
-from django.test import TestCase
 from django.core.exceptions import ValidationError
-from api.models import User, FriendActivity, FriendActivityChoices, FriendActivityStatus
+from django.test import TestCase
+
+from api.models import FriendActivity, FriendActivityChoices, FriendActivityStatus, User
 
 
 class TestFriendActivity(TestCase):

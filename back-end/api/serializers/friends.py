@@ -1,8 +1,10 @@
-from rest_framework import serializers
-from django.core.exceptions import ValidationError
-from api.models import FriendTable
 from typing import Any
+
+from django.core.exceptions import ValidationError
 from django.db.models import Q
+from rest_framework import serializers
+
+from api.models import FriendTable
 
 
 class ToUserIdSerializer(serializers.ModelSerializer):

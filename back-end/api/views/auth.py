@@ -1,34 +1,29 @@
-from rest_framework import status
-from rest_framework import permissions
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView, CreateAPIView
-
-from drf_spectacular.utils import (
-    extend_schema,
-    OpenApiParameter,
-)
-
-from oauth2_provider.views import TokenView, RevokeTokenView
-
-from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    extend_schema,
+)
+from oauth2_provider.views import RevokeTokenView, TokenView
+from rest_framework import permissions, status
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 
-from api.schema_docs import Tags
+from api.models import PasswordResetToken, User
 from api.permissions import isBanned
+from api.schema_docs import Tags
 from api.serializers import (
-    TokenResponseSerializer,
-    TokenSerializer,
-    RevokeTokenSerializer,
     ForgotPasswordEmailSerializer,
     ForgotPasswordTokenSerializer,
     MsgSerializer,
+    RegisterFormSerializer,
+    RevokeTokenSerializer,
+    TokenResponseSerializer,
+    TokenSerializer,
     UpdateUserPasswordSerializer,
 )
-from api.serializers import RegisterFormSerializer
-from api.models import User, PasswordResetToken
-
 
 MSG_FAIL = "FAIL:user {0} is {1}"
 

@@ -1,6 +1,7 @@
-import api.models as custom_models
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
+from rest_framework import serializers
+
+import api.models as custom_models
 
 
 class NewWorkoutRecordRequestSerializer(serializers.ModelSerializer):

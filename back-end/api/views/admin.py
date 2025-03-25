@@ -1,13 +1,13 @@
-from rest_framework.generics import GenericAPIView
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import permissions
-from rest_framework import status
-from api.schema_docs import Tags
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+from rest_framework import permissions, status
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
+
+from api.schema_docs import Tags
 from api.serializers.user import UpdateUserPermissionsSerializer
 
 

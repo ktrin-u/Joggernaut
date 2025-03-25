@@ -10,11 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+<<<<<<< HEAD
 import os
 from pathlib import Path
 import dotenv
+=======
+>>>>>>> 2062367 (style(backend): run linter and formatter)
 import os
 import sys
+from pathlib import Path
+
+import dotenv
 
 # load .env file
 dotenv.load_dotenv()

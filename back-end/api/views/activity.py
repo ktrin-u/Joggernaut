@@ -1,38 +1,36 @@
 from copy import deepcopy
 
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-
-from drf_spectacular.utils import (
-    extend_schema,
-    OpenApiResponse,
-    OpenApiExample,
-    OpenApiParameter,
-)
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, QuerySet
-
-from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
-from rest_framework.request import Request
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 
-from api.schema_docs import Tags, Response as Schema_Response
 from api.models import (
-    User,
-    FriendTable,
     FriendActivity,
-    FriendActivityStatus,
     FriendActivityChoices,
+    FriendActivityStatus,
+    FriendTable,
+    User,
 )
 from api.responses import RESPONSE_USER_NOT_FOUND
+from api.schema_docs import Response as Schema_Response
+from api.schema_docs import Tags
 from api.serializers import (
-    MsgSerializer,
-    FriendActivitySerializer,
     CreateActivitySerializer,
-    TargetActivitySerializer,
     FilterFriendActivitySerializer,
+    FriendActivitySerializer,
+    MsgSerializer,
     NewActivitySerializer,
+    TargetActivitySerializer,
 )
 
 

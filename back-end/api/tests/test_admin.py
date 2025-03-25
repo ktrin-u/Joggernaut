@@ -1,13 +1,14 @@
-from django.test import TestCase
 from django.contrib.admin.sites import site
-from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings
+from django.test import TestCase
+
 from api.admin import (
     UserAdmin,
-    WorkoutRecordAdmin,
     UserAuditLogAdmin,
     UserProfilesAdmin,
     UserSettingsAdmin,
+    WorkoutRecordAdmin,
 )
+from api.models import User, UserAuditLog, UserProfiles, UserSettings, WorkoutRecord
 
 
 class TestAdminRegistration(TestCase):

@@ -1,31 +1,28 @@
 from copy import deepcopy
 
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
-
-from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
-from rest_framework.request import Request
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from api import schema_docs
-from api.schema_docs import Tags
-from api.models.friends import FriendTable
 from api.helper import get_user_object
+from api.models.friends import FriendTable
 from api.responses import RESPONSE_USER_NOT_FOUND
-from api.serializers.general import MsgSerializer, TargetUserIdSerializer
+from api.schema_docs import Tags
 from api.serializers.friends import (
     CreateFriendSerializer,
-    ToUserIdSerializer,
-    PendingFriendsListResponseSerializer,
-    FriendTableSerializer,
     FriendsListResponseSerializer,
+    FriendTableSerializer,
     FromUserIdSerializer,
+    PendingFriendsListResponseSerializer,
+    ToUserIdSerializer,
 )
+from api.serializers.general import MsgSerializer, TargetUserIdSerializer
 
 
 class AbstractFriendTableView(GenericAPIView):

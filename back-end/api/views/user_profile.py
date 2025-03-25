@@ -1,16 +1,13 @@
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-
 from drf_spectacular.utils import extend_schema
-
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
 
-from api.schema_docs import Tags
+from api.helper import clean_request_data, get_user_object
 from api.models.user import UserProfiles
-from api.helper import get_user_object
-from api.helper import clean_request_data
+from api.schema_docs import Tags
 from api.serializers.user_profile import UserProfileFormSerializer
 
 

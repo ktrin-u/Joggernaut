@@ -1,9 +1,11 @@
 from typing import Any
-from api.models import User
+
+from oauth2_provider.models import AccessToken
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
-from oauth2_provider.models import AccessToken
+
+from api.models import User
 
 
 def get_token_from_header(request: Request) -> tuple[str, str]:
