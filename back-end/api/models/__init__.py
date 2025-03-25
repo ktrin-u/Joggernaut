@@ -1,17 +1,24 @@
+from .auth import PasswordResetToken
 from .friends import (
-    FriendTable,
     FriendActivity,
     FriendActivityChoices,
     FriendActivityStatus,
+    FriendTable,
+)
+from .game import (
+    GameAchievement,
+    GameAchievementLog,
+    GameCharacter,
+    GameEnemy,
+    GameSave,
 )
 from .user import (
+    Gender,
+    Status,
     User,
-    UserManager,
     UserAuditLog,
+    UserManager,
     UserProfiles,
     UserSettings,
-    Status,
-    Gender,
 )
 from .workout import WorkoutRecord
-from .auth import PasswordResetToken
