@@ -1,28 +1,31 @@
 from copy import deepcopy
 
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-from rest_framework import status
+
 from rest_framework.generics import GenericAPIView
-from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework import status
 
 from api import schema_docs
-from api.helper import get_user_object
-from api.models.friends import FriendTable
-from api.responses import RESPONSE_USER_NOT_FOUND
 from api.schema_docs import Tags
+from api.models.friends import FriendTable
+from api.helper import get_user_object
+from api.responses import RESPONSE_USER_NOT_FOUND
+from api.serializers.general import MsgSerializer, TargetUserIdSerializer
 from api.serializers.friends import (
     CreateFriendSerializer,
-    FriendsListResponseSerializer,
-    FriendTableSerializer,
-    FromUserIdSerializer,
-    PendingFriendsListResponseSerializer,
     ToUserIdSerializer,
+    PendingFriendsListResponseSerializer,
+    FriendTableSerializer,
+    FriendsListResponseSerializer,
+    FromUserIdSerializer,
 )
-from api.serializers.general import MsgSerializer, TargetUserIdSerializer
 
 
 class AbstractFriendTableView(GenericAPIView):
@@ -133,7 +136,7 @@ class AcceptFriendView(AbstractFriendTableView):
             fromUserid = serialized.validated_data["fromUserid"]
             try:
                 friend_entry = self.model.objects.get(
-                    fromUserid=fromUserid, toUserid=user
+                    fromUserid=fromUserid, toUserid=user.userid, status=FriendTable.FriendshipStatus.PENDING
                 )
 
                 friend_entry.status = FriendTable.FriendshipStatus.ACCEPTED
@@ -232,7 +235,7 @@ class CancelPendingFriendView(AbstractFriendTableView):
             toUserid = serialized.validated_data["toUserid"]
             try:
                 friend_entry = self.model.objects.get(
-                    toUserid=toUserid, fromUserid=user.userid
+                    toUserid=toUserid, fromUserid=user.userid, status=FriendTable.FriendshipStatus.PENDING
                 )
 
                 friend_entry.delete()
@@ -243,7 +246,7 @@ class CancelPendingFriendView(AbstractFriendTableView):
 
             except ObjectDoesNotExist:
                 return Response(
-                    {"msg": f"No pending friend request from {toUserid} found."},
+                    {"msg": f"No pending friend request to {toUserid} found."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -408,8 +411,8 @@ class GetFriendsView(AbstractFriendTableView):
 
         friends = self.get_serializer(
             self.model.objects.filter(
-                Q(toUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
-                | Q(fromUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
+                Q(toUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED) |
+                Q(fromUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
             ),
             many=True,
         )
@@ -438,23 +441,21 @@ class RemoveFriendView(AbstractFriendTableView):
 
         if serialized.is_valid():
             targetUserid = serialized.validated_data["targetid"]
-            try:
-                entry = FriendTable.objects.get(
-                    Q(fromUserid=targetUserid, toUserid=user.userid)
-                    | Q(toUserid=targetUserid, fromUserid=user.userid)
-                )
-
-                entry.delete()
-
+            # Use filter() to handle multiple entries
+            entries = FriendTable.objects.filter(
+                Q(fromUserid=targetUserid, toUserid=user.userid) |
+                Q(toUserid=targetUserid, fromUserid=user.userid)
+            )
+            if entries.exists():
+                entries.delete()
                 return Response(
-                    {"msg": f"succesfully unfriended {targetUserid}"},
+                    {"msg": f"successfully unfriended {targetUserid}"},
                     status=status.HTTP_200_OK,
                 )
-
-            except ObjectDoesNotExist:
-                return Response(
-                    {"msg": f"unable to find friendship entry with {targetUserid}"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            return Response(
+                {"msg": f"unable to find friendship entry with {targetUserid}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
