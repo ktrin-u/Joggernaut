@@ -37,12 +37,12 @@ jobs:
         cd $GITHUB_WORKSPACE/back-end
         poetry run python manage.py test --noinput --parallel
       env:
-        client_id: ${{ secrets.CLIENT_ID }}
-        client_secret: ${{ secrets.CLIENT_SECRET }}
-        db_database: ${{ secrets.DB_DATABASE }}
-        db_host: ${{ secrets.DB_HOST }}
-        db_password: ${{ secrets.DB_PASSWORD }}
-        db_user: ${{ secrets.DB_USER }}
-        db_port: ${{ secrets.DB_PORT }}
-        django_key: ${{ secrets.DJANGO_KEY }}
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DJANGO_KEY: ${{ secrets.DJANGO_KEY }}
 
