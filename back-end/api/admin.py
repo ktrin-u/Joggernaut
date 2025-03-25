@@ -14,6 +14,11 @@ from .models import (
     UserProfiles,
     UserSettings,
     WorkoutRecord,
+    GameSave,
+    GameEnemy,
+    GameCharacter,
+    GameAchievementLog,
+    GameAchievement,
 )
 
 
@@ -68,7 +73,7 @@ class UserAuditLogAdmin(admin.ModelAdmin):
 @admin.register(UserProfiles)
 class UserProfilesAdmin(admin.ModelAdmin):
     list_display = [
-        "userid",
+        "userid__email",
         "accountname",
         "dateofbirth",
         "gender",
@@ -91,9 +96,16 @@ class UserSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(FriendTable)
 class FriendTableAdmin(admin.ModelAdmin):
-    list_display = ["lastUpdate", "fromUserid", "toUserid", "status", "creationDate"]
-    ordering = ["lastUpdate"]
+    list_display = [
+        "lastUpdate",
+        "fromUserid__email",
+        "toUserid__email",
+        "status",
+        "creationDate",
+    ]
+    ordering = ["lastUpdate", "creationDate"]
     # readonly_fields = ["fromUserid", "toUserid"]
+    list_filter = ["fromUserid", "toUserid"]
 
     def get_readonly_fields(
         self, request: HttpRequest, obj: Any | None = ...
@@ -115,6 +127,7 @@ class WorkoutRecordAdmin(admin.ModelAdmin):
     ]
     ordering = ["lastUpdate"]
     readonly_fields = ["creationDate"]
+    list_filter = ["userid"]
 
 
 @admin.register(FriendActivity)
@@ -131,6 +144,75 @@ class FriendActivityAdmin(admin.ModelAdmin):
     ]
     ordering = ["activityid", "creationDate"]
     readonly_fields = ["creationDate"]
+    list_filter = [
+        "activity",
+        "status",
+        "fromUserid",
+        "toUserid",
+    ]
+
+
+@admin.register(GameSave)
+class GameSaveAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "owner__email",
+    ]
+    ordering = ["id"]
+    readonly_fields = ["id"]
+
+
+@admin.register(GameCharacter)
+class GameCharacterAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "gamesave_id__owner__email",
+        "name",
+        "color_hex",
+        "health",
+        "speed",
+        "strength",
+        "stamina",
+    ]
+    ordering = ["id"]
+    list_filter = ["gamesave_id__owner__email"]
+
+
+@admin.register(GameEnemy)
+class GameEnemyAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+        "health",
+        "damage",
+        "speed",
+        "defense",
+    ]
+    ordering = ["id"]
+
+
+@admin.register(GameAchievement)
+class GameAchievementAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+        "description",
+    ]
+    ordering = ["id"]
+
+
+@admin.register(GameAchievementLog)
+class GameAchievementLogAdmin(admin.ModelAdmin):
+    list_display = [
+        "date",
+        "gamesave_id__owner__email",
+        "achievement_id__name",
+    ]
+    ordering = ["date"]
+    list_filter = [
+        "gamesave_id__owner__email",
+        "achievement_id__name",
+    ]
 
 
 admin.site.unregister(Group)  # remove the groups since oauth will be used for scoping

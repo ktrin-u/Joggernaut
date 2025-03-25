@@ -29,6 +29,9 @@ class GameEnemy(models.Model):
     speed = models.PositiveIntegerField(default=1)
     defense = models.PositiveIntegerField(default=1)
 
+    class Meta:
+        verbose_name_plural = "Game enemies"
+
 
 class GameAchievement(models.Model):
     id = models.AutoField(primary_key=True, editable=False, db_column="achievement_id")
