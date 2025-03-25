@@ -1,9 +1,7 @@
-from datetime import date
-
-from django.core.exceptions import ValidationError
 from django.test import TestCase
-
-from api.models import Gender, User, UserProfiles
+from django.core.exceptions import ValidationError
+from api.models import User, UserProfiles, Gender
+from datetime import date
 
 
 class TestUserProfiles(TestCase):

@@ -1,28 +1,27 @@
 from django.test import SimpleTestCase
-from django.urls import resolve, reverse
-from drf_spectacular.views import (  # type: ignore
-    SpectacularAPIView,
-    SpectacularSwaggerView,
-)
-from rest_framework import status
+from django.urls import reverse, resolve
 from rest_framework.test import APIClient
+from rest_framework import status
 
-from api.views.admin import BanUserView, UnbanUserView
-from api.views.auth import CreateUserView, RevokeTokenAPIView, TokenAPIView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView  # type: ignore
+
 from api.views.user import (
-    DeleteUserView,
     UpdateUserInfoView,
     UpdateUserPasswordView,
+    DeleteUserView,
     ViewUserInfoView,
 )
 from api.views.user_profile import (
-    CreateUserProfileView,
-    UpdateUserProfileView,
     UserProfileView,
+    UpdateUserProfileView,
+    CreateUserProfileView,
 )
+from api.views.auth import CreateUserView, TokenAPIView, RevokeTokenAPIView
+from api.views.admin import BanUserView, UnbanUserView
 
 
 class TestUrls(SimpleTestCase):
+
     def test_register_url(self):
         url = reverse("register new user")
         self.assertEqual(resolve(url).func.view_class, CreateUserView)  # type: ignore

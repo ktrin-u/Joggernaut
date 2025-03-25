@@ -1,17 +1,30 @@
-from django.contrib.admin.sites import site
 from django.test import TestCase
-
+from django.contrib.admin.sites import site
+from unittest.mock import MagicMock
+from api.models import User, WorkoutRecord, UserAuditLog, UserProfiles, UserSettings, FriendTable
 from api.admin import (
-    UserAdmin,
-    UserAuditLogAdmin,
-    UserProfilesAdmin,
-    UserSettingsAdmin,
-    WorkoutRecordAdmin,
+    UserAdmin, WorkoutRecordAdmin, UserAuditLogAdmin, UserProfilesAdmin, UserSettingsAdmin, FriendTableAdmin
 )
-from api.models import User, UserAuditLog, UserProfiles, UserSettings, WorkoutRecord
 
 
 class TestAdminRegistration(TestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(
+            email="testuser@email.com",
+            phonenumber="09171112222",
+            firstname="Test",
+            lastname="User",
+            password="testPass1@",
+        )
+
+        # Create a FriendTable instance
+        self.friend_table = FriendTable.objects.create(
+            fromUserid=self.user,
+            toUserid=self.user,
+            status="Pending",
+        )
+
     # Tests for admin registration
     def test_user_admin_registered(self):
         self.assertTrue(site.is_registered(User))
@@ -37,18 +50,7 @@ class TestAdminRegistration(TestCase):
     def test_user_admin_list_display(self):
         self.assertEqual(
             UserAdmin.list_display,
-            (
-                "userid",
-                "email",
-                "phonenumber",
-                "firstname",
-                "lastname",
-                "last_login",
-                "is_superuser",
-                "is_staff",
-                "is_active",
-                "joindate",
-            ),
+            ("userid", "email", "phonenumber", "firstname", "lastname", "last_login", "is_superuser", "is_staff", "is_active", "joindate"),
         )
 
     def test_user_activity_admin_list_display(self):
@@ -66,15 +68,7 @@ class TestAdminRegistration(TestCase):
     def test_user_profiles_admin_list_display(self):
         self.assertEqual(
             UserProfilesAdmin.list_display,
-            [
-                "userid",
-                "accountname",
-                "dateofbirth",
-                "gender",
-                "address",
-                "height_cm",
-                "weight_kg",
-            ],
+            ["userid", "accountname", "dateofbirth", "gender", "address", "height_cm", "weight_kg"],
         )
 
     def test_user_settings_admin_list_display(self):
@@ -98,20 +92,32 @@ class TestAdminRegistration(TestCase):
 
     # Tests for readonly_fields
     def test_user_admin_readonly_fields(self):
-        self.assertEqual(
-            UserAdmin.readonly_fields, ["userid", "last_login", "joindate"]
-        )
+        self.assertEqual(UserAdmin.readonly_fields, ["userid", "last_login", "joindate"])
 
     def test_user_activity_admin_readonly_fields(self):
         self.assertEqual(WorkoutRecordAdmin.readonly_fields, ["creationDate"])
 
     def test_user_audit_log_admin_readonly_fields(self):
-        self.assertEqual(
-            UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid")
-        )
+        self.assertEqual(UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid"))
 
     def test_user_profiles_admin_readonly_fields(self):
         self.assertEqual(UserProfilesAdmin.readonly_fields, ["userid"])
 
     def test_user_settings_admin_readonly_fields(self):
         self.assertEqual(UserSettingsAdmin.readonly_fields, ["userid"])
+
+    # Test for get_readonly_fields logic
+    def test_friend_table_admin_get_readonly_fields(self):
+        # Create a mock request
+        mock_request = MagicMock()
+
+        # Create an instance of FriendTableAdmin
+        admin_instance = FriendTableAdmin(FriendTable, site)
+
+        # Call get_readonly_fields with a truthy obj
+        readonly_fields = admin_instance.get_readonly_fields(mock_request, obj=self.friend_table)
+        self.assertEqual(readonly_fields, ["fromUserid", "toUserid"])  # Should return the fields
+
+        # Call get_readonly_fields with a falsy obj
+        readonly_fields = admin_instance.get_readonly_fields(mock_request, obj=None)
+        self.assertEqual(readonly_fields, [])  # Should return an empty list

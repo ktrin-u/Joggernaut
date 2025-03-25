@@ -1,7 +1,6 @@
-from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
 from django.test import TestCase
-
+from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 from api.models import User, WorkoutRecord
 
 
@@ -28,9 +27,7 @@ class TestWorkoutRecord(TestCase):
         self.assertIsNotNone(record.lastUpdate)
 
     def test_non_zero_calories_or_steps_constraint(self):
-        with self.assertRaises(
-            IntegrityError
-        ):  # Expect IntegrityError for invalid data
+        with self.assertRaises(IntegrityError):  # Expect IntegrityError for invalid data
             WorkoutRecord.objects.create(
                 userid=self.user,
                 calories=0,

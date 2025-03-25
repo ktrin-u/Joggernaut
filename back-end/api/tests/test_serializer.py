@@ -1,16 +1,15 @@
-import datetime
-from decimal import Decimal
-from unittest.mock import MagicMock, patch
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-
 from api.serializers.user import (
+    UserDeleteSerializer,
     RegisterFormSerializer,
     UpdateUserPasswordSerializer,
-    UserDeleteSerializer,
 )
 from api.serializers.user_profile import UserProfileFormSerializer
+
+from unittest.mock import MagicMock, patch
+from decimal import Decimal
+import datetime
 
 UserModel = get_user_model()
 

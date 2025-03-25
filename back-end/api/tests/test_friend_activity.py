@@ -1,19 +1,19 @@
-from django.core.exceptions import ValidationError
 from django.test import TestCase
-
-from api.models import FriendActivity, FriendActivityChoices, FriendActivityStatus, User
+from django.core.exceptions import ValidationError
+from django.utils.timezone import now, timedelta
+from api.models import User, FriendActivity, FriendActivityChoices, FriendActivityStatus
 
 
 class TestFriendActivity(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(  # type: ignore
+        self.user1 = User.objects.create_user(
             email="user1@email.com",
             phonenumber="09171112222",
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
         )
-        self.user2 = User.objects.create_user(  # type: ignore
+        self.user2 = User.objects.create_user(
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
@@ -38,7 +38,7 @@ class TestFriendActivity(TestCase):
                 toUserid=self.user1,
                 activity=FriendActivityChoices.POKE,
             )
-            self_referencing_activity.full_clean()  # Trigger validation
+            self_referencing_activity.full_clean()
 
     def test_accept_activity(self):
         activity = FriendActivity.objects.create(
@@ -50,44 +50,61 @@ class TestFriendActivity(TestCase):
         self.assertEqual(activity.status, FriendActivityStatus.ACCEPT)
         self.assertIsNotNone(activity.statusDate)
 
-    def test_duplicate_activity_creation(self):
-        FriendActivity.objects.create(
+    def test_accept_activity_when_expired(self):
+        activity = FriendActivity.objects.create(
             fromUserid=self.user1,
             toUserid=self.user2,
             activity=FriendActivityChoices.POKE,
         )
-        # Creating the same activity again should succeed unless explicitly restricted
-        duplicate_activity = FriendActivity.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            activity=FriendActivityChoices.POKE,
-        )
-        self.assertEqual(duplicate_activity.fromUserid, self.user1)
-        self.assertEqual(duplicate_activity.toUserid, self.user2)
-        self.assertEqual(duplicate_activity.activity, FriendActivityChoices.POKE)
+        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+        activity.save()
+        self.assertFalse(activity.accept_activity())
 
-    def test_activity_reverse_users(self):
-        activity1 = FriendActivity.objects.create(
+    def test_reject_activity(self):
+        activity = FriendActivity.objects.create(
             fromUserid=self.user1,
             toUserid=self.user2,
             activity=FriendActivityChoices.POKE,
         )
-        activity2 = FriendActivity.objects.create(
-            fromUserid=self.user2,
-            toUserid=self.user1,
-            activity=FriendActivityChoices.POKE,
-        )
-        self.assertNotEqual(activity1, activity2)
+        self.assertTrue(activity.reject_activity())
+        self.assertEqual(activity.status, FriendActivityStatus.REJECT)
+        self.assertIsNotNone(activity.statusDate)
 
-    def test_activity_with_different_activities(self):
-        poke_activity = FriendActivity.objects.create(
+        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+        activity.save()
+        self.assertFalse(activity.reject_activity())
+
+    def test_cancel_activity(self):
+        activity = FriendActivity.objects.create(
             fromUserid=self.user1,
             toUserid=self.user2,
             activity=FriendActivityChoices.POKE,
         )
-        challenge_activity = FriendActivity.objects.create(
+        self.assertTrue(activity.cancel_activity())
+        self.assertEqual(activity.status, FriendActivityStatus.CANCEL)
+        self.assertIsNotNone(activity.statusDate)
+
+        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+        activity.save()
+        self.assertFalse(activity.cancel_activity())
+
+    def test_expired_property(self):
+        activity = FriendActivity.objects.create(
             fromUserid=self.user1,
             toUserid=self.user2,
-            activity=FriendActivityChoices.CHALLENGE,
+            activity=FriendActivityChoices.POKE,
+            durationSecs=0,
         )
-        self.assertNotEqual(poke_activity.activity, challenge_activity.activity)
+        self.assertFalse(activity.expired)
+
+        activity = FriendActivity.objects.create(
+            fromUserid=self.user1,
+            toUserid=self.user2,
+            activity=FriendActivityChoices.POKE,
+            durationSecs=3600,
+        )
+        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+        activity.save()
+        self.assertTrue(activity.expired)
+        self.assertEqual(activity.status, FriendActivityStatus.EXPIRED)
+        self.assertIsNotNone(activity.statusDate)
