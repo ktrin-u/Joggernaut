@@ -1,9 +1,11 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.utils.timezone import now, timedelta
-from api.models.auth import PasswordResetToken
+
 from api.models import User
+from api.models.auth import PasswordResetToken
 from django_backend.settings import PASSWORD_RESET_TIMEOUT
-from unittest.mock import patch
 
 
 class TestPasswordResetToken(TestCase):
@@ -31,7 +33,9 @@ class TestPasswordResetToken(TestCase):
             user_email=self.user,
             token="validtoken123",
         )
-        self.assertFalse(token.expired)  # Token should not be expired immediately after creation
+        self.assertFalse(
+            token.expired
+        )  # Token should not be expired immediately after creation
 
         # Simulate an expired token by modifying `created_at`
         token.created_at = now() - timedelta(seconds=PASSWORD_RESET_TIMEOUT + 1)
@@ -40,7 +44,7 @@ class TestPasswordResetToken(TestCase):
 
     def test_token_never_expires(self):
         # Mock PASSWORD_RESET_TIMEOUT to 0
-        with patch('api.models.auth.PASSWORD_RESET_TIMEOUT', 0):
+        with patch("api.models.auth.PASSWORD_RESET_TIMEOUT", 0):
             token = PasswordResetToken.objects.create(
                 user_email=self.user,
                 token="neverexpiretoken",
@@ -54,5 +58,5 @@ class TestPasswordResetToken(TestCase):
         )
 
         # Mock the `created_at` field to simulate an invalid value
-        with patch.object(token, 'created_at', None):
+        with patch.object(token, "created_at", None):
             self.assertTrue(token.expired)  # Should return True if an exception occurs

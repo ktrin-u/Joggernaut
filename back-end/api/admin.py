@@ -9,16 +9,16 @@ from .forms import SignupForm, UserChangeForm
 from .models import (
     FriendActivity,
     FriendTable,
+    GameAchievement,
+    GameAchievementLog,
+    GameCharacter,
+    GameEnemy,
+    GameSave,
     User,
     UserAuditLog,
     UserProfiles,
     UserSettings,
     WorkoutRecord,
-    GameSave,
-    GameEnemy,
-    GameCharacter,
-    GameAchievementLog,
-    GameAchievement,
 )
 
 

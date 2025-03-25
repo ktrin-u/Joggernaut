@@ -1,7 +1,8 @@
-from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.test import TestCase
 from django.utils.timezone import now, timedelta
-from api.models import User, FriendActivity, FriendActivityChoices, FriendActivityStatus
+
+from api.models import FriendActivity, FriendActivityChoices, FriendActivityStatus, User
 
 
 class TestFriendActivity(TestCase):

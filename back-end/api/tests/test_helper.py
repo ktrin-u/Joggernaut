@@ -1,18 +1,20 @@
-from django.test import TestCase
+from datetime import timedelta
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.utils.timezone import now
 from oauth2_provider.models import AccessToken, Application
-from rest_framework.test import APIRequestFactory
 from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory
+
+from api.admin import WorkoutRecordAdmin
 from api.helper import (
     get_token_from_header,
     get_user_from_token,
     get_user_object,
     get_user_object_or_404,
 )
-from api.admin import WorkoutRecordAdmin
-from datetime import timedelta
-from unittest.mock import patch 
 
 User = get_user_model()
 
@@ -78,7 +80,9 @@ class TestHelperFuncs(TestCase):
         # Mock AccessToken.objects.get to simulate a valid token with a non-existent user
         with patch("oauth2_provider.models.AccessToken.objects.get") as mock_get:
             mock_get.return_value = type(
-                "MockAccessToken", (object,), {"user": 9999}  # Non-existent user ID
+                "MockAccessToken",
+                (object,),
+                {"user": 9999},  # Non-existent user ID
             )
 
             # Call the function with the mocked token

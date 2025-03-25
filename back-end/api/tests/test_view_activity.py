@@ -1,11 +1,19 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
-from api.models import User, FriendTable, FriendActivity, FriendActivityStatus, FriendActivityChoices
-from oauth2_provider.models import AccessToken, Application
-from datetime import timedelta
 from django.utils.timezone import now
+from oauth2_provider.models import AccessToken, Application
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from api.models import (
+    FriendActivity,
+    FriendActivityChoices,
+    FriendActivityStatus,
+    FriendTable,
+    User,
+)
 
 
 class TestActivityViews(TestCase):
@@ -75,7 +83,10 @@ class TestActivityViews(TestCase):
         data = {"toUserid": self.user2.userid, "durationSecs": 3600}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["msg"], "Poke Friend Activity entry successfully added to database")
+        self.assertEqual(
+            response.data["msg"],
+            "Poke Friend Activity entry successfully added to database",
+        )
 
     def test_poke_friend_view_not_friends(self):
         url = reverse("poke a friend")  # Correct URL name
@@ -89,4 +100,7 @@ class TestActivityViews(TestCase):
         data = {"toUserid": self.user2.userid, "durationSecs": 3600}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["msg"], "Challenge Friend Activity entry successfully added to database")
+        self.assertEqual(
+            response.data["msg"],
+            "Challenge Friend Activity entry successfully added to database",
+        )
