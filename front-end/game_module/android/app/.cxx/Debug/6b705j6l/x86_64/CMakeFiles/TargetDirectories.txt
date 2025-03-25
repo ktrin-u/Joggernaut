@@ -1,0 +1,2 @@
+C:/Users/phea/Desktop/CS 192/CS192-Joggernaut-game/front-end/game_module/android/app/.cxx/Debug/6b705j6l/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/phea/Desktop/CS 192/CS192-Joggernaut-game/front-end/game_module/android/app/.cxx/Debug/6b705j6l/x86_64/CMakeFiles/rebuild_cache.dir
