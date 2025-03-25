@@ -193,7 +193,6 @@ class GetUsersView(GenericAPIView):
         }
     )
     def get(self, request: Request) -> Response:
-
         pub_user = UserProfiles.objects.select_related("userid")
 
         serialized = self.get_serializer(pub_user, many=True)

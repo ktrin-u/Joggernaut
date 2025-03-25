@@ -21,7 +21,6 @@ from api.views.admin import BanUserView, UnbanUserView
 
 
 class TestUrls(SimpleTestCase):
-
     def test_register_url(self):
         url = reverse("register new user")
         self.assertEqual(resolve(url).func.view_class, CreateUserView)  # type: ignore

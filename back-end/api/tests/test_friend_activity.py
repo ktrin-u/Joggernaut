@@ -78,7 +78,6 @@ class TestFriendActivity(TestCase):
         )
         self.assertNotEqual(activity1, activity2)
 
-
     def test_activity_with_different_activities(self):
         poke_activity = FriendActivity.objects.create(
             fromUserid=self.user1,

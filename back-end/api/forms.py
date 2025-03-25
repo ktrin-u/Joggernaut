@@ -6,7 +6,6 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 # Register your models here.
 class SignupForm(forms.ModelForm):
-
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
     password2 = forms.CharField(
         label="Password confirmation", widget=forms.PasswordInput
@@ -43,4 +42,11 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["email", "password", "phonenumber", "firstname", "lastname", "is_superuser"]
+        fields = [
+            "email",
+            "password",
+            "phonenumber",
+            "firstname",
+            "lastname",
+            "is_superuser",
+        ]

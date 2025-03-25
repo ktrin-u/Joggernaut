@@ -23,8 +23,6 @@ class PasswordResetToken(models.Model):
             if PASSWORD_RESET_TIMEOUT == 0:  # 0 means cannot expire
                 return False
 
-            if time_elapsed > activity_duration:
-                return True
-            return False
+            return time_elapsed > activity_duration
         except Exception:
             return True  # safer to assume it is expired when it cannot be verified

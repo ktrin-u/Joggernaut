@@ -85,9 +85,8 @@ class CreateFriendSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data) -> FriendTable:
-        friendrequest = FriendTable.objects.create(
+        return FriendTable.objects.create(
             fromUserid=validated_data["fromUserid"],
             toUserid=validated_data["toUserid"],
             status=FriendTable.FriendshipStatus.PENDING,
         )
-        return friendrequest

@@ -5,7 +5,6 @@ from api.responses import RESPONSE_USER_NOT_FOUND
 
 
 class TestResponses(SimpleTestCase):
-
     def test_response_user_not_found(self):
         response = RESPONSE_USER_NOT_FOUND
         self.assertIsInstance(response, Response)

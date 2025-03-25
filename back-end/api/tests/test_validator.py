@@ -4,7 +4,6 @@ from api.validators import validate_phoneNumber, CustomPasswordValidator
 
 
 class TestValidator(TestCase):
-
     def setUp(self):
         self.password_validator = CustomPasswordValidator()
 

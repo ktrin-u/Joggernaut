@@ -1,10 +1,5 @@
 from django.test import TestCase
-from api.models import (
-    User,
-    UserAuditLog,
-    UserProfiles,
-    Gender
-)
+from api.models import User, UserAuditLog, UserProfiles, Gender
 from datetime import datetime, date
 from django.utils.timezone import make_aware
 
@@ -36,15 +31,27 @@ class TestUserModel(TestCase):
 
     def test_missing_email(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="", phonenumber="09171112222", firstname="First", lastname="Last")  # type: ignore
+            User.objects.create_user(
+                email="", phonenumber="09171112222", firstname="First", lastname="Last"
+            )  # type: ignore
 
     def test_missing_phone(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="test2@email.com", phonenumber="", firstname="First", lastname="Last")  # type: ignore
+            User.objects.create_user(
+                email="test2@email.com",
+                phonenumber="",
+                firstname="First",
+                lastname="Last",
+            )  # type: ignore
 
     def test_missing_name(self):
         with self.assertRaises(ValueError):
-            User.objects.create_user(email="test2@email.com", phonenumber="09171112222", firstname="", lastname="")  # type: ignore
+            User.objects.create_user(
+                email="test2@email.com",
+                phonenumber="09171112222",
+                firstname="",
+                lastname="",
+            )  # type: ignore
 
     def test_ban_user(self):
         self.user.ban()
@@ -65,7 +72,6 @@ class TestUserModel(TestCase):
         self.assertTrue(self.user.is_active)
         self.user.unban()
         self.assertTrue(self.user.is_active)
-
 
 
 class TestUserAuditLog(TestCase):
@@ -121,6 +127,3 @@ class TestUserProfiles(TestCase):
     def test_profile_fields(self):
         self.assertEqual(self.profile.height_cm, 999.9)
         self.assertEqual(self.profile.weight_kg, 99.9)
-
-
-

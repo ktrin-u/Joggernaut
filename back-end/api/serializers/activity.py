@@ -32,13 +32,12 @@ class CreateActivitySerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data) -> FriendActivity:  # type: ignore
-        activity = FriendActivity.objects.create(
+        return FriendActivity.objects.create(
             fromUserid=validated_data["fromUserid"],
             toUserid=validated_data["toUserid"],
             activity=validated_data["activity_type"],
             durationSecs=validated_data["durationSecs"],
         )
-        return activity
 
 
 class FriendActivitySerializer(serializers.ModelSerializer):

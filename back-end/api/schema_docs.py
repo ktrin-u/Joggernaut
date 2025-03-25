@@ -16,7 +16,7 @@ class Response:
                     "field_name2": "field error message",
                 },
             )
-        ]
+        ],
     )
 
     # 404 NOT FOUND
