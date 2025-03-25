@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("django_key")
+SECRET_KEY = os.getenv("DJANGO_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -97,11 +97,11 @@ DATABASES = {  # type: ignore
 >>>>>>> 1216fc8 (feat(backend): add forgot password email token endpoints)
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "HOST": os.getenv("db_host"),
-        "NAME": os.getenv("db_database"),
-        "USER": os.getenv("db_user"),
-        "PASSWORD": os.getenv("db_password"),
-        "PORT": os.getenv("db_port"),
+        "HOST": os.getenv("DB_HOST"),
+        "NAME": os.getenv("DB_DATABASE"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "PORT": os.getenv("DB_PORT"),
         "OPTIONS": {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -174,8 +174,8 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
     "SWAGGER_UI_OAUTH2_CONFIG": {
-        "clientId": os.getenv("client_id"),
-        "clientSecret": os.getenv("client_secret"),
+        "clientId": os.getenv("CLIENT_ID"),
+        "clientSecret": os.getenv("CLIENT_SECRET"),
         "appName": "api",
     },
     "OAUTH2_FLOWS": ["password"],
@@ -216,8 +216,8 @@ AUTH_USER_MODEL = "api.User"
 
 # Email SMTP Settings
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("smtp_host")
+EMAIL_HOST = os.getenv("SMTP_HOST")
 EMAIL_USE_TLS = True
-EMAIL_PORT = os.getenv("smtp_port")
-EMAIL_HOST_USER = os.getenv("smtp_user")
-EMAIL_HOST_PASSWORD = os.getenv("smtp_password")
+EMAIL_PORT = os.getenv("SMTP_PORT")
+EMAIL_HOST_USER = os.getenv("SMTP_USER")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")

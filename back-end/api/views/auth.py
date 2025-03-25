@@ -7,8 +7,6 @@ from rest_framework.generics import GenericAPIView, CreateAPIView
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter,
-    OpenApiResponse,
-    OpenApiExample,
 )
 
 from oauth2_provider.views import TokenView, RevokeTokenView
@@ -34,11 +32,13 @@ from api.models import User, PasswordResetToken
 
 MSG_FAIL = "FAIL:user {0} is {1}"
 
+
 def verify_reset_token(user: User, token: str):
     try:
         return PasswordResetToken.objects.get(user_email=user, token=token).expired
     except Exception:
         return False
+
 
 @extend_schema(
     summary="Register new user account",
@@ -78,8 +78,6 @@ class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
-
-
 
 
 @extend_schema(

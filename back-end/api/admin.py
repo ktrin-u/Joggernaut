@@ -98,8 +98,7 @@ class FriendTableAdmin(admin.ModelAdmin):
     ) -> list[str] | tuple[Any, ...]:
         if obj:
             return ["fromUserid", "toUserid"]
-        else:
-            return []
+        return []
 
 
 @admin.register(WorkoutRecord)

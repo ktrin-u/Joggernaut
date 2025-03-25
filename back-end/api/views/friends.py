@@ -411,8 +411,8 @@ class GetFriendsView(AbstractFriendTableView):
 
         friends = self.get_serializer(
             self.model.objects.filter(
-                Q(toUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED) |
-                Q(fromUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
+                Q(toUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
+                | Q(fromUserid=user, status=FriendTable.FriendshipStatus.ACCEPTED)
             ),
             many=True,
         )
@@ -443,8 +443,8 @@ class RemoveFriendView(AbstractFriendTableView):
             targetUserid = serialized.validated_data["targetid"]
             try:
                 entry = FriendTable.objects.get(
-                    Q(fromUserid=targetUserid, toUserid=user.userid) |
-                    Q(toUserid=targetUserid, fromUserid=user.userid)
+                    Q(fromUserid=targetUserid, toUserid=user.userid)
+                    | Q(toUserid=targetUserid, fromUserid=user.userid)
                 )
 
                 entry.delete()

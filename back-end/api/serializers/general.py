@@ -2,25 +2,21 @@ from rest_framework import serializers
 
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
 
+
 @extend_schema_serializer(
     examples=[
-        OpenApiExample(
-            name="generic",
-            value={
-                "msg":"message about what happened"
-            }
-        ),
+        OpenApiExample(name="generic", value={"msg": "message about what happened"}),
         OpenApiExample(
             name="success/pass",
             value={
-                "msg":"PASS:<success message>",
-            }
+                "msg": "PASS:<success message>",
+            },
         ),
         OpenApiExample(
             name="error/fail",
             value={
-                "msg":"ERROR:<error or point of failure message>",
-            }
+                "msg": "ERROR:<error or point of failure message>",
+            },
         ),
         OpenApiExample(
             name="malformed parameters",

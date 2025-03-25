@@ -6,7 +6,6 @@ from api.schema_docs import Response, Tags
 
 
 class TestSchemaDocs(SimpleTestCase):
-
     def test_serializer_validation_errors(self):
         response = Response.SERIALIZER_VALIDATION_ERRORS
         self.assertIsInstance(response, OpenApiResponse)

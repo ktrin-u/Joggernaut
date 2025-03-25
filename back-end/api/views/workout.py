@@ -80,8 +80,8 @@ class CreateWorkoutRecordView(GenericAPIView):
 
         if serializer.is_valid():
             if (
-                serializer.validated_data["calories"] == 0 and
-                serializer.validated_data["steps"] == 0
+                serializer.validated_data["calories"] == 0
+                and serializer.validated_data["steps"] == 0
             ):
                 return self.RESPONSE_BOTH_ZERO
 
@@ -208,7 +208,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
             except ObjectDoesNotExist:
                 return Response(
                     {
-                        "msg": f"workout id {serialized.validated_data["workoutid"]} under {user.userid} not found"
+                        "msg": f"workout id {serialized.validated_data['workoutid']} under {user.userid} not found"
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )

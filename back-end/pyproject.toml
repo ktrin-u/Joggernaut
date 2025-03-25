@@ -30,7 +30,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)
-select = ["E", "F", "W"]
+select = ["E", "F", "W", "SIM", "RET", "B"]
 ignore = ["E501"]
 extend-select = ["F403"]
 

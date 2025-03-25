@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import timedelta
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
@@ -136,7 +135,7 @@ class GetFriendActivityView(AbstractActivityView):
                 activities_qset = activities_qset.exclude(status=activity_status)
 
         for activity in activities_qset:
-            activity.expired  # update status if expired
+            _ = activity.expired  # update status if expired
 
         activities = self.get_serializer(
             activities_qset,
@@ -355,7 +354,10 @@ class AcceptActivityFriendView(AbstractActivityView):
                     status=status.HTTP_200_OK,
                 )
 
-            return Response({"msg": MSG_FAIL.format(activityid, activity.status)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"msg": MSG_FAIL.format(activityid, activity.status)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         except ObjectDoesNotExist:
             return Response(
@@ -496,7 +498,10 @@ class RejectActivityView(AbstractActivityView):
                     {"msg": MSG_PASS.format(activityid, FriendActivityStatus.REJECT)},
                     status=status.HTTP_200_OK,
                 )
-            return Response({"msg": MSG_FAIL.format(activityid, activity.status)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"msg": MSG_FAIL.format(activityid, activity.status)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         except ObjectDoesNotExist:
             return Response(

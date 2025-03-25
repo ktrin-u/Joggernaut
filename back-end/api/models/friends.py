@@ -102,7 +102,7 @@ class FriendActivity(models.Model):
             return False
 
     def clean(self) -> None:
-        self.expired
+        _ = self.expired
         if self.fromUserid == self.toUserid:
             raise ValidationError(
                 {"toUserid": "not allowed to match with key fromUserid"}
@@ -127,7 +127,7 @@ class FriendActivity(models.Model):
             return True
         return False
 
-    def cancel_activity(self)-> bool:
+    def cancel_activity(self) -> bool:
         if not self.expired:
             self.status = FriendActivityStatus.CANCEL
             self.statusDate = timezone.now()
