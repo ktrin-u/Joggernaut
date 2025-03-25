@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django_backend.settings import PASSWORD_RESET_TIMEOUT
 
-from api.models import User
+from .user import User
 
 from datetime import timedelta
 

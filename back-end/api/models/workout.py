@@ -1,5 +1,5 @@
 from django.db import models
-from api.models.user import User
+from .user import User
 
 
 class WorkoutRecord(models.Model):
