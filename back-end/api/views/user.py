@@ -1,24 +1,21 @@
-from oauth2_provider.contrib.rest_framework import TokenHasScope
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
-
 from django.contrib.auth import get_user_model
-
-from rest_framework import views, status
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+from rest_framework import status, views
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.response import Response
 
+from api.helper import clean_request_data, get_user_object
 from api.models.user import User, UserProfiles
-from api.schema_docs import Tags
 from api.permissions import isBanned
-from api.helper import get_user_object, clean_request_data
+from api.schema_docs import Tags
 from api.serializers.user import (
-    UserModelSerializer,
-    UserDeleteSerializer,
-    UpdateUserPasswordSerializer,
-    PublicUserSerializer,
     PublicUserResponseSerializer,
+    PublicUserSerializer,
+    UpdateUserPasswordSerializer,
+    UserDeleteSerializer,
+    UserModelSerializer,
 )
 
 

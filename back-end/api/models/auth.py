@@ -1,10 +1,11 @@
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
+
 from django_backend.settings import PASSWORD_RESET_TIMEOUT
 
 from .user import User
-
-from datetime import timedelta
 
 
 class PasswordResetToken(models.Model):

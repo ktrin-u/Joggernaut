@@ -1,7 +1,9 @@
 from enum import StrEnum, auto
+
 from drf_spectacular.types import OpenApiTypes
-from api.serializers.general import MsgSerializer
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse
+
+from api.serializers.general import MsgSerializer
 
 
 class Response:

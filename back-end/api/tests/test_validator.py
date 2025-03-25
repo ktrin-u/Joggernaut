@@ -1,6 +1,7 @@
-from django.test import TestCase
 from django.core.exceptions import ValidationError
-from api.validators import validate_phoneNumber, CustomPasswordValidator
+from django.test import TestCase
+
+from api.validators import CustomPasswordValidator, validate_phoneNumber
 
 
 class TestValidator(TestCase):

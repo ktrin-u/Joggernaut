@@ -1,10 +1,11 @@
 from .activity import (
     CreateActivitySerializer,
-    FriendActivitySerializer,
-    TargetActivitySerializer,
     FilterFriendActivitySerializer,
+    FriendActivitySerializer,
     NewActivitySerializer,
+    TargetActivitySerializer,
 )
+from .auth import ForgotPasswordEmailSerializer, ForgotPasswordTokenSerializer
 from .friends import (
     CreateFriendSerializer,
     FriendsListResponseSerializer,
@@ -15,7 +16,6 @@ from .friends import (
 )
 from .general import MsgSerializer, TargetUserIdSerializer
 from .token import RevokeTokenSerializer, TokenResponseSerializer, TokenSerializer
-from .user_profile import UserProfileFormSerializer
 from .user import (
     PublicUserResponseSerializer,
     PublicUserSerializer,
@@ -25,4 +25,4 @@ from .user import (
     UserDeleteSerializer,
     UserModelSerializer,
 )
-from .auth import ForgotPasswordEmailSerializer, ForgotPasswordTokenSerializer
+from .user_profile import UserProfileFormSerializer

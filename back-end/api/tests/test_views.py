@@ -1,11 +1,13 @@
-from rest_framework.test import APITestCase, APIClient
-from rest_framework import status
-from django.contrib.auth import get_user_model
-from api.models import UserProfiles
-from oauth2_provider.models import AccessToken, Application
-from django.utils.timezone import now
 from datetime import timedelta
 from decimal import Decimal
+
+from django.contrib.auth import get_user_model
+from django.utils.timezone import now
+from oauth2_provider.models import AccessToken, Application
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+
+from api.models import UserProfiles
 
 UserModel = get_user_model()
 

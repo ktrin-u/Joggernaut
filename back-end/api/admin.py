@@ -1,18 +1,20 @@
 from typing import Any
+
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
 from django.http import HttpRequest
+
+from .forms import SignupForm, UserChangeForm
 from .models import (
+    FriendActivity,
+    FriendTable,
     User,
     UserAuditLog,
     UserProfiles,
     UserSettings,
-    FriendTable,
     WorkoutRecord,
-    FriendActivity,
 )
-from django.contrib import admin
-from .forms import UserChangeForm, SignupForm
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import Group
 
 
 @admin.register(User)

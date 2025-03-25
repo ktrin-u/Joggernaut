@@ -1,8 +1,9 @@
 from django.test import SimpleTestCase
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from api.serializers.general import MsgSerializer
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse
+
 from api.schema_docs import Response, Tags
+from api.serializers.general import MsgSerializer
 
 
 class TestSchemaDocs(SimpleTestCase):

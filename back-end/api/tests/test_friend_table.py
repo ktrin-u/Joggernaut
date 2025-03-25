@@ -1,6 +1,7 @@
-from django.test import TestCase
-from api.models import User, FriendTable
 from django.core.exceptions import ValidationError
+from django.test import TestCase
+
+from api.models import FriendTable, User
 
 
 class TestFriendTable(TestCase):

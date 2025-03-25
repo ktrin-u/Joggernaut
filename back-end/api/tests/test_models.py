@@ -1,7 +1,9 @@
+from datetime import date, datetime
+
 from django.test import TestCase
-from api.models import User, UserAuditLog, UserProfiles, Gender
-from datetime import datetime, date
 from django.utils.timezone import make_aware
+
+from api.models import Gender, User, UserAuditLog, UserProfiles
 
 
 class TestUserModel(TestCase):

@@ -1,5 +1,5 @@
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
 
 RESPONSE_USER_NOT_FOUND = Response(
     {

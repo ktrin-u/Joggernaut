@@ -1,27 +1,24 @@
 from copy import deepcopy
 
 from django.core.exceptions import ObjectDoesNotExist
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
-
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
-
-from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from api import schema_docs
-from api.schema_docs import Tags
+from api.helper import clean_request_data, get_user_object
 from api.models.workout import WorkoutRecord
-from api.serializers.general import MsgSerializer
 from api.responses import RESPONSE_USER_NOT_FOUND
-from api.helper import get_user_object, clean_request_data
+from api.schema_docs import Tags
+from api.serializers.general import MsgSerializer
 from api.serializers.workout import (
+    GetWorkoutRecordSerializer,
+    NewWorkoutRecordRequestSerializer,
     NewWorkoutRecordSerializer,
     UpdateWorkoutRecordSerializer,
-    NewWorkoutRecordRequestSerializer,
-    GetWorkoutRecordSerializer,
 )
 
 

@@ -1,8 +1,10 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIRequestFactory
-from api.permissions import isBanned
 from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework.test import APIRequestFactory
+
+from api.permissions import isBanned
 
 User = get_user_model()
 
