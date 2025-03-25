@@ -16,10 +16,18 @@ class FriendTable(models.Model):
         verbose_name="Friend ID", primary_key=True, unique=True
     )
     fromUserid = models.ForeignKey(
-        User, models.CASCADE, db_column="fromUserID", related_name="friend_fromUserid"
+        User,
+        models.CASCADE,
+        db_column="fromUserID",
+        related_name="friend_fromUserid",
+        to_field="userid",
     )
     toUserid = models.ForeignKey(
-        User, models.CASCADE, db_column="toUserID", related_name="friend_toUserid"
+        User,
+        models.CASCADE,
+        db_column="toUserID",
+        related_name="friend_toUserid",
+        to_field="userid",
     )
     status = models.CharField(
         max_length=3, choices=FriendshipStatus.choices, default=FriendshipStatus.PENDING
@@ -67,12 +75,14 @@ class FriendActivity(models.Model):
         models.CASCADE,
         db_column="fromUserID",
         related_name="friendactivity_fromUserid",
+        to_field="userid",
     )
     toUserid = models.ForeignKey(
         User,
         models.CASCADE,
         db_column="toUserID",
         related_name="friendactivity_toUserid",
+        to_field="userid",
     )
     activity = models.CharField(max_length=3, choices=FriendActivityChoices)
     creationDate = models.DateTimeField(auto_now_add=True)

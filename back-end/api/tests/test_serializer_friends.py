@@ -1,27 +1,26 @@
 from django.test import TestCase
-from api.models import User, FriendTable
-from api.serializers.friends import (
-    ToUserIdSerializer,
-    FromUserIdSerializer,
-    FriendTableSerializer,
-    FriendsListResponseSerializer,
-    PendingFriendsListResponseSerializer,
-    CreateFriendSerializer,
-)
 from rest_framework.exceptions import ErrorDetail
+
+from api.models import FriendTable, User
+from api.serializers.friends import (
+    FriendsListResponseSerializer,
+    FromUserIdSerializer,
+    PendingFriendsListResponseSerializer,
+    ToUserIdSerializer,
+)
 
 
 class TestFriendSerializers(TestCase):
     def setUp(self):
         # Create test users
-        self.user1 = User.objects.create_user(
+        self.user1: User = User.objects.create_user(  # type: ignore
             email="user1@email.com",
             phonenumber="09171112222",
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
         )
-        self.user2 = User.objects.create_user(
+        self.user2: User = User.objects.create_user(  # type: ignore
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
@@ -38,12 +37,11 @@ class TestFriendSerializers(TestCase):
 
     def test_to_user_id_serializer(self):
         serializer = ToUserIdSerializer(instance=self.friend)
-        self.assertEqual(serializer.data, {"toUserid": self.user2.userid})
+        self.assertEqual(serializer.data, {"toUserid": str(self.user2.userid)})
 
     def test_from_user_id_serializer(self):
         serializer = FromUserIdSerializer(instance=self.friend)
-        self.assertEqual(serializer.data, {"fromUserid": self.user1.userid})
-
+        self.assertEqual(serializer.data, {"fromUserid": str(self.user1.userid)})
 
     def test_friends_list_response_serializer_valid(self):
         serializer = FriendsListResponseSerializer(data={"friends": [self.friend]})
@@ -54,7 +52,16 @@ class TestFriendSerializers(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {"friends": {"friends": [ErrorDetail(string="list contents must be of type FriendTable", code="invalid")]}}  # noqa
+            {
+                "friends": {
+                    "friends": [
+                        ErrorDetail(
+                            string="list contents must be of type FriendTable",
+                            code="invalid",
+                        )
+                    ]
+                }
+            },  # noqa
         )
 
     def test_pending_friends_list_response_serializer_valid(self):
@@ -70,7 +77,16 @@ class TestFriendSerializers(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {"sent": {"sent": [ErrorDetail(string="list contents must be of type FriendTable", code="invalid")]}}  # noqa
+            {
+                "sent": {
+                    "sent": [
+                        ErrorDetail(
+                            string="list contents must be of type FriendTable",
+                            code="invalid",
+                        )
+                    ]
+                }
+            },  # noqa
         )
 
     def test_pending_friends_list_response_serializer_invalid_received(self):
@@ -80,5 +96,14 @@ class TestFriendSerializers(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {"received": {"received": [ErrorDetail(string="list contents must be of type FriendTable", code="invalid")]}}  # noqa
+            {
+                "received": {
+                    "received": [
+                        ErrorDetail(
+                            string="list contents must be of type FriendTable",
+                            code="invalid",
+                        )
+                    ]
+                }
+            },  # noqa
         )

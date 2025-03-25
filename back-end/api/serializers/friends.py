@@ -8,15 +8,29 @@ from api.models import FriendTable
 
 
 class ToUserIdSerializer(serializers.ModelSerializer):
+    toUserid = serializers.UUIDField(required=True)
+
     class Meta:  # type: ignore
         model = FriendTable
         fields = ["toUserid"]
 
+    def to_representation(self, instance: FriendTable) -> Any:
+        data = super().to_representation(instance)
+        data["toUserid"] = str(instance.toUserid.userid)
+        return data
+
 
 class FromUserIdSerializer(serializers.ModelSerializer):
+    fromUserid = serializers.UUIDField(required=True)
+
     class Meta:  # type: ignore
         model = FriendTable
         fields = ["fromUserid"]
+
+    def to_representation(self, instance: FriendTable) -> Any:
+        data = super().to_representation(instance)
+        data["fromUserid"] = str(instance.fromUserid.userid)
+        return data
 
 
 class FriendTableSerializer(serializers.ModelSerializer):
