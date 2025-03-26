@@ -115,7 +115,5 @@ class PublicUserResponseSerializer(serializers.Serializer):
 
     def validate_users(self, value):
         if not all(isinstance(x, UserProfiles) for x in value):
-            raise ValidationError(
-                {"users": "list contents must be of type UserProfile"}
-            )
+            raise ValidationError({"users": "list contents must be of type UserProfile"})
         return value

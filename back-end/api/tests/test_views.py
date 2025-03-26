@@ -50,9 +50,7 @@ class UserViewsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_user_info(self):
-        response = self.client.patch(
-            "/api/user/info/update", {"email": "newemail@example.com"}
-        )
+        response = self.client.patch("/api/user/info/update", {"email": "newemail@example.com"})
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
     def test_change_password(self):
@@ -107,24 +105,18 @@ class UserViewsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_delete_user(self):
-        response = self.client.post(
-            "/api/user/delete", {"delete": True, "confirm_delete": True}
-        )
+        response = self.client.post("/api/user/delete", {"delete": True, "confirm_delete": True})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_ban_and_unban_user(self):
         self.assertTrue(self.user.is_active)
 
-        response = self.client.post(
-            "/api/admin/ban/", {"userid": str(self.user.userid)}
-        )
+        response = self.client.post("/api/admin/ban/", {"userid": str(self.user.userid)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_active)
 
-        response = self.client.post(
-            "/api/admin/unban/", {"userid": str(self.user.userid)}
-        )
+        response = self.client.post("/api/admin/unban/", {"userid": str(self.user.userid)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_active)

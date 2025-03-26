@@ -209,9 +209,7 @@ class PokeFriendView(AbstractActivityView):
                 serialized.save(activity_type=FriendActivityChoices.POKE)
             except ObjectDoesNotExist:
                 return Response(
-                    {
-                        "msg": f"user is not friends with {serialized.validated_data['toUserid']}"
-                    }
+                    {"msg": f"user is not friends with {serialized.validated_data['toUserid']}"}
                 )
             return self.RESPONSE_SUCCESS
 
@@ -282,9 +280,7 @@ class ChallengeFriendView(AbstractActivityView):
             serialized.save(activity_type=FriendActivityChoices.CHALLENGE)
         except ObjectDoesNotExist:
             return Response(
-                {
-                    "msg": f"user is not friends with {serialized.validated_data['toUserid']}"
-                }
+                {"msg": f"user is not friends with {serialized.validated_data['toUserid']}"}
             )
         return self.RESPONSE_SUCCESS
 
@@ -343,10 +339,7 @@ class AcceptActivityFriendView(AbstractActivityView):
                 toUserid=request.user.userid,  # type: ignore
             )  # type: ignore
 
-            if (
-                activity.status == FriendActivityStatus.PENDING
-                and activity.accept_activity()
-            ):
+            if activity.status == FriendActivityStatus.PENDING and activity.accept_activity():
                 return Response(
                     {"msg": MSG_PASS.format(activityid, FriendActivityStatus.ACCEPT)},
                     status=status.HTTP_200_OK,
@@ -433,10 +426,7 @@ class CancelActivityView(AbstractActivityView):
                 fromUserid=request.user.userid,  # type: ignore
             )
 
-            if (
-                activity.status == FriendActivityStatus.PENDING
-                and activity.cancel_activity()
-            ):
+            if activity.status == FriendActivityStatus.PENDING and activity.cancel_activity():
                 return Response(
                     {
                         "msg": MSG_PASS.format(
@@ -488,10 +478,7 @@ class RejectActivityView(AbstractActivityView):
                 toUserid=request.user.userid,  # type: ignore
             )
 
-            if (
-                activity.status == FriendActivityStatus.PENDING
-                and activity.reject_activity()
-            ):
+            if activity.status == FriendActivityStatus.PENDING and activity.reject_activity():
                 return Response(
                     {"msg": MSG_PASS.format(activityid, FriendActivityStatus.REJECT)},
                     status=status.HTTP_200_OK,

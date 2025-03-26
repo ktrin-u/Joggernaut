@@ -57,9 +57,7 @@ class CreateWorkoutRecordView(GenericAPIView):
                 response=MsgSerializer,
                 description="calories=steps=0",
                 examples=[
-                    OpenApiExample(
-                        name="accepted but no entry", value=RESPONSE_BOTH_ZERO.data
-                    )
+                    OpenApiExample(name="accepted but no entry", value=RESPONSE_BOTH_ZERO.data)
                 ],
             ),
             RESPONSE_USER_NOT_FOUND.status_code: schema_docs.Response.AUTH_TOKEN_USER_NOT_FOUND,
@@ -102,9 +100,7 @@ class GetWorkoutRecordView(GenericAPIView):
         if user is None:
             return RESPONSE_USER_NOT_FOUND
 
-        workouts = self.get_serializer(
-            self.model.objects.filter(userid=user.userid), many=True
-        )
+        workouts = self.get_serializer(self.model.objects.filter(userid=user.userid), many=True)
 
         return Response(data=workouts.data, status=status.HTTP_200_OK)
 
@@ -128,9 +124,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
     _not_found.examples.append(  # type: ignore
         OpenApiExample(
             name="invalid workoutid",
-            value={
-                "msg": "workout id 15 under eb28f55f-fd95-43ce-ba91-e279bcdc9e6f not found"
-            },
+            value={"msg": "workout id 15 under eb28f55f-fd95-43ce-ba91-e279bcdc9e6f not found"},
         )
     )
 
@@ -154,9 +148,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
                     ),
                     OpenApiExample(
                         name="new calories and steps",
-                        value={
-                            "msg": "success, calories updated to 2340, steps updated to 8792, "
-                        },
+                        value={"msg": "success, calories updated to 2340, steps updated to 8792, "},
                     ),
                 ],
             ),

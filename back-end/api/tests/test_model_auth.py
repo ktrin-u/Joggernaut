@@ -33,9 +33,7 @@ class TestPasswordResetToken(TestCase):
             user_email=self.user,
             token="validtoken123",
         )
-        self.assertFalse(
-            token.expired
-        )  # Token should not be expired immediately after creation
+        self.assertFalse(token.expired)  # Token should not be expired immediately after creation
 
         # Simulate an expired token by modifying `created_at`
         token.created_at = now() - timedelta(seconds=PASSWORD_RESET_TIMEOUT + 1)

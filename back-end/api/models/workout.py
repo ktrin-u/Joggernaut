@@ -4,9 +4,7 @@ from .user import User
 
 
 class WorkoutRecord(models.Model):
-    workoutid = models.BigAutoField(
-        primary_key=True, unique=True
-    )  # Field name made lowercase.
+    workoutid = models.BigAutoField(primary_key=True, unique=True)  # Field name made lowercase.
     userid = models.ForeignKey(
         User, models.CASCADE, db_column="userID"
     )  # Field name made lowercase.

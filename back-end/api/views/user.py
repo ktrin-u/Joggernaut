@@ -153,9 +153,7 @@ class DeleteUserView(AbstractUserView):
         return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(
-    summary="Get list of users and their non-confidential data", tags=[Tags.USER]
-)
+@extend_schema(summary="Get list of users and their non-confidential data", tags=[Tags.USER])
 class GetUsersView(GenericAPIView):
     serializer_class = PublicUserSerializer
     permission_classes = [TokenHasScope]

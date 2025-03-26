@@ -90,9 +90,7 @@ class User(AbstractUser):
 
 
 class UserAuditLog(models.Model):
-    logid = models.AutoField(
-        db_column="logID", primary_key=True
-    )  # Field name made lowercase.
+    logid = models.AutoField(db_column="logID", primary_key=True)  # Field name made lowercase.
     userid = models.ForeignKey(
         User, models.CASCADE, db_column="userID"
     )  # Field name made lowercase.
@@ -113,9 +111,7 @@ class UserProfiles(models.Model):
         User, on_delete=models.CASCADE, db_column="userID", primary_key=True
     )
     accountname = models.CharField(unique=True, max_length=50)
-    dateofbirth = models.DateField(
-        db_column="dateOfBirth"
-    )  # Field name made lowercase.
+    dateofbirth = models.DateField(db_column="dateOfBirth")  # Field name made lowercase.
     gender = models.CharField(choices=Gender, max_length=6)
     address = models.TextField()
     height_cm = models.DecimalField(max_digits=5, decimal_places=2)

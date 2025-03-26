@@ -8,9 +8,7 @@ from .models import User
 # Register your models here.
 class SignupForm(forms.ModelForm):
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
-    password2 = forms.CharField(
-        label="Password confirmation", widget=forms.PasswordInput
-    )
+    password2 = forms.CharField(label="Password confirmation", widget=forms.PasswordInput)
 
     class Meta:
         model = User

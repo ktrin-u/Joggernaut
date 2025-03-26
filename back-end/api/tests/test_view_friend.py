@@ -66,9 +66,7 @@ class TestFriendsViews(TestCase):
 
     def _set_credentials(self, user_num: int):
         if isinstance(self.client, APIClient):
-            self.client.credentials(
-                HTTP_AUTHORIZATION=f"Bearer {self.access_tokens[user_num]}"
-            )
+            self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_tokens[user_num]}")
 
     def test_send_friend_request_valid(self):
         user_num = 0
@@ -77,9 +75,7 @@ class TestFriendsViews(TestCase):
         data = {"toUserid": str(self.users[user_num + 1].userid)}
         response = self.client.post(url, data)
         data = json.loads(response.content)
-        self.assertEqual(
-            data["msg"], "friend request entry successfully added to database"
-        )
+        self.assertEqual(data["msg"], "friend request entry successfully added to database")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_send_friend_request_user_not_found(self):

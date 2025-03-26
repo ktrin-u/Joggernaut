@@ -106,9 +106,7 @@ class TestUpdateUserPasswordSerializer(TestCase):
         self.assertIn("new_password", serializer.errors)
 
     def test_update_user_password(self):
-        serializer = UpdateUserPasswordSerializer(
-            instance=self.user, data=self.valid_data
-        )
+        serializer = UpdateUserPasswordSerializer(instance=self.user, data=self.valid_data)
         self.assertTrue(serializer.is_valid())
 
         updated_user = serializer.update(self.user, serializer.validated_data)

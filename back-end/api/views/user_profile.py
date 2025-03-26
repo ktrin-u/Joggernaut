@@ -29,9 +29,7 @@ class UserProfileView(AbstractUserProfileView):
     def get(self, request: Request, format=None) -> Response:
         user = get_user_object(request)
         if user is None:
-            return Response(
-                {"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             profile = self.model.objects.get(userid=user.userid)
@@ -55,9 +53,7 @@ class CreateUserProfileView(AbstractUserProfileView):
         serialized = UserProfileFormSerializer(data=request.data)
         if serialized.is_valid():
             serialized.save()
-            return Response(
-                {"msg": "user profile created"}, status=status.HTTP_201_CREATED
-            )
+            return Response({"msg": "user profile created"}, status=status.HTTP_201_CREATED)
 
         return Response(data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -76,9 +72,7 @@ class UpdateUserProfileView(AbstractUserProfileView):
         user = get_user_object(request)
 
         if user is None:
-            return Response(
-                {"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             profile = self.model.objects.get(userid=user.userid)
@@ -91,9 +85,7 @@ class UpdateUserProfileView(AbstractUserProfileView):
                 serialized.save()
                 return Response(data=serialized.data, status=status.HTTP_201_CREATED)
 
-            return Response(
-                data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+            return Response(data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except UserProfiles.DoesNotExist:
             return Response(

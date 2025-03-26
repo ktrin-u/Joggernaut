@@ -21,9 +21,7 @@ urlpatterns = [
         auth.ResetForgotPasswordView.as_view(),
         name="change forgot password",
     ),
-    path(
-        "profile/", user_profile.UserProfileView.as_view(), name="retrieve user profile"
-    ),
+    path("profile/", user_profile.UserProfileView.as_view(), name="retrieve user profile"),
     path(
         "profile/new",
         user_profile.CreateUserProfileView.as_view(),
@@ -37,9 +35,7 @@ urlpatterns = [
     path("user/", user.GetUsersView.as_view(), name="get list of users"),
     path("user/info/", user.ViewUserInfoView.as_view(), name="retrieve user info"),
     path("user/delete", user.DeleteUserView.as_view(), name="delete user account"),
-    path(
-        "user/info/update", user.UpdateUserInfoView.as_view(), name="update user info"
-    ),
+    path("user/info/update", user.UpdateUserInfoView.as_view(), name="update user info"),
     path(
         "user/password/change",
         user.UpdateUserPasswordView.as_view(),
@@ -66,9 +62,7 @@ urlpatterns = [
         friends.RejectFriendView.as_view(),
         name="reject friend request",
     ),
-    path(
-        "friends/remove", friends.RemoveFriendView.as_view(), name="unfriend a friend"
-    ),
+    path("friends/remove", friends.RemoveFriendView.as_view(), name="unfriend a friend"),
     path(
         "friends/pending",
         friends.GetPendingFriendsView.as_view(),
@@ -100,9 +94,7 @@ urlpatterns = [
         activity.CancelActivityView.as_view(),
         name="cancel a pending activity",
     ),
-    path(
-        "workout/", workout.GetWorkoutRecordView.as_view(), name="get workout records"
-    ),
+    path("workout/", workout.GetWorkoutRecordView.as_view(), name="get workout records"),
     path(
         "workout/add",
         workout.CreateWorkoutRecordView.as_view(),
