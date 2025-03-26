@@ -31,8 +31,8 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
       });
       showFormBottomSheet(
         context: context, 
-        minHeight: 0.52,
-        maxHeight: 0.52, 
+        minHeight: 0.55,
+        maxHeight: 0.55, 
         form: VerificationForm(), 
         onClose: null
       );
@@ -121,7 +121,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.21),
+          SizedBox(height: screenHeight * 0.2),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
             child: Row(

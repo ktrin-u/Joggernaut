@@ -1001,7 +1001,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                       style: TextStyle(
                         color: Colors.black,
                         fontFamily: 'Roboto',
-                        fontSize: screenWidth * 0.045, 
+                        fontSize: screenWidth * 0.04, 
                         fontWeight: FontWeight.w400,
                       ),
                     ),

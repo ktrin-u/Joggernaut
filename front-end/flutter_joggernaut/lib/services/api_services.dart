@@ -595,7 +595,7 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "durationSecs": "20",
+          "durationSecs": "3600",
           "toUserid": friendId,
         },
         encoding: Encoding.getByName('utf-8')

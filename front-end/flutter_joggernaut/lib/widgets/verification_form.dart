@@ -35,8 +35,8 @@ class _VerificationFormState extends State<VerificationForm> {
       });
       showFormBottomSheet(
         context: context, 
-        minHeight: 0.52,
-        maxHeight: 0.52, 
+        minHeight: 0.55,
+        maxHeight: 0.55, 
         form: ChangePasswordForm(), 
         onClose: null
       );
@@ -204,7 +204,7 @@ class _VerificationFormState extends State<VerificationForm> {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.16),
+          SizedBox(height: screenHeight * 0.15),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
             child: Row(

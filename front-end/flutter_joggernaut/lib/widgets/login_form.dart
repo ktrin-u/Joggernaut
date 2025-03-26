@@ -153,10 +153,11 @@ class _LoginFormState extends State<LoginForm> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
+                Navigator.pop(context);
                 showFormBottomSheet(
                   context: context, 
-                  minHeight: 0.52,
-                  maxHeight: 0.52, 
+                  minHeight: 0.55,
+                  maxHeight: 0.55, 
                   form: ResetPasswordForm(), 
                   onClose: null
                 );
