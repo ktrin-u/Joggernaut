@@ -29,7 +29,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   String? myUserID;
   List<Map<String, dynamic>> users = [];
   List<Map<String, dynamic>> friends = [];
-  List<Map<String, dynamic>> requests = [];
   List<Map<String, dynamic>> receivedRequests = [];
   List<Map<String, dynamic>> friendActivities = [];
 
@@ -72,10 +71,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   void filterFriends() {
-    List requestIDs = receivedRequests.map((friend) {
-      return friend["fromUserid"] == myUserID ? friend["toUserid"] : friend["fromUserid"];
-    }).where((id) => id != myUserID).toList();
-
     Map<String, String> userMap = {
       for (var user in users) user["userid"] as String: user["accountname"] as String
     };
@@ -91,6 +86,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
       activity["timeAgo"] = formatTimeAgo(difference);
     }
 
+    for (var request in receivedRequests) {
+      String toUserId = request["toUserid"];
+      String fromUserId = request["fromUserid"];
+      request["friendName"] = toUserId == myUserID ? userMap[fromUserId] : userMap[toUserId];
+
+      DateTime creationDate = DateTime.parse(request["creationDate"]);
+      Duration difference = now.difference(creationDate);
+      request["timeAgo"] = formatTimeAgo(difference);
+    }
+
     friendActivities.removeWhere((activity) =>
       (activity["fromUserid"] == myUserID && (activity["status"] != "ACC" && activity["status"] != "REJ" && activity["status"] != "EXP")) ||
       (activity["toUserid"] == myUserID && (activity["status"] == "ACC" || activity["status"] == "REJ")) ||
@@ -100,11 +105,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
 
     friendActivities.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
-    setState(() {
-      requests = users
-      .where((user) => requestIDs.contains(user["userid"]))
-      .toList();
-    });
+    receivedRequests.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
   }
 
   Future setup() async {
@@ -170,32 +171,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.only(top: 0, bottom: screenHeight * 0.01),
-                    itemCount: friendActivities.length, 
+                    itemCount: receivedRequests.length + friendActivities.length, 
                     itemBuilder: (context, index) {
+                      bool isRequest = index < receivedRequests.length;
                       bool isExpired = false;
-                      var item = friendActivities[index];
+                      var item = isRequest ? receivedRequests[index] : friendActivities[index - receivedRequests.length]; // Fix: Use friendActivities
+
                       var friendID = item["fromUserid"] == myUserID ? item["toUserid"] : item["fromUserid"];
                       String subtitleText;
-                      if (item["activity"] == "CHA") {
-                        if (item["status"] == "EXP" && item["toUserid"] == myUserID){
-                          isExpired = true;
-                          subtitleText = "challenge has expired!";
-                        } 
-                        else if (item["status"] == "EXP" && item["fromUserid"] == myUserID){
-                          isExpired = true;
-                          subtitleText = "challenge to ${item["friendName"]} has expired!";
-                        } 
-                        else if (item["status"] == "ACC" && item["fromUserid"] == myUserID){
-                          subtitleText = "accepted your challenge!";
-                        }
-                        else if (item["status"] == "REJ" && item["fromUserid"] == myUserID){
-                          subtitleText = "rejected your challenge!";
-                        }
-                        else {
-                          subtitleText = "challenged you!";
-                        }     
+
+                      if (isRequest) {
+                        subtitleText = "sent you a friend request";
                       } else {
-                        subtitleText = "poked you!"; 
+                        if (item["activity"] == "CHA") {
+                          if (item["status"] == "EXP" && item["toUserid"] == myUserID) {
+                            isExpired = true;
+                            subtitleText = "challenge has expired!";
+                          } else if (item["status"] == "EXP" && item["fromUserid"] == myUserID) {
+                            isExpired = true;
+                            subtitleText = "challenge to ${item["friendName"]} has expired!";
+                          } else if (item["status"] == "ACC" && item["fromUserid"] == myUserID) {
+                            subtitleText = "accepted your challenge!";
+                          } else if (item["status"] == "REJ" && item["fromUserid"] == myUserID) {
+                            subtitleText = "rejected your challenge!";
+                          } else {
+                            subtitleText = "challenged you!";
+                          }
+                        } else {
+                          subtitleText = "poked you!";
+                        }
                       }
                       return Padding(
                         padding: EdgeInsets.symmetric(

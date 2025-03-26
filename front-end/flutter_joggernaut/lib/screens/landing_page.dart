@@ -46,7 +46,7 @@ class _LandingPageState extends State<LandingPage> {
             curve: Curves.easeInOut,
             top: _titleMovedUpLogin
                 ? screenHeight * 0.18
-                : (_titleMovedUpSignUp ? screenHeight * 0.08 : screenHeight / 2.5),
+                : (_titleMovedUpSignUp ? screenHeight * 0.08 : screenHeight / 3.5),
             left: 0,
             right: 0,
             child: Center(

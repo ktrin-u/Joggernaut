@@ -158,7 +158,8 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.085),
+          (error != null) ? SizedBox(height: screenHeight * 0.05)
+          : SizedBox(height: screenHeight * 0.08),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
             child: Row(

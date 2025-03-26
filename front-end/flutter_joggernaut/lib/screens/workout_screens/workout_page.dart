@@ -220,7 +220,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.06, 
+                              fontSize: screenWidth * 0.05, 
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -229,7 +229,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.05, 
+                              fontSize: screenWidth * 0.04, 
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -241,7 +241,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: screenHeight*0.02, horizontal: screenWidth*0.05),
                   child: AspectRatio(
-                    aspectRatio: 0.95, 
+                    aspectRatio: 1.1, 
                     child: BarChartWidget(
                       title: "Weekly Steps",
                       weeklyData: weeklySteps,
@@ -279,7 +279,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.06, 
+                                  fontSize: screenWidth * 0.05, 
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -293,7 +293,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                     _saveSteps
                                   );
                                 },
-                                iconSize: screenWidth*0.07,
+                                iconSize: screenWidth*0.06,
                                 icon: Icon(Icons.edit_square),
                                 color: Color.fromRGBO(90, 155, 212, 1),
                               )
@@ -320,7 +320,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.06, 
+                                  fontSize: screenWidth * 0.05, 
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -334,7 +334,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                     _saveCalories,
                                   );
                                 },
-                                iconSize: screenWidth*0.07,
+                                iconSize: screenWidth*0.06,
                                 icon: Icon(Icons.edit_square),
                                 color: Color.fromRGBO(90, 155, 212, 1),
                               )
