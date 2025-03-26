@@ -72,7 +72,10 @@ flutter:
   assets:
     - assets/images/
     - assets/tiles/
-    - assets/images/Terrain/
+    - assets/images/Terrain/Ground/
+    - assets/images/Terrain/Water/
+    - assets/images/Terrain/Bridge/
+    - assets/images/Factions/Knights/Troops/Archer/Blue/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

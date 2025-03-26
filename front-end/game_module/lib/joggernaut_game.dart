@@ -4,56 +4,49 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/palette.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_joggernaut_game/actors/player.dart';
-import 'package:flutter_joggernaut_game/worlds/map.dart';
+import 'package:flutter_joggernaut_game/components/player.dart';
+import 'package:flutter_joggernaut_game/components/map.dart';
 
 class JoggernautGame extends FlameGame {
   @override
-  Color backgroundColor() => const Color(0xFF211F30);
+  Color backgroundColor() => const Color(0xFF47ABA9); // 0xFF211F30
   late Map map;
   late Player player;
   late JoystickComponent joystick;
 
   @override
   FutureOr<void> onLoad() async {
-    super.onLoad();
+    await images.loadAllImages();
 
-    player = Player();
-    map = Map(player: player);
+    player = Player(character: 'Blue');
+    map = Map(mapName: 'world01', player: player);
 
     camera = CameraComponent.withFixedResolution(
       world: map,
-      width: 640,
-      height: 360,
+      width: 540,
+      height: 1200,
     );
     camera.priority = 1;
     camera.follow(player);
 
     addAll([camera, map]);
     addJoystick();
-  }
-
-  @override
-  void update(double dt) {
-    if (joystick.direction != JoystickDirection.idle) {
-      player.position.add(joystick.relativeDelta * player.maxSpeed * dt);
-      player.angle = joystick.delta.screenAngle();
-    }
-    super.update(dt);
+    return super.onLoad();
   }
 
   void addJoystick() {
+    double joystickSize = 48;
     joystick = JoystickComponent(
       priority: 2,
       knob: CircleComponent(
-        radius: 24,
+        radius: joystickSize,
         paint: BasicPalette.gray.withAlpha(150).paint(), // alpha = transparency
       ),
       background: CircleComponent(
-        radius: 48,
+        radius: joystickSize * 2,
         paint: BasicPalette.black.withAlpha(100).paint(),
       ),
-      margin: EdgeInsets.only(left: 32, bottom: 32),
+      margin: EdgeInsets.only(left: 64, bottom: 128),
     );
     camera.viewport.add(joystick);
   }
