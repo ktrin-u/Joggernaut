@@ -8,9 +8,7 @@ from api.models.friends import (
 
 
 class NewActivitySerializer(serializers.ModelSerializer):
-    durationSecs = serializers.IntegerField(
-        min_value=0, default=0, help_text="0 means no expiry"
-    )
+    durationSecs = serializers.IntegerField(min_value=0, default=0, help_text="0 means no expiry")
 
     class Meta:  # type: ignore
         model = FriendActivity

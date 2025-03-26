@@ -32,7 +32,7 @@ def verify_reset_token(user: User, token: str):
     try:
         return PasswordResetToken.objects.get(user_email=user, token=token).expired
     except Exception:
-        return False
+        return True
 
 
 @extend_schema(
@@ -53,9 +53,7 @@ class TokenAPIView(TokenView, GenericAPIView):
     serializer_class = TokenSerializer
     permission_classes = [isBanned]
 
-    @extend_schema(
-        description="For acquiring an access token", responses=TokenResponseSerializer
-    )
+    @extend_schema(description="For acquiring an access token", responses=TokenResponseSerializer)
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
@@ -166,9 +164,7 @@ class ForgotPasswordOtpView(GenericAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                     data={"msg": "FAIL: token is invalid"},
                 )
-            return Response(
-                status=status.HTTP_200_OK, data={"msg": "PASS: token is valid"}
-            )
+            return Response(status=status.HTTP_200_OK, data={"msg": "PASS: token is valid"})
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
@@ -176,9 +172,7 @@ class ForgotPasswordOtpView(GenericAPIView):
             )
 
 
-@extend_schema(
-    summary="Use a valid token to reset forgotten password", tags=[Tags.AUTH]
-)
+@extend_schema(summary="Use a valid token to reset forgotten password", tags=[Tags.AUTH])
 class ResetForgotPasswordView(GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
@@ -233,6 +227,8 @@ class ResetForgotPasswordView(GenericAPIView):
                 )
 
             serialized.update(instance=user, validated_data=serialized.validated_data)
+
+            PasswordResetToken.objects.filter(token=token).delete()  # delete used token
             return Response(
                 status=status.HTTP_200_OK,
                 data={"msg": f"PASS: user {email}'s password has been changed."},

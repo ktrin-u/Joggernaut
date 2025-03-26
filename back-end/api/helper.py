@@ -53,9 +53,7 @@ def get_user_object_or_404(request: Request) -> User | Response:
     _, token = get_token_from_header(request)
     ret = get_user_from_token(token)
     if ret is None:
-        return Response(
-            {"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND)
     return ret
 
 

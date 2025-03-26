@@ -199,9 +199,7 @@ class RejectFriendView(AbstractFriendTableView):
         if serialized.is_valid():
             fromUserid = serialized.validated_data["fromUserid"]
             try:
-                friend_entry = self.model.objects.get(
-                    fromUserid=fromUserid, toUserid=user
-                )
+                friend_entry = self.model.objects.get(fromUserid=fromUserid, toUserid=user)
                 friend_entry.delete()
 
                 return Response(
@@ -327,16 +325,12 @@ class GetPendingFriendsView(AbstractFriendTableView):
             return RESPONSE_USER_NOT_FOUND
 
         received = self.get_serializer(
-            self.model.objects.filter(
-                toUserid=user, status=FriendTable.FriendshipStatus.PENDING
-            ),
+            self.model.objects.filter(toUserid=user, status=FriendTable.FriendshipStatus.PENDING),
             many=True,
         )
 
         sent = self.get_serializer(
-            self.model.objects.filter(
-                fromUserid=user, status=FriendTable.FriendshipStatus.PENDING
-            ),
+            self.model.objects.filter(fromUserid=user, status=FriendTable.FriendshipStatus.PENDING),
             many=True,
         )
 
@@ -431,9 +425,7 @@ class GetFriendsView(AbstractFriendTableView):
 class RemoveFriendView(AbstractFriendTableView):
     serializer_class = TargetUserIdSerializer
 
-    @extend_schema(
-        description="Find the friendship entry with the given userid and then delete it"
-    )
+    @extend_schema(description="Find the friendship entry with the given userid and then delete it")
     def post(self, request: Request) -> Response:
         user = get_user_object(request)
         if user is None:

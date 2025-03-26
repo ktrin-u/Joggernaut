@@ -19,6 +19,4 @@ class TokenResponseSerializer(serializers.Serializer):
 
 class RevokeTokenSerializer(serializers.Serializer):
     token = serializers.CharField(default="MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3")
-    client_id = serializers.CharField(
-        default="AAdjk4dlE7ssgbacPU8n4PeaQ1QYyqydhT2mPyyPi"
-    )
+    client_id = serializers.CharField(default="AAdjk4dlE7ssgbacPU8n4PeaQ1QYyqydhT2mPyyPi")

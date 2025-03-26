@@ -13,9 +13,7 @@ class TestUserSettings(TestCase):
             lastname="Last",
             password="testPass1@",
         )
-        self.setting = UserSettings.objects.create(
-            userid=self.user, status=Status.ONLINE
-        )
+        self.setting = UserSettings.objects.create(userid=self.user, status=Status.ONLINE)
 
     def test_settings_creation(self):
         self.assertEqual(self.setting.status, Status.ONLINE)

@@ -30,6 +30,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
+line-length = 100
 exclude = [
     ".bzr",
     ".direnv",

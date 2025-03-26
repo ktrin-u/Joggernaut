@@ -21,9 +21,7 @@ class AbstractUpdateUserUserPermissionsView(GenericAPIView):
         if serialized.is_valid():
             email = serialized.validated_data.get("email")
             uuid = serialized.validated_data.get("userid")
-            user = (
-                get_user_model().objects.filter(Q(email=email) | Q(userid=uuid)).first()
-            )
+            user = get_user_model().objects.filter(Q(email=email) | Q(userid=uuid)).first()
 
             if user is None:
                 return Response(

@@ -17,9 +17,7 @@ class TestSignupForm(TestCase):
         user = form.save()
         self.assertEqual(user.firstname, "John")
         self.assertEqual(user.lastname, "Doe")
-        self.assertTrue(
-            user.check_password("TestPassword123!")
-        )  # Password should be hashed
+        self.assertTrue(user.check_password("TestPassword123!"))  # Password should be hashed
 
     def test_password_mismatch(self):
         form_data = {
@@ -62,6 +60,4 @@ class TestSignupForm(TestCase):
         self.assertNotEqual(
             user.password, "TestPassword123!"
         )  # Password should not be stored in plain text
-        self.assertTrue(
-            user.check_password("TestPassword123!")
-        )  # Password should be hashed
+        self.assertTrue(user.check_password("TestPassword123!"))  # Password should be hashed

@@ -27,9 +27,7 @@ class TestSchemaDocs(SimpleTestCase):
         response = Response.AUTH_TOKEN_USER_NOT_FOUND
         self.assertIsInstance(response, OpenApiResponse)
         self.assertEqual(response.response, MsgSerializer)
-        self.assertEqual(
-            response.description, "failed to identify user using auth token"
-        )
+        self.assertEqual(response.description, "failed to identify user using auth token")
         self.assertEqual(len(response.examples), 1)
         example = response.examples[0]
         self.assertIsInstance(example, OpenApiExample)

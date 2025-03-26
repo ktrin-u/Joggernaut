@@ -12,9 +12,7 @@ class FriendTable(models.Model):
         PENDING = "PEN"
         ACCEPTED = "ACC"
 
-    friendid = models.BigAutoField(
-        verbose_name="Friend ID", primary_key=True, unique=True
-    )
+    friendid = models.BigAutoField(verbose_name="Friend ID", primary_key=True, unique=True)
     fromUserid = models.ForeignKey(
         User,
         models.CASCADE,
@@ -37,9 +35,7 @@ class FriendTable(models.Model):
 
     def clean(self):
         if self.fromUserid == self.toUserid:
-            raise ValidationError(
-                {"toUserid": "not allowed to match with key fromUserid"}
-            )
+            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
 
     class Meta:  # type: ignore
         constraints = [
@@ -67,9 +63,7 @@ class FriendActivityStatus(models.TextChoices):
 
 
 class FriendActivity(models.Model):
-    activityid = models.BigAutoField(
-        verbose_name="activity id", primary_key=True, unique=True
-    )
+    activityid = models.BigAutoField(verbose_name="activity id", primary_key=True, unique=True)
     fromUserid = models.ForeignKey(
         User,
         models.CASCADE,
@@ -114,9 +108,7 @@ class FriendActivity(models.Model):
     def clean(self) -> None:
         _ = self.expired
         if self.fromUserid == self.toUserid:
-            raise ValidationError(
-                {"toUserid": "not allowed to match with key fromUserid"}
-            )
+            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
 
     def accept_activity(self) -> bool:
         """

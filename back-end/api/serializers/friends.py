@@ -51,9 +51,7 @@ class FriendsListResponseSerializer(serializers.Serializer):
 
     def validate_friends(self, value):
         if not all(isinstance(x, FriendTable) for x in value):
-            raise ValidationError(
-                {"friends": "list contents must be of type FriendTable"}
-            )
+            raise ValidationError({"friends": "list contents must be of type FriendTable"})
         return value
 
 
@@ -68,9 +66,7 @@ class PendingFriendsListResponseSerializer(serializers.Serializer):
 
     def validate_received(self, value):
         if not all(isinstance(x, FriendTable) for x in value):
-            raise ValidationError(
-                {"received": "list contents must be of type FriendTable"}
-            )
+            raise ValidationError({"received": "list contents must be of type FriendTable"})
         return value
 
 

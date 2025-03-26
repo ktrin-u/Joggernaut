@@ -125,17 +125,13 @@ class TestAdminRegistration(TestCase):
 
     # Tests for readonly_fields
     def test_user_admin_readonly_fields(self):
-        self.assertEqual(
-            UserAdmin.readonly_fields, ["userid", "last_login", "joindate"]
-        )
+        self.assertEqual(UserAdmin.readonly_fields, ["userid", "last_login", "joindate"])
 
     def test_user_activity_admin_readonly_fields(self):
         self.assertEqual(WorkoutRecordAdmin.readonly_fields, ["creationDate"])
 
     def test_user_audit_log_admin_readonly_fields(self):
-        self.assertEqual(
-            UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid")
-        )
+        self.assertEqual(UserAuditLogAdmin.readonly_fields, ("timestamp", "logid", "userid"))
 
     def test_user_profiles_admin_readonly_fields(self):
         self.assertEqual(UserProfilesAdmin.readonly_fields, ["userid"])
@@ -152,12 +148,8 @@ class TestAdminRegistration(TestCase):
         admin_instance = FriendTableAdmin(FriendTable, site)
 
         # Call get_readonly_fields with a truthy obj
-        readonly_fields = admin_instance.get_readonly_fields(
-            mock_request, obj=self.friend_table
-        )
-        self.assertEqual(
-            readonly_fields, ["fromUserid", "toUserid"]
-        )  # Should return the fields
+        readonly_fields = admin_instance.get_readonly_fields(mock_request, obj=self.friend_table)
+        self.assertEqual(readonly_fields, ["fromUserid", "toUserid"])  # Should return the fields
 
         # Call get_readonly_fields with a falsy obj
         readonly_fields = admin_instance.get_readonly_fields(mock_request, obj=None)
