@@ -1,48 +1,55 @@
-import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/utils/routes.dart';
-import 'package:flutter_application_1/widgets/form_sheet.dart';
-import 'package:flutter_application_1/widgets/verification_form.dart';
+import 'package:flutter_application_1/widgets/snackbar.dart';
 
-class ResetPasswordForm extends StatefulWidget {
-  const ResetPasswordForm({super.key});
+class ChangePasswordForm extends StatefulWidget {
+  const ChangePasswordForm({super.key});
 
   @override
-  State<ResetPasswordForm> createState() => _ResetPasswordFormState();
+  State<ChangePasswordForm> createState() => _ChangePasswordFormState();
 }
 
-class _ResetPasswordFormState extends State<ResetPasswordForm> {
-  final emailController = TextEditingController();
-  int? statusCode;
-  bool isLoading = false;  
+class _ChangePasswordFormState extends State<ChangePasswordForm> {
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   
-  Future confirmEmail(context) async{
+  String? error;
+  bool isLoading = false;
+
+  Future changePassword(context) async {
     setState(() {
       isLoading = true;
-      statusCode = null;
+      error = null;
     });
 
-    var response = (await AuthService().forgetPasswordPost(emailController.text));
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
 
-    if (response.statusCode == 200) {
+    var response = await AuthService().forgetPasswordChange(newPasswordController.text, confirmPasswordController.text);
+    if (response.statusCode == 200){
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      ScaffoldMessenger.of(context).showSnackBar(NotifSnackbar(message: "Password changed successfully!", screenHeight: screenHeight, screenWidth: screenWidth*0.9));
+    }
+    else{
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+
       setState(() {
-        isLoading = false;
+        error = errorMessage;
       });
-      showFormBottomSheet(
-        context: context, 
-        minHeight: 0.52,
-        maxHeight: 0.52, 
-        form: VerificationForm(), 
-        onClose: null
-      );
     }
     setState(() {
       isLoading = false;
-      statusCode = response.statusCode;
     });
   }
-
+  
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -57,7 +64,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
           Padding(
             padding: EdgeInsets.fromLTRB(screenWidth * 0.04, 5, 5, 5),
             child: Text(
-              "Reset Password",
+              "Change Password",
               style: TextStyle(
                 color: Color.fromRGBO(51, 51, 51, 1),
                 fontFamily: 'Roboto',
@@ -73,7 +80,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Email",
+                  "New Password",
                   style: TextStyle(
                     fontSize: screenWidth * 0.05, 
                     color: Color.fromRGBO(51, 51, 51, 1),
@@ -81,31 +88,15 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                (statusCode != null && statusCode != 200) ? Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-                  child: Text(
-                    "Invalid email",
-                    style: TextStyle(
-                      color: Color.fromRGBO(255, 92, 92, 1),
-                      fontSize: screenWidth * 0.030, 
-                      fontFamily: 'Roboto',
-                      fontStyle: FontStyle.italic,
-                    ),
-                  )
-                ) : Padding(
-                  padding: EdgeInsets.only(bottom: screenHeight*0.01),
-                  child: Row()
-                ),
               ],
             ),
           ),
           TextField(
-            controller: emailController,
-            keyboardType: TextInputType.emailAddress,
+            controller: newPasswordController,
             decoration: InputDecoration(
-              hintText: "Enter the email associated with your account",
+              hintText: "Enter your password",
               hintStyle: TextStyle(
-                fontSize: screenWidth * 0.035,
+                fontSize: screenWidth * 0.04,
                 color: Color.fromRGBO(51, 51, 51, 1),
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w400,
@@ -121,7 +112,53 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
               ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.21),
+          SizedBox(height: screenHeight * 0.02),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              "Confirm Password",
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                color: Color.fromRGBO(51, 51, 51, 1),
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+         TextField(
+            controller: confirmPasswordController,
+            decoration: InputDecoration(
+              hintText: "Confirm your password",
+              hintStyle: TextStyle(
+                fontSize: screenWidth * 0.04,
+                color: Color.fromRGBO(51, 51, 51, 1),
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+              ),
+            ),
+          ),
+          if (error != null) Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              error!,
+              style: TextStyle(
+                color: Color.fromRGBO(255, 92, 92, 1),
+                fontSize: screenWidth * 0.030, 
+                fontFamily: 'Roboto',
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.085),
           Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.01),
             child: Row(
@@ -148,7 +185,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    confirmEmail(context);
+                    changePassword(context);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
@@ -191,5 +228,5 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
         ],
       ),
     );
-  }
+  } 
 }

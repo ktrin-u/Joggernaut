@@ -72,6 +72,110 @@ class AuthService {
     await storage.clearAll();
   }
 
+  Future createUser(firstname, lastname, email, phonenumber, password) async {
+    var uri = Uri.parse(registerURL);
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }, 
+        body: {
+          "firstname": firstname,
+          "lastname": lastname,
+          "email" : email,
+          "phonenumber" : phonenumber,
+          "password" : password,
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+      return response;
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future forgetPasswordPost(email) async {
+    if (email == "getsavedemail"){
+      email = await storage.getData("email");
+    }
+    var uri = Uri.parse(forgetPasswordURL);
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }, 
+        body: {
+          "email": email        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Forget Password request posted successfully!");
+        await storage.saveData("email", email);
+        return response;
+      } else {
+        print("Failed to request forget password. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future forgetPasswordGet(token) async {
+    var uri = Uri.parse(forgetPasswordURL).replace(queryParameters: {
+      "email": await storage.getData("email"),
+      "token": token
+    });
+    try {
+      var response = await client.get(
+        uri,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("Verification code and email are correct");
+        await storage.saveData("verification_code", token);
+        return response;
+      } else {
+        print("Incorrect verification code or email. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future forgetPasswordChange(newPassword, confirmPassword) async {
+    var uri = Uri.parse(forgetPasswordChangeURL);
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",  
+          "email": (await storage.getData("email")).toString(),
+          "token": (await storage.getData("verification_code")).toString()
+        }, 
+        body: {
+          "new_password": newPassword,
+          "confirm_password": confirmPassword
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Changed password-forget successfully!");
+        return response;
+      } else {
+        print("Failed to change password-forget. Status code: ${response.body}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
   Future getAccessToken() async {
     return await storage.getAccessToken();
   }

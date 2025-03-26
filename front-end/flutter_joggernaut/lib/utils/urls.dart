@@ -22,6 +22,8 @@ const challengeFriendURL = "${hostURL}api/activity/challenge";
 const pokeFriendURL = "${hostURL}api/activity/poke";
 
 // auth
+const forgetPasswordURL = "${hostURL}api/forgot/password/";
+const forgetPasswordChangeURL = "${hostURL}api/forgot/password/change";
 const registerURL = "${hostURL}api/register/";
 const loginURL = "${hostURL}api/login/";
 const logoutURL = "${hostURL}api/logout/";
