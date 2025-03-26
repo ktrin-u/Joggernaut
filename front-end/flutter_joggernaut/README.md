@@ -21,12 +21,12 @@
 
 ## Setup guide to run app on your physical device
 
-1. Change hostURL in lib/utils/urls.dart
+1. Change hostURL in `..\lib\utils\urls.dart`
   -  Replace `10.0.2.2` with the ip address of the device where you are running the backend server
 
 2. Build and run the apk file
-  - Run `flutter build apk` in `front-end/flutter_jogernaut`
+  - Run `flutter build apk` in `..front-end\flutter_jogernaut`
   - Locate `app-release.apk` in `..\front-end\flutter_joggernaut\build\app\outputs\flutter-apk`
-  - Run the backend server
+  - Run the backend server `poetry run python manage.py runserver 0.0.0.0:8000`
   - Transfer the apk file to your physical device and install
   
