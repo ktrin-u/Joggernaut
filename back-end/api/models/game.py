@@ -12,11 +12,21 @@ class GameCharacter(models.Model):
     gamesave_id = models.ForeignKey(GameSave, on_delete=models.CASCADE, db_column="gamesave_id")
     id = models.AutoField(primary_key=True, editable=False, db_column="character_id")
     name = models.CharField(max_length=32)
-    color_hex = models.CharField(max_length=7)
+    color_hex = models.CharField(max_length=7, default="#000000")
     health = models.PositiveIntegerField(default=1)
     speed = models.PositiveIntegerField(default=1)
     strength = models.PositiveIntegerField(default=1)
     stamina = models.PositiveIntegerField(default=1)
+    selected = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['gamesave_id'],
+                condition=models.Q(selected=True),
+                name='unique-selected-per-gamesave',
+            )
+        ]
 
 
 class GameEnemy(models.Model):

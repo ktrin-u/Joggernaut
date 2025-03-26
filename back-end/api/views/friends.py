@@ -186,7 +186,7 @@ class RejectFriendView(AbstractFriendTableView):
                     )
                 ],
             ),
-            status.HTTP_400_BAD_REQUEST: schema_docs.Response.SERIALIZER_VALIDATION_ERRORS,
+            status.HTTP_400_BAD_REQUEST: MsgSerializer
         },
     )
     def patch(self, request: Request) -> Response:

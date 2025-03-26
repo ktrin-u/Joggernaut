@@ -1,13 +1,20 @@
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from api.views import activity, admin, auth, friends, user, user_profile, workout
+from api.views import activity, admin, auth, friends, game, user, user_profile, workout
 
-urlpatterns = [
+schema_urls = [
     path("", SpectacularSwaggerView.as_view(url_name="schema"), name="overview"),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
+]
+
+admin_urls = [
     path("admin/ban/", admin.BanUserView.as_view(), name="ban a user"),
     path("admin/unban/", admin.UnbanUserView.as_view(), name="unban a user"),
+]
+
+
+auth_urls = [
     path("register/", auth.CreateUserView.as_view(), name="register new user"),
     path("login/", auth.TokenAPIView.as_view(), name="login and acquire token"),
     path("logout/", auth.RevokeTokenAPIView.as_view(), name="logout and revoke token"),
@@ -21,6 +28,9 @@ urlpatterns = [
         auth.ResetForgotPasswordView.as_view(),
         name="change forgot password",
     ),
+]
+
+profile_urls = [
     path("profile/", user_profile.UserProfileView.as_view(), name="retrieve user profile"),
     path(
         "profile/new",
@@ -32,6 +42,9 @@ urlpatterns = [
         user_profile.UpdateUserProfileView.as_view(),
         name="update user profile",
     ),
+]
+
+user_urls = [
     path("user/", user.GetUsersView.as_view(), name="get list of users"),
     path("user/info/", user.ViewUserInfoView.as_view(), name="retrieve user info"),
     path("user/delete", user.DeleteUserView.as_view(), name="delete user account"),
@@ -41,6 +54,9 @@ urlpatterns = [
         user.UpdateUserPasswordView.as_view(),
         name="change user password",
     ),
+]
+
+friend_urls = [
     path("friends/", friends.GetFriendsView.as_view(), name="get friend list"),
     path(
         "friends/add",
@@ -68,6 +84,9 @@ urlpatterns = [
         friends.GetPendingFriendsView.as_view(),
         name="get pending friend list",
     ),
+]
+
+activity_urls = [
     path(
         "activity",
         activity.GetFriendActivityView.as_view(),
@@ -94,6 +113,9 @@ urlpatterns = [
         activity.CancelActivityView.as_view(),
         name="cancel a pending activity",
     ),
+]
+
+workout_urls = [
     path("workout/", workout.GetWorkoutRecordView.as_view(), name="get workout records"),
     path(
         "workout/add",
@@ -105,4 +127,22 @@ urlpatterns = [
         workout.UpdateWorkoutRecordView.as_view(),
         name="update workout records",
     ),
+]
+
+game_urls = [
+    path("game/", game.GameSaveView.as_view(), name="access game save"),
+    path("game/character/", game.GameCharacterView.as_view(), name="get characters"),
+]
+
+
+urlpatterns = [
+    *schema_urls,
+    *admin_urls,
+    *auth_urls,
+    *profile_urls,
+    *user_urls,
+    *friend_urls,
+    *activity_urls,
+    *workout_urls,
+    *game_urls,
 ]

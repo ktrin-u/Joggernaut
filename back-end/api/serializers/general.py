@@ -1,5 +1,6 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
+from rest_framework import status
 
 
 @extend_schema_serializer(
@@ -14,8 +15,9 @@ from rest_framework import serializers
         OpenApiExample(
             name="error/fail",
             value={
-                "msg": "ERROR:<error or point of failure message>",
+                "msg": "FAIL:<error or point of failure message>",
             },
+            status_codes=[status.HTTP_500_INTERNAL_SERVER_ERROR]
         ),
         OpenApiExample(
             name="malformed parameters",
@@ -23,6 +25,14 @@ from rest_framework import serializers
                 "field_name1": "field error message",
                 "field_name2": "field error message",
             },
+            status_codes=[status.HTTP_400_BAD_REQUEST]
+        ),
+        OpenApiExample(
+            name="not found",
+            value={
+                "msg": "FAIL: <resource identifier> is NOT FOUND",
+            },
+            status_codes=[status.HTTP_404_NOT_FOUND,]
         ),
     ]
 )
