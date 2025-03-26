@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/services/api_services.dart';
+import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/snackbar.dart';
 
@@ -38,7 +38,7 @@ class _SignUpFormState extends State<SignUpForm> {
       passwordError = null;
     });
 
-    var response = await ApiService().createUser(firstnameController.text, lastnameController.text, emailController.text, phonenumberController.text, passwordController.text);
+    var response = await AuthService().createUser(firstnameController.text, lastnameController.text, emailController.text, phonenumberController.text, passwordController.text);
     var responseData = json.decode((response).body);
     if (response.statusCode == 201) {
       Navigator.pop(context);

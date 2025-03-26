@@ -10,28 +10,6 @@ class ApiService {
   var client = http.Client();
   final SecureStorageService storage = SecureStorageService();
 
-  Future createUser(firstname, lastname, email, phonenumber, password) async {
-    var uri = Uri.parse(registerURL);
-    try {
-      var response = await client.post(uri, 
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        }, 
-        body: {
-          "firstname": firstname,
-          "lastname": lastname,
-          "email" : email,
-          "phonenumber" : phonenumber,
-          "password" : password,
-        },
-        encoding: Encoding.getByName('utf-8')
-      );
-      return response;
-    } catch (e) {
-      throw Exception("Error: $e");
-    }
-  }
-
   Future deleteAccount() async {
     var uri = Uri.parse(deleteAccURL);
     String? accessToken = await storage.getAccessToken();

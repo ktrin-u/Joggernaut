@@ -42,7 +42,7 @@ class _LandingPageState extends State<LandingPage> {
             child: Image.asset('assets/images/landing_screen_bg.png', fit: BoxFit.cover),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 250),
+            duration: Duration(milliseconds: 250),
             curve: Curves.easeInOut,
             top: _titleMovedUpLogin
                 ? screenHeight * 0.18
@@ -75,6 +75,7 @@ class _LandingPageState extends State<LandingPage> {
                       _moveTitleUpLogin();
                       showFormBottomSheet(
                         context: context, 
+                        minHeight: 0.50,
                         maxHeight: 0.70, 
                         form: LoginForm(), 
                         onClose: _resetTitlePosition
@@ -102,13 +103,14 @@ class _LandingPageState extends State<LandingPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 20), 
+                SizedBox(width: 20), 
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
                       _moveTitleUpSignUp();
                       showFormBottomSheet(
                         context: context, 
+                        minHeight: 0.80,
                         maxHeight: 0.80, 
                         form: SignUpForm(), 
                         onClose: _resetTitlePosition

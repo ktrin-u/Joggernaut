@@ -53,7 +53,7 @@ class _LoginFormState extends State<LoginForm> {
             child: Text(
               "Log in to your account",
               style: TextStyle(
-                color: const Color.fromRGBO(51, 51, 51, 1),
+                color: Color.fromRGBO(51, 51, 51, 1),
                 fontFamily: 'Roboto',
                 fontSize: screenWidth * 0.075, 
                 fontWeight: FontWeight.w700,
@@ -80,7 +80,7 @@ class _LoginFormState extends State<LoginForm> {
                   child: Text(
                     "Invalid email or password.",
                     style: TextStyle(
-                      color: const Color.fromRGBO(255, 92, 92, 1),
+                      color: Color.fromRGBO(255, 92, 92, 1),
                       fontSize: screenWidth * 0.030, 
                       fontFamily: 'Roboto',
                       fontStyle: FontStyle.italic,
@@ -106,11 +106,11 @@ class _LoginFormState extends State<LoginForm> {
               contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
               ),
             ),
           ),
@@ -141,11 +141,11 @@ class _LoginFormState extends State<LoginForm> {
               contentPadding: EdgeInsets.symmetric(vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50),
-                borderSide: const BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+                borderSide: BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
               ),
             ),
           ),
@@ -155,8 +155,9 @@ class _LoginFormState extends State<LoginForm> {
               onPressed: () {
                 showFormBottomSheet(
                   context: context, 
-                  maxHeight: 0.70, 
-                  form: RecoverPasswordForm(), 
+                  minHeight: 0.52,
+                  maxHeight: 0.52, 
+                  form: ResetPasswordForm(), 
                   onClose: null
                 );
               },
@@ -182,7 +183,7 @@ class _LoginFormState extends State<LoginForm> {
               children: [
                 TextButton.icon(
                   onPressed: () => router.pop(),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios,
                     color: Color.fromRGBO(51, 51, 51, 1),
                   ),
@@ -206,7 +207,7 @@ class _LoginFormState extends State<LoginForm> {
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Color.fromRGBO(51, 51, 51, 1),
                     backgroundColor: Color.fromRGBO(245, 245, 245, 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 1),
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
