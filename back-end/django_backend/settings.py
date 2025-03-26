@@ -178,6 +178,11 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_SETTINGS": {
         "deepLinking": False,
         "persistAuthorization": True,
+        "filter": True,
+        "tryItOutEnabled": True,
+        "defaultModelsExpandDepth": -1,
+        "displayRequestDuration": True,
+        "docExpansion": "none",
     },
     "SWAGGER_UI_OAUTH2_CONFIG": {
         "clientId": os.getenv("CLIENT_ID"),
@@ -227,3 +232,5 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = os.getenv("SMTP_PORT")
 EMAIL_HOST_USER = os.getenv("SMTP_USER")
 EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")
+
+SILENCED_SYSTEM_CHECKS = ["models.W036"]

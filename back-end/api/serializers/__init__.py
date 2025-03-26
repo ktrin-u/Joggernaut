@@ -14,6 +14,12 @@ from .friends import (
     PendingFriendsListResponseSerializer,
     ToUserIdSerializer,
 )
+from .game import (
+    GameCharacterSerializer,
+    CreateGameSaveSerializer,
+    CreateGameCharacterSerializer,
+    TargetCharacterSerializer,
+)
 from .general import MsgSerializer, TargetUserIdSerializer
 from .token import RevokeTokenSerializer, TokenResponseSerializer, TokenSerializer
 from .user import (
