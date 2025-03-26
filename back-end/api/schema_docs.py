@@ -2,11 +2,9 @@ from enum import StrEnum, auto
 
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse
-
 from rest_framework import status
 
 from api.serializers.general import MsgSerializer
-
 
 OpenApiResponse()
 

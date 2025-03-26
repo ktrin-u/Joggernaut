@@ -1,8 +1,41 @@
+from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
 from api.models import GameCharacter, GameSave
 
 
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            name="has characters",
+            value={
+                "characters": [
+                    {
+                        "id": 2,
+                        "selected": "false",
+                        "name": "string",
+                        "color_hex": "#ffffff",
+                        "health": 1,
+                        "speed": 1,
+                        "strength": 1,
+                        "stamina": 1,
+                    },
+                    {
+                        "id": 45,
+                        "selected": "false",
+                        "name": "string",
+                        "color_hex": "#ffffff",
+                        "health": 1,
+                        "speed": 1,
+                        "strength": 1,
+                        "stamina": 1,
+                    },
+                ]
+            },
+        ),
+        OpenApiExample(name="no characters", value={"characters": []}),
+    ]
+)
 class GameCharacterSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = GameCharacter

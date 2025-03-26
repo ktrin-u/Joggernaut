@@ -19,14 +19,4 @@
 4. Start the Backend Server
   - App should be good to go
 
-## Setup guide to run app on your physical device
 
-1. Change hostURL in lib/utils/urls.dart
-  -  Replace `10.0.2.2` with the ip address of the device where you are running the backend server
-
-2. Build and run the apk file
-  - Run `flutter build apk`
-  - Locate `app-release.apk` in `..\front-end\flutter_joggernaut\build\app\outputs\flutter-apk`
-  - Run the backend server
-  - Transfer the apk file to your physical device and install
-  

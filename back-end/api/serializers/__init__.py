@@ -15,9 +15,9 @@ from .friends import (
     ToUserIdSerializer,
 )
 from .game import (
-    GameCharacterSerializer,
-    CreateGameSaveSerializer,
     CreateGameCharacterSerializer,
+    CreateGameSaveSerializer,
+    GameCharacterSerializer,
     TargetCharacterSerializer,
 )
 from .general import MsgSerializer, TargetUserIdSerializer

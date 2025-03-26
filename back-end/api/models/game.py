@@ -22,9 +22,9 @@ class GameCharacter(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['gamesave_id'],
+                fields=["gamesave_id"],
                 condition=models.Q(selected=True),
-                name='unique-selected-per-gamesave',
+                name="unique-selected-per-gamesave",
             )
         ]
 

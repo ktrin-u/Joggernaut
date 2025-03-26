@@ -1,5 +1,5 @@
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.models import AnonymousUser, AbstractBaseUser
 from drf_spectacular.utils import (
     OpenApiParameter,
     extend_schema,
@@ -10,15 +10,13 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-
 from api.models import GameCharacter, GameSave, User
-from api.schema_docs import Tags, RESPONSEMSG
+from api.schema_docs import RESPONSEMSG, Tags
 from api.serializers import (
-    GameCharacterSerializer,
-    CreateGameSaveSerializer,
     CreateGameCharacterSerializer,
+    CreateGameSaveSerializer,
+    GameCharacterSerializer,
     TargetCharacterSerializer,
-    MsgSerializer,
 )
 
 
@@ -44,7 +42,9 @@ class GameSaveView(AbstractGameView):
     serializer_class = CreateGameSaveSerializer
 
     @extend_schema(
-        description="Get or create a game save for the user by the auth header.", request=None
+        description="Get or create a game save for the user by the auth header.",
+        request=None,
+        responses=RESPONSEMSG,
     )
     def get(self, request: Request) -> Response:
         user = request.user
