@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter_joggernaut_game/components/collision_block.dart';
+import 'package:flutter_joggernaut_game/components/enemy.dart';
 import 'package:flutter_joggernaut_game/components/player.dart';
 
 class Map extends World {
@@ -19,6 +20,11 @@ class Map extends World {
 
     add(map);
 
+    _spawnObjects();
+    _addCollisions();
+  }
+
+  void _spawnObjects() {
     final spawnLayer = map.tileMap.getLayer<ObjectGroup>('Spawnpoints');
 
     if (spawnLayer != null) {
@@ -26,13 +32,23 @@ class Map extends World {
         switch (spawnPoint.class_) {
           case 'Player':
             player.position = Vector2(spawnPoint.x, spawnPoint.y);
+            player.collisionBlocks = collisionBlocks;
             add(player);
             break;
+          case 'Enemy':
+            final enemy = Enemy(
+              enemy: spawnPoint.name,
+              position: Vector2(spawnPoint.x, spawnPoint.y),
+            );
+            enemy.collisionBlocks = collisionBlocks;
+            add(enemy);
           default:
         }
       }
     }
+  }
 
+  void _addCollisions() {
     final collisionLayer = map.tileMap.getLayer<ObjectGroup>('Collisions');
 
     if (collisionLayer != null) {
@@ -45,7 +61,5 @@ class Map extends World {
         add(wall);
       }
     }
-    player.collisionBlocks = collisionBlocks;
-    return super.onLoad();
   }
 }

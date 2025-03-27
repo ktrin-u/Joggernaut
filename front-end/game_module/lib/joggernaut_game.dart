@@ -18,7 +18,7 @@ class JoggernautGame extends FlameGame {
   FutureOr<void> onLoad() async {
     await images.loadAllImages();
 
-    player = Player(character: 'Blue');
+    player = Player(color: 'Blue');
     map = Map(mapName: 'world01', player: player);
 
     camera = CameraComponent.withFixedResolution(

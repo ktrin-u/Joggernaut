@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\Users\\gelo4\\AppData\\Local\\dev\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\gelo4\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\gelo4\\Desktop\\School Files\\SY 2024-2025\\2nd Sem\\CS 192\\CS192-Joggernaut\\front-end\\game_module\\android\\app\\.cxx\\Debug\\5i1f2p5u\\x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\gelo4\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\gelo4\\Desktop\\School Files\\SY 2024-2025\\2nd Sem\\CS 192\\CS192-Joggernaut\\front-end\\game_module\\android\\app\\.cxx\\Debug\\5i1f2p5u\\x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
