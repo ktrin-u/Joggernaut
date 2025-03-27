@@ -173,6 +173,7 @@ class GameCharacterAdmin(admin.ModelAdmin):
         "speed",
         "strength",
         "stamina",
+        "selected",
     ]
     ordering = ["id"]
     list_filter = ["gamesave_id__owner__email"]
