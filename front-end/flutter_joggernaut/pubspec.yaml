@@ -75,7 +75,9 @@ flutter:
     - assets/images/Terrain/Ground/
     - assets/images/Terrain/Water/
     - assets/images/Terrain/Bridge/
+    - assets/images/Factions/Goblins/Troops/Torch/Blue/
     - assets/images/Factions/Knights/Troops/Archer/Blue/
+    - assets/images/Factions/Knights/Troops/Archer/Arrow/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
