@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\phea\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\phea\Desktop\CS 192\CS192-Joggernaut-game\front-end\game_module"
+export "FLUTTER_ROOT=C:\Users\User\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\Users\User\OneDrive\Desktop\CS 192\CS192-Joggernaut\front-end\game_module"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
