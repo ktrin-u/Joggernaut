@@ -1,42 +1,30 @@
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
-import 'package:flutter_joggernaut_game/components/collision_block.dart';
+import 'package:flutter_joggernaut_game/components/character.dart';
+import 'package:flutter_joggernaut_game/components/projectile.dart';
 import 'package:flutter_joggernaut_game/components/utils.dart';
-import 'package:flutter_joggernaut_game/joggernaut_game.dart';
 
-enum PlayerState { idle, moving }
+class Player extends Character {
+  String color;
+  Player({super.position, required this.color}) : super(character: color);
 
-class Player extends SpriteAnimationGroupComponent
-    with HasGameRef<JoggernautGame> {
-  String character;
-  Player({super.position, required this.character})
-    : super(anchor: Anchor.center);
-
-  late final SpriteSheet spriteSheet;
-  late final SpriteAnimation idleAnimation;
-  late final SpriteAnimation moveAnimation;
-  final double stepTime = 0.1;
-
-  Vector2 velocity = Vector2.zero();
-  List<CollisionBlock> collisionBlocks = [];
-
-  double maxSpeed = 200.0;
-
-  @override
-  Future<void> onLoad() async {
-    _loadAllAnimations();
-    debugMode = true;
-    return super.onLoad();
-  }
+  double lastShotTime = 0.0;
+  double shootInterval = 0.5;
+  Vector2 shootDirection = Vector2(1, 0);
 
   @override
   void update(double dt) {
-    _updateMovement(dt);
-    _checkCollisions(dt);
+    lastShotTime += dt;
+
+    updateMovement(dt);
+    checkCollisions(dt);
+    shootProjectile(dt);
+
     super.update(dt);
   }
 
-  void _loadAllAnimations() {
+  @override
+  void loadAllAnimations() {
     spriteSheet = SpriteSheet(
       image: game.images.fromCache(
         'Factions/Knights/Troops/Archer/Blue/Archer_Blue.png',
@@ -48,8 +36,8 @@ class Player extends SpriteAnimationGroupComponent
     moveAnimation = _loadAnimation(6, 1);
 
     animations = {
-      PlayerState.idle: idleAnimation,
-      PlayerState.moving: moveAnimation,
+      CharacterState.idle: idleAnimation,
+      CharacterState.moving: moveAnimation,
     };
   }
 
@@ -62,7 +50,8 @@ class Player extends SpriteAnimationGroupComponent
     );
   }
 
-  void _updateMovement(dt) {
+  @override
+  void updateMovement(double dt) {
     JoystickComponent joystick = gameRef.joystick;
     if (joystick.direction != JoystickDirection.idle) {
       velocity = joystick.relativeDelta;
@@ -74,13 +63,14 @@ class Player extends SpriteAnimationGroupComponent
         scale.x = 1;
       }
 
-      current = PlayerState.moving;
+      current = CharacterState.moving;
     } else {
-      current = PlayerState.idle;
+      current = CharacterState.idle;
     }
   }
 
-  void _checkCollisions(dt) {
+  @override
+  void checkCollisions(double dt) {
     for (final wall in collisionBlocks) {
       if (checkCollision(this, wall)) {
         if (velocity.x != 0) {
@@ -90,6 +80,22 @@ class Player extends SpriteAnimationGroupComponent
           position.y -= (velocity.y * maxSpeed * dt);
         }
       }
+    }
+  }
+
+  void shootProjectile(dt) {
+    if (lastShotTime >= shootInterval) {
+      if (gameRef.joystick.direction != JoystickDirection.idle) {
+        shootDirection = gameRef.joystick.relativeDelta.normalized();
+      }
+
+      final projectile = Projectile(
+        position: position + (shootDirection * 32),
+        direction: shootDirection,
+      );
+
+      gameRef.map.add(projectile);
+      lastShotTime = 0;
     }
   }
 }
