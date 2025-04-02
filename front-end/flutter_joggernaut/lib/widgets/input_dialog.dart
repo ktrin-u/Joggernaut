@@ -328,5 +328,131 @@ class InputHelper {
       ],
     );
   }
+
+  static void showWorkoutDialog(BuildContext context, String title, TextEditingController stepsController, TextEditingController caloriesController, Function(BuildContext) onConfirm) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+  
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return WorkoutDialog(
+          context: context, 
+          title: title,
+          stepsController: stepsController,
+          caloriesController: caloriesController,
+          height: screenHeight,
+          width: screenWidth,
+          onConfirm: onConfirm
+        );
+      }
+    );
+  }
+  
+  static AlertDialog WorkoutDialog({
+    required BuildContext context,
+    required String title,
+    required TextEditingController stepsController,
+    required TextEditingController caloriesController,
+    required double height,
+    required double width,
+    required Function(BuildContext) onConfirm,
+  }) {
+    return AlertDialog.adaptive(
+      backgroundColor:  Color.fromARGB(255, 255, 255, 255),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontFamily: 'Big Shoulders Display',
+          fontSize: width * 0.08,
+          fontWeight: FontWeight.bold,
+          color:  Color.fromRGBO(51, 51, 51, 1),
+        ),
+        ), 
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: stepsController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: "Enter your number of steps",
+              hintStyle: TextStyle(
+                fontSize: width * 0.03,
+                color: Color.fromRGBO(51, 51, 51, 1),
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide:  BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide:  BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+              ),
+            ), 
+          ),
+          SizedBox(height: height*0.02),
+          TextField(
+            controller: caloriesController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: "Enter your calories burned",
+              hintStyle: TextStyle(
+                fontSize: width * 0.03,
+                color: Color.fromRGBO(51, 51, 51, 1),
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide:  BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 0.75),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50),
+                borderSide:  BorderSide(color: Color.fromRGBO(51, 51, 51, 1), width: 1.25),
+              ),
+            ), 
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(
+            foregroundColor: Color.fromRGBO(51, 51, 51, 1),
+          ),
+          child: Text(
+            "Cancel",
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w400,
+              fontSize: width * 0.04,
+              color: Color.fromRGBO(51, 51, 51, 1)
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); 
+            onConfirm(context); 
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: Color.fromRGBO(51, 51, 51, 1),
+          ),
+          child: Text(
+            "Save",
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w400,
+              fontSize: width * 0.04,
+              color: Color.fromRGBO(51, 51, 51, 1)
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
   

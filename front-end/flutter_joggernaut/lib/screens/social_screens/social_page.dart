@@ -125,6 +125,14 @@ class _SocialPageState extends State<SocialPage> {
                       Row(
                         children: [
                           IconButton(
+                            onPressed: (){router.push('/workout/challenges');},
+                            icon: Icon(
+                              Icons.handshake_rounded,
+                              color: Colors.black87,
+                              size: screenWidth * 0.09,
+                            ),
+                          ),
+                          IconButton(
                             onPressed: (){router.push('/social/notifications');},
                             icon: Icon(
                               Icons.notifications,

@@ -86,6 +86,87 @@ class ConfirmHelper {
     );
   }
 
+  static void showChallengeDialog(BuildContext context, Function(BuildContext) onConfirm) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+  
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ChallengeDialog(
+          context: context, 
+          height: screenHeight,
+          width: screenWidth,
+          onConfirm: onConfirm
+        );
+      }
+    );
+  }
+  
+  static AlertDialog ChallengeDialog({
+    required BuildContext context,
+    required double height,
+    required double width,
+    required Function(BuildContext) onConfirm,
+  }) {
+    return AlertDialog.adaptive(
+      backgroundColor:  Color.fromARGB(255, 255, 255, 255),
+      title: Text(
+        "Challenge",
+        style: TextStyle(
+          fontFamily: 'Big Shoulders Display',
+          fontSize: width * 0.08,
+          fontWeight: FontWeight.bold,
+          color:  Color.fromRGBO(51, 51, 51, 1),
+        ),
+        ), 
+      content: Text(
+        "Challenge your friend one on one and see who has the most steps taken by the end of your challenge. Person with the most steps by the end of your challenge wins!",
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w400,
+          fontSize: width * 0.04,
+          color: Color.fromRGBO(51, 51, 51, 1)
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(
+            foregroundColor: Color.fromRGBO(51, 51, 51, 1),
+          ),
+          child: Text(
+            "Back",
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w400,
+              fontSize: width * 0.04,
+              color: Color.fromRGBO(51, 51, 51, 1)
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); 
+            onConfirm(context);
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: Color.fromRGBO(51, 51, 51, 1),
+          ),
+          child: Text(
+            "Continue",
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w400,
+              fontSize: width * 0.04,
+              color: Color.fromRGBO(51, 51, 51, 1)
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   static void showResultDialog(BuildContext context, String resultText, String titleText) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -103,6 +184,7 @@ class ConfirmHelper {
       }
     );
   }
+
 
   static AlertDialog ResultDialog({
     required BuildContext context,

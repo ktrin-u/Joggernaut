@@ -36,8 +36,10 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
   late Future gettingUserProfile;
   late String userId; 
   late String userName;
+  DateTime? deadline;
   String? myUserID;
   List friendIDs = [];
+  String? durationChallenge;
   List<Map<String, dynamic>> pendingRequest = [];
   List<Map<String, dynamic>> friendActivities = [];
   Map<String, dynamic> latestChallenge = {};
@@ -53,6 +55,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
   bool hasReceived = false;
   bool hasChallenged = false;
   bool isChallenged = false;
+  bool ongoingChallenge = false;
  
 
   Future pokeFriend() async {
@@ -386,6 +389,33 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
     }
   }
 
+  Future selectDeadline() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context, 
+      firstDate: DateTime.now(), 
+      lastDate: DateTime(2100),
+      helpText: "Deadline of Challenge",
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.black87, 
+            hintColor: Colors.black87, 
+            colorScheme: ColorScheme.light(primary: Colors.black87),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black87
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    setState(() {
+      deadline = selectedDate;
+    });
+  }
+
   Future setup() async {
     await getUserId();
     await getFriends();
@@ -456,15 +486,6 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Container(
-                        //   width: screenWidth*0.23,
-                        //   height: screenWidth*0.23,
-                        //   decoration: BoxDecoration(
-                        //     shape: BoxShape.circle,
-                        //     color: Colors.white,
-                        //   ),
-                        // ),  
-                        // SizedBox(width: screenWidth*0.04),
                         Text(
                           userName,
                           style: TextStyle(
@@ -522,7 +543,9 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                         ),
                       ),
                       if (isFriends && !hasChallenged && !isChallenged) ElevatedButton(
-                        onPressed: () {addChallenge();},
+                        onPressed: () {
+                          ConfirmHelper.showChallengeDialog(context, (context)=> {selectDeadline()});
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -921,81 +944,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth*0.1, vertical: screenHeight*0.02),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              "Weight:",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.045, 
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Text(
-                              "?? kg",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.05, 
-                                fontWeight: FontWeight.w700,
-                              ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "Height:",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.045, 
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Text(
-                              "?? cm",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.05, 
-                                fontWeight: FontWeight.w700,
-                              ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "Birthday:",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.045, 
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Text(
-                              "????-??-??",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.05, 
-                                fontWeight: FontWeight.w700,
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: screenHeight*0.01),
+                    padding: EdgeInsets.symmetric(vertical: screenHeight*0.03),
                     child: Text(
                       "$userName's progress as of last week:",
                       style: TextStyle(
@@ -1006,19 +955,18 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: screenHeight*0.02),
-                      child: AspectRatio(
-                        aspectRatio: 0.95, 
-                        child: BarChartWidget(
-                          title: "Weekly Steps",
-                          weeklyData: [8, 10, 14, 15, 13, 10, 16], 
-                          highlightDay: DateTime.now().weekday, 
-                        )
-                      )
-                    )
-                  )
+                  // Expanded(
+                  //   child: Padding(
+                  //     padding: EdgeInsets.symmetric(vertical: screenHeight*0.02),
+                  //     child: AspectRatio(
+                  //       aspectRatio: 0.95, 
+                  //       child: BarChartWidget(
+                  //         title: "Weekly Steps",
+                  //         weeklyData: [8, 10, 14, 15, 13, 10, 16], 
+                  //       )
+                  //     )
+                  //   )
+                  // )
                 ],
               );
             }

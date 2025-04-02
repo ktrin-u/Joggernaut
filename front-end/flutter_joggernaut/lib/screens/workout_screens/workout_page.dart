@@ -3,9 +3,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
-import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
-import 'package:flutter_application_1/widgets/input_dialog.dart';
+import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/step_chart.dart';
+import 'package:intl/intl.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
@@ -15,104 +15,14 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
-  late BuildContext _currentContext;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _currentContext = context;
-  }
-
   late Future gettingWorkout;
-  bool isFirstWorkout = false;
-  bool isLoadingUpdate = false;
-  bool isLoadingAdd = false;
   int? steps;
   int? calories;
   int? workoutID;
-  String? weight;
-  int currentDay =  DateTime.now().weekday;
+  String? creationDate;
+  String? lastUpdate;
+  List<(DateTime, int)> sessions = [];
   List<int> weeklySteps = List.filled(7, 0);
-
-  TextEditingController stepsController = TextEditingController();
-  TextEditingController caloriesController = TextEditingController();
-
-  void _saveSteps(){
-    setState(() {
-      steps = int.tryParse(stepsController.text);
-      weeklySteps[currentDay] = steps!;
-    });
-  }
-  
-  void _saveCalories(){
-    setState(() {
-      calories = int.tryParse(caloriesController.text);
-    });
-  }
-
-  void _addWorkout(){
-    ConfirmHelper.showConfirmDialog(
-      context, 
-      "Are you sure you want to create a new workout session?",
-      (context) => _createWorkout()
-    );
-  }
-
-  void _saveWorkout(){
-    if (isFirstWorkout){
-      ConfirmHelper.showResultDialog(_currentContext, "Please create a workout session first", "Failed");
-    }
-    else {
-      ConfirmHelper.showConfirmDialog(
-        context, 
-        "Are you sure you want to update your workout session?",
-        (context) => _updateWorkout()
-      );
-    }
-  }
-
-  Future _createWorkout() async {
-    setState(() {
-      isLoadingAdd = true;
-    });
-    var response = await ApiService().createWorkout(steps, calories);
-    if (response.statusCode == 200){
-      ConfirmHelper.showResultDialog(_currentContext, "Workout session created successfully!", "Success");
-      setState(() {
-        isFirstWorkout = false;
-      });
-    } 
-    else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody["msg"];
-      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
-    }
-    setState(() {
-      isLoadingAdd = false;
-    });
-  }
-
-  Future _updateWorkout() async {
-    setState(() {
-      isLoadingUpdate = true;
-    });
-    var response = await ApiService().updateWorkout(workoutID, steps, calories);
-    if (response.statusCode == 201){
-      ConfirmHelper.showResultDialog(_currentContext, "Workout session updated successfully!", "Success");
-    } 
-    else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody.entries.map((entry) {
-        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
-        String messages = (entry.value as List).join("\n");
-        return "$field: $messages";
-      }).join("\n");
-      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
-    }
-    setState(() {
-      isLoadingUpdate = false;
-    });
-  }
 
   Future getWorkout() async {
     var response = await ApiService().getWorkout();
@@ -121,53 +31,35 @@ class _WorkoutPageState extends State<WorkoutPage> {
         setState(() {
           steps = 0;
           calories = 0;
-          isFirstWorkout = true;
-          stepsController.text = steps!.toString();
-          caloriesController.text = calories!.toString();
-          weeklySteps[currentDay] = steps!;
         });
         return;
       }
       List<dynamic> jsonData = jsonDecode(response.body);
-      Map<String, dynamic> data = (jsonData.length == 1) ? jsonData[0] : jsonData[-1];
-
+      jsonData = jsonData.length > 7 ? jsonData.sublist(jsonData.length - 7) : jsonData;
+      jsonData.sort((a, b) => DateTime.parse(a["creationDate"]).compareTo(DateTime.parse(b["creationDate"])));
+      Map<String, dynamic> data = jsonData.last;
+      
       setState(() {
         steps = data["steps"];
         calories = data["calories"];
         workoutID = data["workoutid"];
-        stepsController.text = steps!.toString();
-        caloriesController.text = calories!.toString();
-        weeklySteps[currentDay] = steps!;
+        creationDate = DateFormat("MMMM d").format(DateTime.parse(data["creationDate"]).toUtc().add(Duration(hours: 8)));
+        lastUpdate = DateFormat("MMMM d, h:mm a").format(DateTime.parse(data["lastUpdate"]).toUtc().add(Duration(hours: 8)));
+        sessions = jsonData.map((w) => (
+          DateTime.parse(w["lastUpdate"]).toUtc().add(Duration(hours: 8)), (w["steps"] as num).toInt()  
+        )).toList();
       });
+
     }
     else if (response.statusCode == 404){
       setState(() {
         steps = 0;
         calories = 0;
-        stepsController.text = steps!.toString();
-        caloriesController.text = calories!.toString();
-        weeklySteps[currentDay] = steps!;
-      });
-    }
-  }
-
-  Future getUserProfile() async {
-    var response = await ApiService().getUserProfile();
-    if (response.statusCode == 200){
-      var data = jsonDecode(response.body);
-      setState(() {
-        weight = data["weight_kg"]?.toString() ?? "??";
-      });
-    }
-    else if (response.statusCode == 404){
-      setState(() {
-        weight =  "??";
       });
     }
   }
 
   Future setup() async{
-    await getUserProfile();
     await getWorkout();
   }
 
@@ -215,22 +107,20 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       ),
                       Row(
                         children: [
-                          Text(
-                            "Weight: ",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.05, 
-                              fontWeight: FontWeight.w500,
+                          IconButton(
+                            onPressed: (){router.push('/workout/challenges');},
+                            icon: Icon(
+                              Icons.handshake_rounded,
+                              color: Colors.black87,
+                              size: screenWidth * 0.09,
                             ),
                           ),
-                          Text(
-                            weight!,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'Roboto',
-                              fontSize: screenWidth * 0.04, 
-                              fontWeight: FontWeight.w400,
+                          IconButton(
+                            onPressed: (){router.push('/workout/sessions');},
+                            icon: Icon(
+                              Icons.format_list_bulleted_add,
+                              color: Colors.black87,
+                              size: screenWidth * 0.09,
                             ),
                           ),
                         ],
@@ -244,8 +134,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     aspectRatio: 1.1, 
                     child: BarChartWidget(
                       title: "Weekly Steps",
-                      weeklyData: weeklySteps,
-                      highlightDay: currentDay, 
+                      workoutData: sessions,
                     )
                   )
                 ),
@@ -254,7 +143,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   child: Row(
                     children: [
                       Text(
-                        "Today you did:",
+                        "Your Latest Session:",
                         style: TextStyle(
                           color: Colors.black,
                           fontFamily: 'Roboto',
@@ -272,32 +161,14 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     children: [
                       Column(
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Steps:",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.05, 
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: (){
-                                  InputHelper.showInputNumDialog(
-                                    context, 
-                                    "Steps", 
-                                    "Enter the number of steps", 
-                                    stepsController, 
-                                    _saveSteps
-                                  );
-                                },
-                                iconSize: screenWidth*0.06,
-                                icon: Icon(Icons.edit_square),
-                                color: Color.fromRGBO(90, 155, 212, 1),
-                              )
-                            ],
+                          Text(
+                            "Steps:",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'Roboto',
+                              fontSize: screenWidth * 0.06, 
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                           Text(
                             steps!.toString(),
@@ -306,39 +177,21 @@ class _WorkoutPageState extends State<WorkoutPage> {
                               fontFamily: 'Roboto',
                               fontSize: screenWidth * 0.08, 
                               fontWeight: FontWeight.w700,
-                            ),
-                          )
+                            ),  
+                          ),
                         ],
                       ),
-                      SizedBox(width: screenWidth*0.1),
+                      SizedBox(width: screenWidth*0.2),
                       Column(
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Calories:",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.05, 
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: (){
-                                  InputHelper.showInputNumDialog(
-                                    context, 
-                                    "Calories", 
-                                    "Enter the number of calories", 
-                                    caloriesController, 
-                                    _saveCalories,
-                                  );
-                                },
-                                iconSize: screenWidth*0.06,
-                                icon: Icon(Icons.edit_square),
-                                color: Color.fromRGBO(90, 155, 212, 1),
-                              )
-                            ],
+                          Text(
+                            "Calories:",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'Roboto',
+                              fontSize: screenWidth * 0.06, 
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                           Text(
                             calories!.toString(),
@@ -348,95 +201,29 @@ class _WorkoutPageState extends State<WorkoutPage> {
                               fontSize: screenWidth * 0.08, 
                               fontWeight: FontWeight.w700,
                             ),
-                          )
+                          ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth*0.07),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {_addWorkout();},
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Color.fromRGBO(51, 51, 51, 1),
-                          backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-                          padding: EdgeInsets.symmetric(horizontal: screenWidth*0.05, vertical: screenHeight*0.001),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.25, screenHeight * 0.045),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingAdd ? 0.0 : 1.0, 
-                              child: Text(
-                                "Add",
-                                style: TextStyle(
-                                  color: Color.fromRGBO(51, 51, 51, 1),
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: screenWidth * 0.045,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingAdd)
-                              SizedBox(
-                                height: screenWidth * 0.045, 
-                                width: screenWidth * 0.045, 
-                                child: CircularProgressIndicator(
-                                  color: Color.fromRGBO(51, 51, 51, 1),
-                                  strokeWidth: 2.5,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: screenWidth*0.02),
-                      ElevatedButton(
-                        onPressed: () {_saveWorkout();},
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Color.fromRGBO(51, 51, 51, 1),
-                          backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-                          padding: EdgeInsets.symmetric(horizontal: screenWidth*0.05, vertical: screenHeight*0.001),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.25, screenHeight * 0.045),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingUpdate ? 0.0 : 1.0, 
-                              child: Text(
-                                "Update",
-                                style: TextStyle(
-                                  color: Color.fromRGBO(51, 51, 51, 1),
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: screenWidth * 0.045,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingUpdate)
-                              SizedBox(
-                                height: screenWidth * 0.045, 
-                                width: screenWidth * 0.045, 
-                                child: CircularProgressIndicator(
-                                  color: Color.fromRGBO(51, 51, 51, 1),
-                                  strokeWidth: 2.5,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                SizedBox(height: screenHeight*0.01),
+                Text(
+                  "Created: $creationDate",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: Color.fromRGBO(51, 51, 51, 1),
+                    fontFamily: 'Roboto',
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                Text(
+                  "Updated: $lastUpdate",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: Color.fromRGBO(51, 51, 51, 1),
+                    fontFamily: 'Roboto',
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ]
