@@ -2,14 +2,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class BarChartWidget extends StatelessWidget {
-  final List<int> weeklyData; 
-  final int highlightDay; 
+  final List<(DateTime, int)> workoutData; // List containing (DateTime, Steps)
   final String title;
 
   const BarChartWidget({
     super.key,
-    required this.weeklyData,
-    required this.highlightDay,
+    required this.workoutData,
     required this.title,
   });
 
@@ -17,12 +15,14 @@ class BarChartWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+    
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Expanded(
           child: Container(
-            padding:  EdgeInsets.symmetric(vertical: screenHeight*0.01, horizontal: screenWidth*0.01),
+            padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.01, horizontal: screenWidth * 0.01),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -31,19 +31,19 @@ class BarChartWidget extends StatelessWidget {
                   color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
                   spreadRadius: 2,
-                  offset:  Offset(0, 4),
+                  offset: Offset(0, 4),
                 ),
               ],
             ),
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: screenHeight*0.001),
+                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.001),
                   child: Text(
-                    title,
-                    style:  TextStyle(
+                    "Steps Chart (last 7)",
+                    style: TextStyle(
                       fontFamily: "Roboto",
-                      fontSize: screenWidth*0.06,
+                      fontSize: screenWidth * 0.06,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -53,13 +53,14 @@ class BarChartWidget extends StatelessWidget {
                     aspectRatio: 1.6,
                     child: BarChart(
                       BarChartData(
-                        barTouchData: barTouchData,
                         titlesData: _titlesData(),
                         borderData: FlBorderData(show: false),
                         barGroups: _buildBarGroups(),
-                        gridData:  FlGridData(show: false),
+                        gridData: FlGridData(show: false),
                         alignment: BarChartAlignment.spaceAround,
-                        maxY: weeklyData.reduce((a, b) => a > b ? a : b).toDouble() + 5,
+                        maxY: workoutData.isNotEmpty
+                                ? (workoutData.map((e) => e.$2).reduce((a, b) => a > b ? a : b) + 1000)
+                                : 1000,
                       ),
                     ),
                   ),
@@ -72,7 +73,7 @@ class BarChartWidget extends StatelessWidget {
     );
   }
 
-  /// Defines the titles for the X-axis
+  /// Defines the titles for the X-axis with DateTime formatting
   FlTitlesData _titlesData() {
     return FlTitlesData(
       show: true,
@@ -83,44 +84,52 @@ class BarChartWidget extends StatelessWidget {
           getTitlesWidget: getTitles,
         ),
       ),
-      leftTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      topTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      rightTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
     );
   }
 
-  /// Custom X-Axis labels
+  /// Custom X-Axis labels using DateTime (MM/dd format)
   Widget getTitles(double value, TitleMeta meta) {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    final isHighlighted = value.toInt() == highlightDay;
-    return Padding(
-      padding:  EdgeInsets.only(top: 6.0),
-      child: Text(
-        days[value.toInt()],
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: isHighlighted ? Color.fromRGBO(90, 155, 212, 1) : Colors.black87,
+    int index = value.toInt();
+  
+    if (index >= 0 && index < workoutData.length) {
+      DateTime date = workoutData[index].$1; // Extract DateTime from tuple
+      String formattedDate = "${date.month}/${date.day}"; // Format as MM/dd
+
+      return Padding(
+        padding: EdgeInsets.only(top: 6.0),
+        child: Text(
+          formattedDate,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
-      ),
-    );
+      );
+    }
+    return Container();
   }
 
   /// Builds the bars dynamically based on steps data
   List<BarChartGroupData> _buildBarGroups() {
-    return List.generate(weeklyData.length, (index) {
-      final isHighlighted = index == highlightDay;
+    if (workoutData.isEmpty) {
+      return []; // Return an empty list if no data
+    }
+
+    return List.generate(workoutData.length, (index) {
       return BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
-            toY: weeklyData[index].toDouble(),
-            gradient: isHighlighted ? _highlightGradient : _barsGradient,
+            toY: workoutData[index].$2.toDouble(),
+            gradient: _barsGradient,
             width: 20,
             borderRadius: BorderRadius.circular(6),
           ),
         ],
-        showingTooltipIndicators: [0],
       );
     });
   }
@@ -128,44 +137,12 @@ class BarChartWidget extends StatelessWidget {
   /// Gradient for normal bars
   LinearGradient get _barsGradient => LinearGradient(
         colors: [
-          Color.fromRGBO(168, 230, 207, 1),
-          Color.fromRGBO(168, 230, 207, 1),
+          Color.fromRGBO(153, 186, 221, 1),
+          Color.fromRGBO(30, 144, 255, 1),
         ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
       );
 
-  /// Gradient for the highlighted bar
-  LinearGradient get _highlightGradient => LinearGradient(
-        colors: [
-          Color.fromRGBO(90, 155, 212, 1),
-          Color.fromRGBO(90, 155, 212, 1),
-        ],
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-      );
-
-  /// Tooltip and touch settings
-  BarTouchData get barTouchData => BarTouchData(
-        enabled: false,
-        touchTooltipData: BarTouchTooltipData(
-          getTooltipColor: (group) => Colors.transparent,
-          tooltipPadding: EdgeInsets.zero,
-          tooltipMargin: 8,
-          getTooltipItem: (
-            BarChartGroupData group,
-            int groupIndex,
-            BarChartRodData rod,
-            int rodIndex,
-          ) {
-            return BarTooltipItem(
-              rod.toY.round().toString(),
-               TextStyle(
-                color: Colors.cyan,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          },
-        ),
-      );
+  
 }

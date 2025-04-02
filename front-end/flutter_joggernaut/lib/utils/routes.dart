@@ -5,6 +5,8 @@ import 'package:flutter_application_1/screens/admin_screens/admin_user_profiles.
 import 'package:flutter_application_1/screens/social_screens/notifications_page.dart';
 import 'package:flutter_application_1/screens/social_screens/add_friend_page.dart';
 import 'package:flutter_application_1/screens/social_screens/social_user_profiles.dart';
+import 'package:flutter_application_1/screens/workout_screens/challenges.dart';
+import 'package:flutter_application_1/screens/workout_screens/sessions.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_application_1/screens/landing_page.dart';
@@ -62,7 +64,11 @@ final GoRouter router = GoRouter(
       },
       branches: [
         StatefulShellBranch(
-          routes: [GoRoute(path: '/workout', builder: (context, state) => WorkoutPage())],
+          routes: [
+            GoRoute(path: '/workout', builder: (context, state) => WorkoutPage()),
+            GoRoute(path: '/workout/sessions', builder: (context, state) => WorkoutSessionPage()),
+            GoRoute(path: '/workout/challenges', builder: (context, state) => WorkoutChallengesPage()),
+          ],
         ),
         StatefulShellBranch(
           routes: [GoRoute(path: '/game', builder: (context, state) => GamePage())],
