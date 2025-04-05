@@ -17,6 +17,7 @@ from .friends import (
 from .game import (
     CreateGameCharacterSerializer,
     CreateGameSaveSerializer,
+    EditCharacterSerializer,
     GameCharacterSerializer,
     TargetCharacterSerializer,
 )
@@ -29,6 +30,12 @@ from .user import (
     UpdateUserPasswordSerializer,
     UpdateUserPermissionsSerializer,
     UserDeleteSerializer,
+    UserIdFilterSerializer,
     UserModelSerializer,
 )
 from .user_profile import UserProfileFormSerializer
+from .workout import (
+    NewWorkoutRecordSerializer,
+    UpdateWorkoutRecordSerializer,
+    WorkoutRecordSerializer,
+)

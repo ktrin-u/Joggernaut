@@ -15,6 +15,7 @@ from api.schema_docs import RESPONSEMSG, Tags
 from api.serializers import (
     CreateGameCharacterSerializer,
     CreateGameSaveSerializer,
+    EditCharacterSerializer,
     GameCharacterSerializer,
     TargetCharacterSerializer,
 )
@@ -176,41 +177,43 @@ class GameCharacterView(AbstractGameView):
             )
 
     @extend_schema(
-        summary="Set a character to selected",
-        request=TargetCharacterSerializer,
-        responses=RESPONSEMSG,
+        summary="Update game character data", request=EditCharacterSerializer, responses=RESPONSEMSG
     )
     def patch(self, request: Request) -> Response:
-        self.serializer_class = TargetCharacterSerializer
-        serialized = self.get_serializer(data=request.data)
-
+        self.serializer_class = EditCharacterSerializer
+        serialized = self.get_serializer(data=request.data, partial=True)
         if not serialized.is_valid():
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=serialized.errors)
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=serialized.errors,
+            )
+        id = serialized.validated_data.get("id")
 
-        try:
-            gamesave = self.get_gamesave_object(request.user)
-            selected_characters = self.model.objects.filter(gamesave_id=gamesave.id, selected=True)
-
-            for character in selected_characters:
-                character.selected = False
-                character.save()
-
-            new_selected = self.model.objects.get(
-                gamesave_id=gamesave.id, id=serialized.validated_data["id"]
+        if id is None:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"msg": f"FAIL: provided id {id} is NOT VALID"},
             )
 
-            new_selected.selected = True
-            new_selected.save()
+        try:
+            if (
+                len(serialized.validated_data) == 2
+                and serialized.validated_data["selected"] is None
+            ):
+                return Response(
+                    status=status.HTTP_200_OK, data={"msg": "PASS: no changes have been made"}
+                )
+
+            instance = self.model.objects.get(id=id)
+            serialized.update(instance, serialized.validated_data)
 
             return Response(
-                status=status.HTTP_200_OK,
-                data={"msg": f"PASS: character {new_selected.name} is now selected"},
+                status=status.HTTP_202_ACCEPTED,
+                data={"msg": f"PASS: successfully updated character {instance.id}"},
             )
 
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"msg": f"FAIL: Character {serialized.validated_data['id']} is NOT FOUND"},
+                data={"msg": f"FAIL: Gamecharacter {id} for user {request.user.email}is NOT FOUND"},  # type: ignore
             )
-        except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={"msg": f"FAIL: {e}"})

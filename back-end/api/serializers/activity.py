@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from api.models.friends import (
@@ -15,10 +16,13 @@ class NewActivitySerializer(serializers.ModelSerializer):
         fields = ["toUserid", "durationSecs"]
 
 
+@extend_schema_serializer(exclude_fields="activity")
 class CreateActivitySerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
         model = FriendActivity
-        fields = ["fromUserid", "toUserid", "durationSecs"]
+        fields = ["fromUserid", "toUserid", "activity", "durationSecs", "details"]
+
+        extra_kwargs = {"details": {"default": ""}}
 
     def validate(self, attrs):
         if attrs["fromUserid"] == attrs["toUserid"]:
@@ -34,12 +38,14 @@ class CreateActivitySerializer(serializers.ModelSerializer):
         return FriendActivity.objects.create(
             fromUserid=validated_data["fromUserid"],
             toUserid=validated_data["toUserid"],
-            activity=validated_data["activity_type"],
+            activity=validated_data["activity"],
             durationSecs=validated_data["durationSecs"],
         )
 
 
 class FriendActivitySerializer(serializers.ModelSerializer):
+    deadline = serializers.DateTimeField()
+
     class Meta:  # type: ignore
         model = FriendActivity
         fields = [
@@ -50,7 +56,9 @@ class FriendActivitySerializer(serializers.ModelSerializer):
             "status",
             "statusDate",
             "durationSecs",
+            "details",
             "creationDate",
+            "deadline",
         ]
 
 
@@ -59,7 +67,7 @@ class TargetActivitySerializer(serializers.ModelSerializer):
 
     class Meta:  # type: ignore
         model = FriendActivity
-        fields = ["activityid"]
+        fields = ["activityid", "status"]
 
 
 class FilterFriendActivitySerializer(serializers.Serializer):

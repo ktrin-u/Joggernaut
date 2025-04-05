@@ -3,6 +3,19 @@ from django.db import models
 from .user import User
 
 
+class GameCharacterColor(models.TextChoices):
+    RED = "RED"
+    PURPLE = "PURPLE"
+    YELLOW = "YELLOW"
+    BLUE = "BLUE"
+
+
+class GameCharacterClass(models.TextChoices):
+    KNIGHT = "KNIGHT"
+    ARCHER = "ARCHER"
+    PAWN = "PAWN"
+
+
 class GameSave(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     owner = models.OneToOneField(User, on_delete=models.CASCADE, db_column="owner_user")
@@ -11,8 +24,17 @@ class GameSave(models.Model):
 class GameCharacter(models.Model):
     gamesave_id = models.ForeignKey(GameSave, on_delete=models.CASCADE, db_column="gamesave_id")
     id = models.AutoField(primary_key=True, editable=False, db_column="character_id")
-    name = models.CharField(max_length=32)
-    color_hex = models.CharField(max_length=7, default="#000000")
+    name = models.CharField(max_length=32, default="Unnamed")
+    color = models.CharField(
+        max_length=6, choices=GameCharacterColor, default=GameCharacterColor.RED
+    )
+    type = models.CharField(
+        name="type",
+        max_length=6,
+        choices=GameCharacterClass,
+        default=GameCharacterClass.PAWN,
+        db_column="type",
+    )
     health = models.PositiveIntegerField(default=1)
     speed = models.PositiveIntegerField(default=1)
     strength = models.PositiveIntegerField(default=1)
@@ -27,6 +49,25 @@ class GameCharacter(models.Model):
                 name="unique-selected-per-gamesave",
             )
         ]
+
+    def select(self) -> None:
+        """
+        Set field selected to True for the instance, while setting the values of field select to False for other instances.
+
+        Returns None
+        """
+        try:
+            selected_characters = GameCharacter.objects.filter(
+                gamesave_id=self.gamesave_id, selected=True
+            )
+
+            for character in selected_characters:
+                character.selected = False
+                character.save()
+            self.selected = True
+            self.save()
+        except Exception as e:
+            raise e
 
 
 class GameEnemy(models.Model):

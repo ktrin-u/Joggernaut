@@ -117,3 +117,11 @@ class PublicUserResponseSerializer(serializers.Serializer):
         if not all(isinstance(x, UserProfiles) for x in value):
             raise ValidationError({"users": "list contents must be of type UserProfile"})
         return value
+
+
+class UserIdFilterSerializer(serializers.ModelSerializer):
+    userid = serializers.UUIDField()
+
+    class Meta:  # type: ignore
+        model = User
+        fields = ["userid"]

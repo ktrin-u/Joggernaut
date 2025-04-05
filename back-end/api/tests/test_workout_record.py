@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from api.models import User, WorkoutRecord
@@ -7,7 +6,7 @@ from api.models import User, WorkoutRecord
 
 class TestWorkoutRecord(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user(  # type: ignore
             email="test@email.com",
             phonenumber="09171112222",
             firstname="John",
@@ -27,13 +26,14 @@ class TestWorkoutRecord(TestCase):
         self.assertIsNotNone(record.creationDate)
         self.assertIsNotNone(record.lastUpdate)
 
-    def test_non_zero_calories_or_steps_constraint(self):
-        with self.assertRaises(IntegrityError):  # Expect IntegrityError for invalid data
-            WorkoutRecord.objects.create(
-                userid=self.user,
-                calories=0,
-                steps=0,
-            )
+    # removed for due to challenge system
+    # def test_non_zero_calories_or_steps_constraint(self):
+    #     with self.assertRaises(IntegrityError):  # Expect IntegrityError for invalid data
+    #         WorkoutRecord.objects.create(
+    #             userid=self.user,
+    #             calories=0,
+    #             steps=0,
+    #         )
 
     def test_negative_calories_or_steps(self):
         with self.assertRaises(ValidationError):

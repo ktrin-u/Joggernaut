@@ -24,7 +24,7 @@ from api.models import (
 class TestAdminRegistration(TestCase):
     def setUp(self):
         # Create a test user
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user(  # type: ignore
             email="testuser@email.com",
             phonenumber="09171112222",
             firstname="Test",
@@ -81,7 +81,15 @@ class TestAdminRegistration(TestCase):
     def test_user_activity_admin_list_display(self):
         self.assertEqual(
             WorkoutRecordAdmin.list_display,
-            ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"],
+            [
+                "workoutid",
+                "lastUpdate",
+                "userid",
+                "calories",
+                "steps",
+                "creationDate",
+                "activityid",
+            ],
         )
 
     def test_user_audit_log_admin_list_display(self):

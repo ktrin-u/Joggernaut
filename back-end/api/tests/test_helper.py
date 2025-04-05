@@ -123,7 +123,15 @@ class TestHelperFuncs(TestCase):
     def test_user_activity_admin_list_display(self):
         self.assertEqual(
             WorkoutRecordAdmin.list_display,
-            ["workoutid", "lastUpdate", "userid", "calories", "steps", "creationDate"],
+            [
+                "workoutid",
+                "lastUpdate",
+                "userid",
+                "calories",
+                "steps",
+                "creationDate",
+                "activityid",
+            ],
         )
 
     def test_user_activity_admin_ordering(self):
