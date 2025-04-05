@@ -7,14 +7,14 @@ from api.models import FriendActivity, FriendActivityChoices, FriendActivityStat
 
 class TestFriendActivity(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(
+        self.user1 = User.objects.create_user(  # type: ignore
             email="user1@email.com",
             phonenumber="09171112222",
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
         )
-        self.user2 = User.objects.create_user(
+        self.user2 = User.objects.create_user(  # type: ignore
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
@@ -41,53 +41,56 @@ class TestFriendActivity(TestCase):
             )
             self_referencing_activity.full_clean()
 
-    def test_accept_activity(self):
-        activity = FriendActivity.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            activity=FriendActivityChoices.POKE,
-        )
-        activity.accept_activity()
-        self.assertEqual(activity.status, FriendActivityStatus.ACCEPT)
-        self.assertIsNotNone(activity.statusDate)
+    # Removed due to deprecation of the functions
+    # def test_accept_activity(self):
+    #     activity = FriendActivity.objects.create(
+    #         fromUserid=self.user1,
+    #         toUserid=self.user2,
+    #         activity=FriendActivityChoices.POKE,
+    #     )
+    #     activity.accept_activity()
+    #     self.assertEqual(activity.status, FriendActivityStatus.ACCEPT)
+    #     self.assertIsNotNone(activity.statusDate)
 
-    def test_accept_activity_when_expired(self):
-        activity = FriendActivity.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            activity=FriendActivityChoices.POKE,
-        )
-        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
-        activity.save()
-        self.assertFalse(activity.accept_activity())
+    # def test_accept_activity_when_expired(self):
+    #     activity = FriendActivity.objects.create(
+    #         fromUserid=self.user1,
+    #         toUserid=self.user2,
+    #         activity=FriendActivityChoices.POKE,
+    #     )
+    #     activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+    #     activity.save()
+    #     self.assertFalse(activity.accept_activity())
 
-    def test_reject_activity(self):
-        activity = FriendActivity.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            activity=FriendActivityChoices.POKE,
-        )
-        self.assertTrue(activity.reject_activity())
-        self.assertEqual(activity.status, FriendActivityStatus.REJECT)
-        self.assertIsNotNone(activity.statusDate)
+    # def test_reject_activity(self):
+    #     activity = FriendActivity.objects.create(
+    #         fromUserid=self.user1,
+    #         toUserid=self.user2,
+    #         activity=FriendActivityChoices.POKE,
+    #     )
+    #     self.assertTrue(activity.reject_activity())
+    #     self.assertEqual(activity.status, FriendActivityStatus.REJECT)
+    #     self.assertIsNotNone(activity.statusDate)
 
-        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
-        activity.save()
-        self.assertFalse(activity.reject_activity())
+    #     activity.status = FriendActivityStatus.PENDING
+    #     activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)  # set expired
+    #     activity.save()
+    #     self.assertFalse(activity.reject_activity())
 
-    def test_cancel_activity(self):
-        activity = FriendActivity.objects.create(
-            fromUserid=self.user1,
-            toUserid=self.user2,
-            activity=FriendActivityChoices.POKE,
-        )
-        self.assertTrue(activity.cancel_activity())
-        self.assertEqual(activity.status, FriendActivityStatus.CANCEL)
-        self.assertIsNotNone(activity.statusDate)
+    # def test_cancel_activity(self):
+    #     activity = FriendActivity.objects.create(
+    #         fromUserid=self.user1,
+    #         toUserid=self.user2,
+    #         activity=FriendActivityChoices.POKE,
+    #     )
+    #     self.assertTrue(activity.cancel_activity())
+    #     self.assertEqual(activity.status, FriendActivityStatus.CANCEL)
+    #     self.assertIsNotNone(activity.statusDate)
 
-        activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
-        activity.save()
-        self.assertFalse(activity.cancel_activity())
+    #     activity.status = FriendActivityStatus.PENDING
+    #     activity.creationDate = now() - timedelta(seconds=activity.durationSecs + 1)
+    #     activity.save()
+    #     self.assertFalse(activity.cancel_activity())
 
     def test_expired_property(self):
         activity = FriendActivity.objects.create(

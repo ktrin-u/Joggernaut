@@ -1,32 +1,46 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-import api.models as custom_models
-
-
-class NewWorkoutRecordRequestSerializer(serializers.ModelSerializer):
-    class Meta:  # type: ignore
-        model = custom_models.WorkoutRecord
-        fields = ["calories", "steps"]
+from api.models import WorkoutRecord
 
 
 class NewWorkoutRecordSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
-        model = custom_models.WorkoutRecord
+        model = WorkoutRecord
         fields = ["userid", "calories", "steps"]
+        extra_kwargs = {
+            "userid": {
+                "allow_empty": True,
+                "default": "",
+                "help_text": "Defaults to userid of authenticated user if left blank.",
+            },
+            "calories": {"min_value": 0, "default": 0},
+            "steps": {"min_value": 0, "default": 0},
+        }
+
+    def create(self, validated_data) -> WorkoutRecord:
+        return WorkoutRecord.objects.create(**validated_data)
 
 
-class GetWorkoutRecordSerializer(serializers.ModelSerializer):
+class WorkoutRecordSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore
-        model = custom_models.WorkoutRecord
-        fields = ["workoutid", "calories", "steps", "lastUpdate", "creationDate"]
+        model = WorkoutRecord
+        fields = [
+            "workoutid",
+            "activityid",
+            "calories",
+            "steps",
+            "lastUpdate",
+            "userid",
+            "creationDate",
+        ]
 
 
 class UpdateWorkoutRecordSerializer(serializers.ModelSerializer):
     workoutid = serializers.IntegerField(min_value=1, required=True)
 
     class Meta:  # type: ignore
-        model = custom_models.WorkoutRecord
+        model = WorkoutRecord
         fields = ["workoutid", "calories", "steps"]
 
     def validate(self, attrs):

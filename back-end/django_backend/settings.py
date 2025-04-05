@@ -180,7 +180,7 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
         "filter": True,
         "tryItOutEnabled": True,
-        "defaultModelsExpandDepth": -1,
+        "defaultModelsExpandDepth": 0,
         "displayRequestDuration": True,
         "docExpansion": "none",
     },

@@ -9,6 +9,8 @@ from .game import (
     GameAchievement,
     GameAchievementLog,
     GameCharacter,
+    GameCharacterClass,
+    GameCharacterColor,
     GameEnemy,
     GameSave,
 )

@@ -1,7 +1,8 @@
 from copy import deepcopy
+from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
@@ -9,16 +10,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api import schema_docs
-from api.helper import clean_request_data, get_user_object
-from api.models.workout import WorkoutRecord
-from api.responses import RESPONSE_USER_NOT_FOUND
+from api.models import User, WorkoutRecord
 from api.schema_docs import Tags
-from api.serializers.general import MsgSerializer
-from api.serializers.workout import (
-    GetWorkoutRecordSerializer,
-    NewWorkoutRecordRequestSerializer,
+from api.serializers import (
+    MsgSerializer,
     NewWorkoutRecordSerializer,
     UpdateWorkoutRecordSerializer,
+    UserIdFilterSerializer,
+    WorkoutRecordSerializer,
 )
 
 
@@ -26,10 +25,11 @@ from api.serializers.workout import (
     summary="Create a new workout record",
     tags=[Tags.WORKOUT],
 )
-class CreateWorkoutRecordView(GenericAPIView):
-    serializer_class = NewWorkoutRecordSerializer
+class WorkoutRecordView(GenericAPIView):
+    model = WorkoutRecord
+    serializer_class = WorkoutRecordSerializer
     permission_classes = [TokenHasScope]
-    required_scopes = ["write"]
+    required_scopes = ["write", "read"]
 
     RESPONSE_SUCCESS = Response(
         {"msg": "successfully created workout record"}, status=status.HTTP_200_OK
@@ -41,76 +41,129 @@ class CreateWorkoutRecordView(GenericAPIView):
     )
 
     @extend_schema(
-        description="Create a new workout record by supplying either calories, steps or both.",
+        summary="Get list of workouts for the user",
+        description="Retrieves all the workout id with the userid of the user identified by the auth token.",
+        parameters=[
+            OpenApiParameter(
+                name="userid",
+                type=UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filter by specified userid",
+            )
+        ],
         responses={
-            RESPONSE_SUCCESS.status_code: OpenApiResponse(
-                response=MsgSerializer,
-                description="succesfully created workout record",
+            status.HTTP_200_OK: OpenApiResponse(
+                NewWorkoutRecordSerializer,
                 examples=[
                     OpenApiExample(
-                        name="success",
-                        value=RESPONSE_SUCCESS.data,
+                        name="no filter",
+                        value={
+                            "workouts": [
+                                {
+                                    "workoutid": 69,
+                                    "activityid": "null",
+                                    "calories": 100,
+                                    "steps": 100,
+                                    "lastUpdate": "2025-03-13T09:31:57.704166+08:00",
+                                    "userid": "acd9c5e5-aef5-435a-8bdb-ea0432f24ac7",
+                                    "creationDate": "2025-03-13T09:31:57.704136+08:02",
+                                },
+                                {
+                                    "workoutid": 25,
+                                    "activityid": "null",
+                                    "calories": 100,
+                                    "steps": 100,
+                                    "lastUpdate": "2025-03-13T20:20:32.134271+08:00",
+                                    "userid": "c2092dae-f1b12-4cb7-8fdd-c863c542a695",
+                                    "creationDate": "2025-03-13T16:17:32.134241+08:00",
+                                },
+                            ]
+                        },
+                        status_codes=[status.HTTP_200_OK],
+                    ),
+                    OpenApiExample(
+                        name="has filter",
+                        value={
+                            "workouts": [
+                                {
+                                    "workoutid": 40,
+                                    "activityid": "13",
+                                    "calories": 100,
+                                    "steps": 100,
+                                    "lastUpdate": "2025-03-13T09:31:57.704166+08:00",
+                                    "userid": "acd9c5e5-aef5-435a-8bdb-ea0432f24ac7",
+                                    "creationDate": "2025-03-13T09:31:57.704136+08:02",
+                                },
+                                {
+                                    "workoutid": 25,
+                                    "activityid": "null",
+                                    "calories": 107,
+                                    "steps": 100,
+                                    "lastUpdate": "2025-03-13T20:20:32.134271+08:00",
+                                    "userid": "acd9c5e5-aef5-435a-8bdb-ea0432f24ac7",
+                                    "creationDate": "2025-03-13T16:17:32.134241+08:00",
+                                },
+                            ]
+                        },
+                        status_codes=[status.HTTP_200_OK],
+                    ),
+                    OpenApiExample(
+                        name="empty", value={"workouts": []}, status_codes=[status.HTTP_200_OK]
                     ),
                 ],
-            ),
-            RESPONSE_BOTH_ZERO.status_code: OpenApiResponse(
-                response=MsgSerializer,
-                description="calories=steps=0",
-                examples=[
-                    OpenApiExample(name="accepted but no entry", value=RESPONSE_BOTH_ZERO.data)
-                ],
-            ),
-            RESPONSE_USER_NOT_FOUND.status_code: schema_docs.Response.AUTH_TOKEN_USER_NOT_FOUND,
+            )
         },
-        request=NewWorkoutRecordRequestSerializer,
+    )
+    def get(self, request: Request) -> Response:
+        self.serializer_class = WorkoutRecordSerializer
+
+        serialized = UserIdFilterSerializer(data=request.query_params, partial=True)
+
+        if not serialized.is_valid():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=serialized.errors,
+            )
+        print(serialized.validate_empty_values)
+        print(serialized.validated_data)
+        userid_filter = serialized.validated_data.get("userid")
+
+        if userid_filter is None:
+            workouts = self.get_serializer(instance=self.model.objects.all(), many=True)
+        else:
+            workouts = self.get_serializer(
+                self.model.objects.filter(userid=userid_filter), many=True
+            )
+
+        return Response(data={"workouts": workouts.data}, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        description="Create a new workout record by supplying either calories, steps or both. Userid is automatically populated with the userid of the authenticated user",
+        responses=schema_docs.RESPONSEMSG,
+        request=NewWorkoutRecordSerializer,
     )
     def post(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        self.serializer_class = NewWorkoutRecordSerializer
+        user = request.user
+        assert isinstance(user, User)
 
         data = deepcopy(request.data)
-        data["userid"] = user.userid
-        serializer = self.get_serializer(data=data)
+        if data.get("userid") in [None, ""]:
+            data["userid"] = user.userid
 
-        if serializer.is_valid():
-            if (
-                serializer.validated_data["calories"] == 0
-                and serializer.validated_data["steps"] == 0
-            ):
-                return self.RESPONSE_BOTH_ZERO
+        serialized = self.get_serializer(data=data)
 
-            serializer.save()
-            return self.RESPONSE_SUCCESS
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        if not serialized.is_valid():
+            return Response(serialized.errors, status.HTTP_400_BAD_REQUEST)
 
-
-@extend_schema(
-    summary="Get list of workouts for the user",
-    tags=[Tags.WORKOUT],
-)
-class GetWorkoutRecordView(GenericAPIView):
-    serializer_class = GetWorkoutRecordSerializer
-    permission_classes = [TokenHasScope]
-    required_scopes = ["read"]
-    model = WorkoutRecord
-
-    def get(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
-
-        workouts = self.get_serializer(self.model.objects.filter(userid=user.userid), many=True)
-
-        return Response(data=workouts.data, status=status.HTTP_200_OK)
-
-
-@extend_schema(summary="Update a workout record", tags=[Tags.WORKOUT])
-class UpdateWorkoutRecordView(GenericAPIView):
-    serializer_class = UpdateWorkoutRecordSerializer
-    permission_classes = [TokenHasScope]
-    required_scopes = ["write"]
-    model = WorkoutRecord
+        new = serialized.create(serialized.validated_data)
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "msg": f"PASS: succesfully created workout record {new.workoutid} for {new.userid}"
+            },
+        )
 
     _bad_request = deepcopy(schema_docs.Response.SERIALIZER_VALIDATION_ERRORS)
     _bad_request.examples.append(  # type: ignore
@@ -129,6 +182,7 @@ class UpdateWorkoutRecordView(GenericAPIView):
     )
 
     @extend_schema(
+        summary="Update a workout record",
         description="Update a workout entry with the supplied data. Empty values will be left untouched.",
         request=UpdateWorkoutRecordSerializer,
         responses={
@@ -156,50 +210,49 @@ class UpdateWorkoutRecordView(GenericAPIView):
         },
     )
     def patch(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        self.serializer_class = UpdateWorkoutRecordSerializer
+        user = request.user
+        assert isinstance(user, User)
 
-        data = clean_request_data(request)
-        serialized = self.get_serializer(data=data)
+        serialized = self.get_serializer(data=request.data, partial=True)
 
-        if serialized.is_valid():
-            try:
-                workout = self.model.objects.get(
-                    userid=user.userid, workoutid=serialized.validated_data["workoutid"]
-                )
-                new_calories = serialized.validated_data.get("calories")
-                new_steps = serialized.validated_data.get("steps")
+        if not serialized.is_valid():
+            return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                if new_steps is None and new_steps is None:
-                    return Response(
-                        {"msg": "no new values supplied"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+        try:
+            workout = self.model.objects.get(
+                userid=user.userid, workoutid=serialized.validated_data["workoutid"]
+            )
+            new_calories = serialized.validated_data.get("calories")
+            new_steps = serialized.validated_data.get("steps")
 
-                msg = "success, "
-                if new_calories is not None:
-                    workout.calories = new_calories
-                    msg += f"calories updated to {new_calories}, "
-                if new_steps is not None:
-                    workout.steps = new_steps
-                    msg += f"steps updated to {new_steps}, "
-
-                workout.save()
-
+            if new_steps is None and new_steps is None:
                 return Response(
-                    {
-                        "msg": msg,
-                    },
-                    status=status.HTTP_201_CREATED,
+                    {"msg": "no new values supplied"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            except ObjectDoesNotExist:
-                return Response(
-                    {
-                        "msg": f"workout id {serialized.validated_data['workoutid']} under {user.userid} not found"
-                    },
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            msg = "PASS: "
+            if new_calories is not None:
+                workout.calories = new_calories
+                msg += f"calories updated to {new_calories}, "
+            if new_steps is not None:
+                workout.steps = new_steps
+                msg += f"steps updated to {new_steps}, "
 
-        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+            workout.save()
+
+            return Response(
+                {
+                    "msg": msg,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ObjectDoesNotExist:
+            return Response(
+                {
+                    "msg": f"FAIL: workout id {serialized.validated_data['workoutid']} under {user.userid} is NOT FOUND"
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )

@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -55,11 +53,12 @@ class FriendActivityChoices(models.TextChoices):
 
 
 class FriendActivityStatus(models.TextChoices):
-    ACCEPT = "ACC"
     REJECT = "REJ"
     CANCEL = "CAN"
     EXPIRED = "EXP"
     PENDING = "PEN"
+    ONGOING = "ONG"
+    FINISHED = "FIN"
 
 
 class FriendActivity(models.Model):
@@ -85,14 +84,16 @@ class FriendActivity(models.Model):
     )
     statusDate = models.DateTimeField(null=True, blank=True)
     durationSecs = models.PositiveIntegerField(default=3600)
+    details = models.CharField(max_length=255, blank=True, null=True)
 
     @property
     def expired(self) -> bool:
         try:
             time_elapsed = timezone.now() - self.creationDate
-            activity_duration = timedelta(seconds=self.durationSecs)
-
-            if self.durationSecs == 0:  # 0 means cannot expire
+            activity_duration = timezone.timedelta(seconds=self.durationSecs)
+            if (
+                self.durationSecs == 0 or self.status != FriendActivityStatus.PENDING
+            ):  # 0 means cannot expire; only PENDING should expire
                 return False
 
             if time_elapsed > activity_duration:
@@ -105,37 +106,17 @@ class FriendActivity(models.Model):
         except Exception:
             return False
 
+    @property
+    def deadline(self) -> timezone.datetime:
+        offset = timezone.timedelta(seconds=self.durationSecs)
+        if self.status == FriendActivityStatus.ONGOING and self.statusDate:
+            return self.statusDate + offset
+        return self.creationDate + offset
+
     def clean(self) -> None:
         _ = self.expired
         if self.fromUserid == self.toUserid:
             raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
-
-    def accept_activity(self) -> bool:
-        """
-        Returns True if success, False if fail since activity is already expired
-        """
-        if not self.expired:
-            self.status = FriendActivityStatus.ACCEPT
-            self.statusDate = timezone.now()
-            self.save()
-            return True
-        return False
-
-    def reject_activity(self) -> bool:
-        if not self.expired:
-            self.status = FriendActivityStatus.REJECT
-            self.statusDate = timezone.now()
-            self.save()
-            return True
-        return False
-
-    def cancel_activity(self) -> bool:
-        if not self.expired:
-            self.status = FriendActivityStatus.CANCEL
-            self.statusDate = timezone.now()
-            self.save()
-            return True
-        return False
 
     class Meta:
         verbose_name = "Friend Activity"

@@ -18,8 +18,8 @@ class TestSchemaDocs(SimpleTestCase):
         self.assertEqual(
             example.value,
             {
-                "field_name1": "field error message",
-                "field_name2": "field error message",
+                "field_name1": ["field error message"],
+                "field_name2": ["field error message"],
             },
         )
 

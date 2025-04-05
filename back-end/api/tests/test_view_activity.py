@@ -21,14 +21,14 @@ class TestActivityViews(TestCase):
         self.client = APIClient()
 
         # Create test users
-        self.user1 = User.objects.create_user(
+        self.user1 = User.objects.create_user(  # type: ignore
             email="user1@email.com",
             phonenumber="09171112222",
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
         )
-        self.user2 = User.objects.create_user(
+        self.user2 = User.objects.create_user(  # type: ignore
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
@@ -76,15 +76,16 @@ class TestActivityViews(TestCase):
         url = reverse("get activities between user and friends")  # Correct URL name
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.data, list)
+        self.assertEqual(response.headers["Content-Type"], "application/json")
 
     def test_poke_friend_view_valid(self):
         url = reverse("poke a friend")  # Correct URL name
         data = {"toUserid": self.user2.userid, "durationSecs": 3600}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.headers["Content-Type"], "application/json")
         self.assertEqual(
-            response.data["msg"],
+            response.json()["msg"],
             "Poke Friend Activity entry successfully added to database",
         )
 
@@ -93,7 +94,7 @@ class TestActivityViews(TestCase):
         data = {"toUserid": "nonexistent-user-id", "durationSecs": 3600}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("toUserid", response.data)
+        self.assertIn("toUserid", response.json())
 
     def test_challenge_friend_view_valid(self):
         url = reverse("challenge a friend")  # Correct URL name
@@ -101,6 +102,6 @@ class TestActivityViews(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
-            response.data["msg"],
+            response.json()["msg"],
             "Challenge Friend Activity entry successfully added to database",
         )

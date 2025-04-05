@@ -89,44 +89,19 @@ friend_urls = [
 activity_urls = [
     path(
         "activity",
-        activity.GetFriendActivityView.as_view(),
+        activity.FriendActivityView.as_view(),
         name="get activities between user and friends",
     ),
-    path("activity/poke", activity.PokeFriendView.as_view(), name="poke a friend"),
-    path(
-        "activity/accept",
-        activity.AcceptActivityFriendView.as_view(),
-        name="accept a pending friend activity",
-    ),
-    path(
-        "activity/reject",
-        activity.RejectActivityView.as_view(),
-        name="reject a pending friend activity",
-    ),
+    path("activity/poke", activity.PokeActivityView.as_view(), name="poke a friend"),
     path(
         "activity/challenge",
-        activity.ChallengeFriendView.as_view(),
+        activity.ChallengeActivityView.as_view(),
         name="challenge a friend",
-    ),
-    path(
-        "activity/cancel",
-        activity.CancelActivityView.as_view(),
-        name="cancel a pending activity",
     ),
 ]
 
 workout_urls = [
-    path("workout/", workout.GetWorkoutRecordView.as_view(), name="get workout records"),
-    path(
-        "workout/add",
-        workout.CreateWorkoutRecordView.as_view(),
-        name="create new workout record",
-    ),
-    path(
-        "workout/update",
-        workout.UpdateWorkoutRecordView.as_view(),
-        name="update workout records",
-    ),
+    path("workout/", workout.WorkoutRecordView.as_view(), name="workout records"),
 ]
 
 game_urls = [

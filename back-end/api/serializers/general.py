@@ -10,6 +10,7 @@ from rest_framework import serializers, status
             value={
                 "msg": "PASS:<success message>",
             },
+            status_codes=[status.HTTP_200_OK, status.HTTP_201_CREATED, status.HTTP_202_ACCEPTED],
         ),
         OpenApiExample(
             name="error/fail",
@@ -21,8 +22,8 @@ from rest_framework import serializers, status
         OpenApiExample(
             name="malformed parameters",
             value={
-                "field_name1": "field error message",
-                "field_name2": "field error message",
+                "field_name1": ["field error message"],
+                "field_name2": ["field error message"],
             },
             status_codes=[status.HTTP_400_BAD_REQUEST],
         ),

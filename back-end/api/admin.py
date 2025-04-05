@@ -124,6 +124,7 @@ class WorkoutRecordAdmin(admin.ModelAdmin):
         "calories",
         "steps",
         "creationDate",
+        "activityid",
     ]
     ordering = ["lastUpdate"]
     readonly_fields = ["creationDate"]
@@ -140,6 +141,7 @@ class FriendActivityAdmin(admin.ModelAdmin):
         "toUserid",
         "statusDate",
         "durationSecs",
+        "details",
         "creationDate",
     ]
     ordering = ["activityid", "creationDate"]
@@ -168,7 +170,8 @@ class GameCharacterAdmin(admin.ModelAdmin):
         "id",
         "gamesave_id__owner__email",
         "name",
-        "color_hex",
+        "color",
+        "type",
         "health",
         "speed",
         "strength",

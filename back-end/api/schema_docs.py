@@ -10,6 +10,8 @@ OpenApiResponse()
 
 RESPONSEMSG: dict[int, OpenApiResponse] = {
     status.HTTP_200_OK: OpenApiResponse(response=MsgSerializer),
+    status.HTTP_201_CREATED: OpenApiResponse(response=MsgSerializer),
+    status.HTTP_202_ACCEPTED: OpenApiResponse(response=MsgSerializer),
     status.HTTP_404_NOT_FOUND: OpenApiResponse(response=MsgSerializer),
     status.HTTP_400_BAD_REQUEST: OpenApiResponse(response=MsgSerializer),
     status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(response=MsgSerializer),
@@ -24,8 +26,8 @@ class Response(OpenApiResponse):
             OpenApiExample(
                 name="malformed parameters",
                 value={
-                    "field_name1": "field error message",
-                    "field_name2": "field error message",
+                    "field_name1": ["field error message"],
+                    "field_name2": ["field error message"],
                 },
             )
         ],
