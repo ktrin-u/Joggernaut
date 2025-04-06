@@ -98,6 +98,11 @@ activity_urls = [
         activity.ChallengeActivityView.as_view(),
         name="challenge a friend",
     ),
+        path(
+        "activity/update",
+        activity.FriendActivityView.as_view(),
+        name="update activity status",  
+    ),
 ]
 
 workout_urls = [
