@@ -22,25 +22,30 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
                 "required": False,
                 "validators": None,
                 "default": "",
+                "allow_null": False,
             },
             "dateofbirth": {
                 "required": False,
                 "default": "",
                 "help_text": "send as empty value if to be left unchanged",
+                "allow_null": False,
             },
             "gender": {
                 "required": False,
                 "default": "",
+                "allow_null": False,
             },
             "height_cm": {
                 "required": False,
                 "min_value": Decimal(1.0),
                 "default": "",
+                "allow_null": False,
             },
             "weight_kg": {
                 "required": False,
                 "min_value": Decimal(1.0),
                 "default": "",
+                "allow_null": False,
             },
         }
 
@@ -55,9 +60,6 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data) -> UserProfiles:
-        for key, val in list(validated_data.items()):
-            if val is None:
-                validated_data.pop(key)
         instance.accountname = validated_data.get("accountname", instance.accountname)
         instance.dateofbirth = validated_data.get("dateofbirth", instance.dateofbirth)
         instance.gender = validated_data.get("gender", instance.gender)

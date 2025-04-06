@@ -136,9 +136,6 @@ class EditCharacterSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance: GameCharacter, validated_data) -> GameCharacter:
-        for key, val in list(validated_data.items()):
-            if val is None:
-                validated_data.pop(key)
         if self.validated_data.get("selected", False):
             instance.select()
         instance.name = validated_data.get("name", instance.name)
