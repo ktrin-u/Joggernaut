@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -8,22 +9,19 @@ from api.models import Gender, User, UserProfiles
 
 class TestUserProfiles(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user(  # type: ignore
             email="profile@email.com",
             phonenumber="09181112222",
             firstname="First",
             lastname="Last",
             password="testPass1@",
         )
-        self.profile = UserProfiles.objects.create(
-            userid=self.user,
-            accountname="First Last",
-            dateofbirth=date(2025, 2, 13),
-            gender=Gender.MALE,
-            address="",
-            height_cm=180.5,
-            weight_kg=75.0,
-        )
+        self.profile = UserProfiles.objects.get(userid=self.user)
+        self.profile.accountname = "First Last"
+        self.profile.dateofbirth = date(2025, 2, 13)
+        self.profile.gender = Gender.MALE
+        self.profile.height_cm = Decimal(180.5)
+        self.profile.weight_kg = Decimal(75.0)
 
     def test_profile_creation(self):
         self.assertEqual(self.profile.accountname, "First Last")
@@ -39,7 +37,6 @@ class TestUserProfiles(TestCase):
                 accountname="First Last",  # Duplicate account name
                 dateofbirth=date(2000, 1, 1),
                 gender=Gender.FEMALE,
-                address="Some Address",
                 height_cm=160.0,
                 weight_kg=50.0,
             )
@@ -52,7 +49,6 @@ class TestUserProfiles(TestCase):
                 accountname="Invalid Gender",
                 dateofbirth=date(2000, 1, 1),
                 gender="INVALID",  # Invalid gender
-                address="Some Address",
                 height_cm=160.0,
                 weight_kg=50.0,
             )
@@ -65,7 +61,6 @@ class TestUserProfiles(TestCase):
                 accountname="Invalid Height",
                 dateofbirth=date(2000, 1, 1),
                 gender=Gender.MALE,
-                address="Some Address",
                 height_cm=-180.0,  # Invalid negative height
                 weight_kg=75.0,
             )
@@ -77,7 +72,6 @@ class TestUserProfiles(TestCase):
                 accountname="Invalid Weight",
                 dateofbirth=date(2000, 1, 1),
                 gender=Gender.MALE,
-                address="Some Address",
                 height_cm=180.0,
                 weight_kg=-75.0,  # Invalid negative weight
             )
@@ -90,7 +84,6 @@ class TestUserProfiles(TestCase):
                 accountname="Future DOB",
                 dateofbirth=date(2030, 1, 1),  # Future date
                 gender=Gender.MALE,
-                address="Some Address",
                 height_cm=180.0,
                 weight_kg=75.0,
             )

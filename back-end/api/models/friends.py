@@ -87,31 +87,39 @@ class FriendActivity(models.Model):
     details = models.CharField(max_length=255, blank=True, null=True)
 
     @property
-    def expired(self) -> bool:
-        try:
-            time_elapsed = timezone.now() - self.creationDate
-            activity_duration = timezone.timedelta(seconds=self.durationSecs)
-            if (
-                self.durationSecs == 0 or self.status != FriendActivityStatus.PENDING
-            ):  # 0 means cannot expire; only PENDING should expire
-                return False
-
-            if time_elapsed > activity_duration:
-                if self.status != FriendActivityStatus.EXPIRED:
-                    self.status = FriendActivityStatus.EXPIRED
-                    self.statusDate = self.creationDate + activity_duration
-                    self.save()
-                return True
-            return False
-        except Exception:
-            return False
-
-    @property
     def deadline(self) -> timezone.datetime:
         offset = timezone.timedelta(seconds=self.durationSecs)
         if self.status == FriendActivityStatus.ONGOING and self.statusDate:
             return self.statusDate + offset
         return self.creationDate + offset
+
+    @property
+    def expired(self) -> bool:
+        try:
+            match self.activity:
+                case FriendActivityChoices.CHALLENGE:
+                    time_elapsed = self.deadline - self.creationDate
+                case _:
+                    time_elapsed = timezone.now() - self.creationDate
+            activity_duration = timezone.timedelta(seconds=self.durationSecs)
+            if self.durationSecs == 0:  # 0 means cannot expire;
+                return False
+
+            if time_elapsed > activity_duration:
+                match self.status:
+                    case FriendActivityStatus.ONGOING:
+                        self.status = FriendActivityStatus.FINISHED
+                    case FriendActivityStatus.PENDING:
+                        self.status = FriendActivityStatus.EXPIRED
+                    case _:
+                        pass
+                self.statusDate = timezone.now()
+                self.save()
+                return True
+
+            return False
+        except Exception:
+            return False
 
     def clean(self) -> None:
         _ = self.expired
@@ -126,3 +134,6 @@ class FriendActivity(models.Model):
                 name="no self poke", check=~models.Q(toUserid=models.F("fromUserid"))
             )
         ]
+
+    def refresh_status(self):
+        _ = self.expired

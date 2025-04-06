@@ -6,7 +6,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from api.helper import clean_request_data, get_user_object
 from api.models.user import User, UserProfiles
 from api.permissions import isBanned
 from api.schema_docs import Tags
@@ -29,20 +28,13 @@ class UpdateUserPasswordView(GenericAPIView):
     required_scopes = ["write"]
     serializer_class = UpdateUserPasswordSerializer
 
-    def get_object(self) -> User | None:
-        return get_user_object(self.request)
-
     @extend_schema(
         description="Supply the password and confirm_password in plaintext. The API will handle hashing and updating the database."
     )
     def patch(self, request: Request) -> Response:
-        user = self.get_object()
+        user = request.user
+        assert isinstance(user, User)
 
-        if user is None:
-            return Response(
-                {"msg": "Failed to retrieve corresponding user"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
         serialized = self.get_serializer(data=request.data)  # type: ignore
         if serialized.is_valid():
             serialized.update(instance=user, validated_data=serialized.validated_data)
@@ -70,20 +62,12 @@ class AbstractUserView(views.APIView):
 class ViewUserInfoView(AbstractUserView):
     required_scopes = ["read"]
 
-    def get_object(self):
-        return get_user_object(self.request)
-
     @extend_schema(
         description="Retrieve the associated entry in the User table. This uses the Authentication Token as the identifier."
     )
     def get(self, request: Request, format=None) -> Response:
-        user = self.get_object()
-
-        if user is None:
-            return Response(
-                {"msg": "Failed to retrieve corresponding user"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        user = request.user
+        assert isinstance(user, User)
 
         serialized = self.serializer_class(user)
         return Response(data=serialized.data, status=status.HTTP_200_OK)
@@ -100,24 +84,35 @@ class UpdateUserInfoView(AbstractUserView):
         description="Update the associated entry in the User table. Expects all User Profile fields. This uses the Authentication Token as the identifier."
     )
     def put(self, request) -> Response:
-        serialized = UserModelSerializer(get_user_object(request), data=request.data)
-        if serialized.is_valid():
-            serialized.save()
-            return Response(status=status.HTTP_202_ACCEPTED)
-        return Response(data=serialized.errors, status=status.HTTP_409_CONFLICT)
+        user = request.user
+        assert isinstance(user, User)
+
+        serialized = UserModelSerializer(data=request.data, partial=True)
+        if not serialized.is_valid():
+            return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serialized.update(user, serialized.validated_data)
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"msg": f"successfully updated info of user {user.email}"},
+        )
 
     @extend_schema(
-        description="Update the associated entry in the User table. Does not require all fields. This uses the Authentication Token as the identifier"
+        description="Update the associated entry in the User table. Does not require all fields. This uses the Authentication Token as the identifier.\n\nNote that userid, joindate, last_login, is_staff cannot be updated through this endpoint."
     )
     def patch(self, request) -> Response:
-        serialized = UserModelSerializer(
-            get_user_object(request), data=clean_request_data(request), partial=True
-        )
-        if serialized.is_valid():
-            serialized.save()
-            return Response(data=serialized.data, status=status.HTTP_202_ACCEPTED)
+        user = request.user
+        assert isinstance(user, User)
+        serialized = UserModelSerializer(data=request.data, partial=True)
+        if not serialized.is_valid():
+            return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(data=serialized.errors, status=status.HTTP_409_CONFLICT)
+        serialized.update(user, serialized.validated_data)
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"msg": f"PASS: successfully updated info of user {user.email}"},
+        )
 
 
 @extend_schema(
@@ -128,29 +123,24 @@ class DeleteUserView(AbstractUserView):
     serializer_class = UserDeleteSerializer
     required_scopes = ["write"]
 
-    def get_object(self) -> User | None:
-        return get_user_object(self.request)
-
     @extend_schema(
         description="Expect two matching booleans. The Authentication Token is used as the identifier"
     )
     def post(self, request: Request) -> Response:
         serialized = self.serializer_class(data=request.data)
 
-        if serialized.is_valid():
-            user = self.get_object()
+        if not serialized.is_valid():
+            return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if user is not None:
-                deleted_userid = user.userid
-                user.delete()
-                return Response(
-                    {"msg": f"user {deleted_userid} has been deleted."},
-                    status=status.HTTP_200_OK,
-                )
+        user = request.user
+        assert isinstance(user, User)
 
-            return Response({"msg": "user not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+        deleted_userid = user.userid
+        user.delete()
+        return Response(
+            {"msg": f"PASS: user {deleted_userid} has been deleted."},
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(summary="Get list of users and their non-confidential data", tags=[Tags.USER])

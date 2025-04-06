@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from api.models import User, UserManager, UserProfiles
+from api.models import User, UserProfiles
 
 
 class RegisterFormSerializer(serializers.ModelSerializer):
@@ -18,8 +18,7 @@ class RegisterFormSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        manager: UserManager = User.objects  # type:ignore
-        new_user = manager.create_user(
+        new_user = User.objects.create_user(  # type: ignore
             email=validated_data["email"],
             firstname=validated_data["firstname"],
             lastname=validated_data["lastname"],
@@ -28,7 +27,6 @@ class RegisterFormSerializer(serializers.ModelSerializer):
         )
         new_user.set_password(validated_data["password"])
         new_user.save()
-
         return new_user
 
 
@@ -75,6 +73,15 @@ class UserModelSerializer(serializers.ModelSerializer):
             "is_active",
             "is_staff",
         ]
+
+    def update(self, instance, validated_data) -> User:
+        instance.email = validated_data.get("email", instance.email)
+        instance.firstname = validated_data.get("firstname", instance.firstname)
+        instance.lastname = validated_data.get("lastname", instance.lastname)
+        instance.phonenumber = validated_data.get("phonenumber", instance.phonenumber)
+        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.save()
+        return instance
 
 
 class UserDeleteSerializer(serializers.Serializer):

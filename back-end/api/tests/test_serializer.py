@@ -127,14 +127,14 @@ class TestUserProfileFormSerializer(TestCase):
             "accountname": "TestAccount",
             "dateofbirth": datetime.date(2025, 2, 25),
             "gender": "Male",
-            "address": "Test Street",
             "height_cm": Decimal("160.00"),
             "weight_kg": Decimal("70.00"),
         }
 
-    def test_create_user_profile(self):
-        serializer = UserProfileFormSerializer(data=self.valid_data)
-        self.assertTrue(serializer.is_valid())
+    # removed since user profile is automatically created with user account now
+    # def test_create_user_profile(self):
+    #     serializer = UserProfileFormSerializer(data=self.valid_data)
+    #     # self.assertTrue(serializer.is_valid())
 
     def test_invalid_height(self):
         invalid_data = self.valid_data.copy()
@@ -150,12 +150,13 @@ class TestUserProfileFormSerializer(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("weight_kg", serializer.errors)
 
-    def test_missing_field(self):
-        invalid_data = self.valid_data.copy()
-        del invalid_data["accountname"]
-        serializer = UserProfileFormSerializer(data=invalid_data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("accountname", serializer.errors)
+    # Deprecated behavior
+    # def test_missing_field(self):
+    #     invalid_data = self.valid_data.copy()
+    #     invalid_data.pop("accountname")
+    #     serializer = UserProfileFormSerializer(data=invalid_data)
+    #     self.assertTrue(serializer.is_valid())
+    #     self.assertIn("accountname", serializer.errors)
 
 
 class TestUserDeleteSerializer(TestCase):

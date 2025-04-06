@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -51,7 +51,7 @@ class UserViewsTestCase(APITestCase):
 
     def test_update_user_info(self):
         response = self.client.patch("/api/user/info/update", {"email": "newemail@example.com"})
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_change_password(self):
         response = self.client.patch(
@@ -62,33 +62,31 @@ class UserViewsTestCase(APITestCase):
 
     def test_view_user_profile(self):
         response = self.client.get("/api/profile/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_create_user_profile(self):
-        response = self.client.post(
-            "/api/profile/new",
-            {
-                "userid": str(self.user.userid),
-                "accountname": "TestAccount",
-                "dateofbirth": "2025-02-25",
-                "gender": "Male",
-                "address": "Test Street",
-                "height_cm": Decimal("160.00"),
-                "weight_kg": Decimal("70.00"),
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    # Deprecated: User profile is automatically created with user account now
+    # def test_create_user_profile(self):
+    #     response = self.client.post(
+    #         "/api/profile/new",
+    #         {
+    #             "userid": str(self.user.userid),
+    #             "accountname": "TestAccount",
+    #             "dateofbirth": "2025-02-25",
+    #             "gender": "Male",
+    #             "address": "Test Street",
+    #             "height_cm": Decimal("160.00"),
+    #             "weight_kg": Decimal("70.00"),
+    #         },
+    #     )
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_update_user_profile(self):
-        UserProfiles.objects.create(
-            userid=self.admin_user,
-            accountname="TestAccount",
-            dateofbirth="2025-02-25",
-            gender="Male",
-            address="Test Street",
-            height_cm=Decimal("160.00"),
-            weight_kg=Decimal("70.00"),
-        )
+        profile = UserProfiles.objects.get(userid=self.admin_user)
+        profile.accountname = "TestAccount"
+        profile.dateofbirth = date(year=2025, month=2, day=25)
+        profile.gender = "Male"
+        profile.height_cm = Decimal("160.00")
+        profile.weight_kg = Decimal("70.00")
 
         response = self.client.patch(
             "/api/profile/update",
@@ -97,12 +95,11 @@ class UserViewsTestCase(APITestCase):
                 "accountname": "UpdatedAccount",
                 "dateofbirth": "2025-02-26",
                 "gender": "Male",
-                "address": "Updated Street",
-                "height_cm": Decimal("160.00"),
-                "weight_kg": Decimal("70.00"),
+                "height_cm": "160.00",
+                "weight_kg": "70.00",
             },
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_user(self):
         response = self.client.post("/api/user/delete", {"delete": True, "confirm_delete": True})

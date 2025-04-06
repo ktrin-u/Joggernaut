@@ -33,11 +33,6 @@ auth_urls = [
 profile_urls = [
     path("profile/", user_profile.UserProfileView.as_view(), name="retrieve user profile"),
     path(
-        "profile/new",
-        user_profile.CreateUserProfileView.as_view(),
-        name="create new user profile",
-    ),
-    path(
         "profile/update",
         user_profile.UpdateUserProfileView.as_view(),
         name="update user profile",
@@ -98,10 +93,10 @@ activity_urls = [
         activity.ChallengeActivityView.as_view(),
         name="challenge a friend",
     ),
-        path(
+    path(
         "activity/update",
         activity.FriendActivityView.as_view(),
-        name="update activity status",  
+        name="update activity status",
     ),
 ]
 

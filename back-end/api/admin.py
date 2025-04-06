@@ -77,7 +77,6 @@ class UserProfilesAdmin(admin.ModelAdmin):
         "accountname",
         "dateofbirth",
         "gender",
-        "address",
         "height_cm",
         "weight_kg",
     ]
@@ -88,9 +87,16 @@ class UserProfilesAdmin(admin.ModelAdmin):
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
-    list_display = ["userid", "status"]
+    list_display = [
+        "userid__email",
+        "profile_edit",
+        "workout_share",
+        "in_leaderboards",
+        "user_interact",
+    ]
     ordering = ["userid"]
     readonly_fields = ["userid"]
+    list_filter = ["profile_edit", "workout_share", "in_leaderboards", "user_interact"]
     pass
 
 

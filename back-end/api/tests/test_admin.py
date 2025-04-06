@@ -106,14 +106,22 @@ class TestAdminRegistration(TestCase):
                 "accountname",
                 "dateofbirth",
                 "gender",
-                "address",
                 "height_cm",
                 "weight_kg",
             ],
         )
 
     def test_user_settings_admin_list_display(self):
-        self.assertEqual(UserSettingsAdmin.list_display, ["userid", "status"])
+        self.assertEqual(
+            UserSettingsAdmin.list_display,
+            [
+                "userid__email",
+                "profile_edit",
+                "workout_share",
+                "in_leaderboards",
+                "user_interact",
+            ],
+        )
 
     # Tests for ordering
     def test_user_admin_ordering(self):
