@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from api.models import UserProfiles
@@ -14,7 +16,33 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
             "height_cm",
             "weight_kg",
         ]
-        extra_kwargs = {"userid": {"validators": None}}
+        extra_kwargs = {
+            "userid": {"read_only": True, "validators": None},
+            "accountname": {
+                "required": False,
+                "validators": None,
+                "default": "",
+            },
+            "dateofbirth": {
+                "required": False,
+                "default": "",
+                "help_text": "send as empty value if to be left unchanged",
+            },
+            "gender": {
+                "required": False,
+                "default": "",
+            },
+            "height_cm": {
+                "required": False,
+                "min_value": Decimal(1.0),
+                "default": "",
+            },
+            "weight_kg": {
+                "required": False,
+                "min_value": Decimal(1.0),
+                "default": "",
+            },
+        }
 
     def create(self, validated_data) -> UserProfiles:
         return UserProfiles.objects.create(
@@ -27,6 +55,9 @@ class UserProfileFormSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data) -> UserProfiles:
+        for key, val in list(validated_data.items()):
+            if val is None:
+                validated_data.pop(key)
         instance.accountname = validated_data.get("accountname", instance.accountname)
         instance.dateofbirth = validated_data.get("dateofbirth", instance.dateofbirth)
         instance.gender = validated_data.get("gender", instance.gender)

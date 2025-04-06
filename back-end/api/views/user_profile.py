@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular.utils import extend_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
@@ -48,20 +50,28 @@ class UpdateUserProfileView(AbstractUserProfileView):
     required_scopes = ["write"]
 
     @extend_schema(
-        description="Updates the relevant entry in the database. Does not expect all fields. This uses the Authentication Token as the identifier."
+        description="Updates the relevant entry in the database. Does not expect all fields. This uses the Authentication Token as the identifier.",
+        request=UserProfileFormSerializer(partial=True),
     )
     def patch(self, request: Request) -> Response:
         user = request.user
         assert isinstance(user, User)
+        data = deepcopy(request.data)
+        data["userid"] = user.userid
+
+        serialized = self.get_serializer(data=data, partial=True)
+
+        if not serialized.is_valid():
+            return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serialized = self.get_serializer(data=request.data, partial=True)
-
-            if not serialized.is_valid():
-                return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
-
             profile = self.model.objects.get(userid=user.userid)
             serialized.update(profile, serialized.validated_data)
-            return Response(data=serialized.data, status=status.HTTP_200_OK)
+            return Response(
+                status=status.HTTP_200_OK,
+                data={
+                    "msg": f"PASS: Successfully updated user profile for {user.email}",
+                },
+            )
 
         except ObjectDoesNotExist:
             return Response(
