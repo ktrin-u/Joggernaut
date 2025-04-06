@@ -1,9 +1,9 @@
 import json
-import uuid
 from unittest.mock import patch
-from django.contrib.auth.models import AnonymousUser
-from rest_framework.test import APITestCase, APIClient
+
 from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+
 from api.models.game import GameCharacter, GameSave
 from api.models.user import User
 
@@ -19,7 +19,7 @@ class GameViewTests(APITestCase):
             firstname="Test",
             lastname="User",
             password="testPass123",
-        )
+        )  # type: ignore
         self.client.force_authenticate(user=self.user)
 
         # Base URLs
@@ -31,8 +31,8 @@ class GameViewTests(APITestCase):
     def test_get_gamesave_create_new(self):
         # Test creating a new GameSave for the user
         response = self.client.get(self.gamesave_url)
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_gamesave_existing(self):
         # Create a GameSave for the user
@@ -40,8 +40,8 @@ class GameViewTests(APITestCase):
 
         # Test retrieving the existing GameSave
         response = self.client.get(self.gamesave_url)
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_gamesave_invalid_user_type(self):
         # Mock the request.user to be an AnonymousUser
@@ -49,7 +49,8 @@ class GameViewTests(APITestCase):
             mock_method.side_effect = TypeError("User object is type <class 'AnonymousUser'>")
 
             response = self.client.get(self.gamesave_url)
-            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     # -------------------- GameCharacterView Tests --------------------
 
     def test_get_game_characters_success(self):
@@ -60,22 +61,25 @@ class GameViewTests(APITestCase):
 
         # Test retrieving the list of characters
         response = self.client.get(self.gamecharacter_url)
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_get_game_characters_no_gamesave(self):
         # Test retrieving characters when no GameSave exists
         response = self.client.get(self.gamecharacter_url)
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_game_character_success(self):
         # Create a GameSave for the user
-        gamesave = GameSave.objects.create(owner=self.user)
+        GameSave.objects.create(owner=self.user)
 
         # Test creating a new character
         data = {"name": "NewCharacter", "level": 1}
         response = self.client.post(self.gamecharacter_url, data)
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_game_character_invalid_data(self):
         # Create a GameSave for the user
         GameSave.objects.create(owner=self.user)
@@ -84,7 +88,8 @@ class GameViewTests(APITestCase):
         data = {"name": "", "level": -1}
         response = self.client.post(self.gamecharacter_url, data)
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_delete_game_character_success(self):
         # Create a GameSave and a character for the user
         gamesave = GameSave.objects.create(owner=self.user)
@@ -92,13 +97,15 @@ class GameViewTests(APITestCase):
 
         # Test deleting the character
         response = self.client.delete(f"{self.gamecharacter_url}?id={character.id}")
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_delete_game_character_not_found(self):
         # Test deleting a character that does not exist
         response = self.client.delete(f"{self.gamecharacter_url}?id=999")
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        # data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_game_character_success(self):
         # Create a GameSave and a character for the user
         gamesave = GameSave.objects.create(owner=self.user)
@@ -108,7 +115,8 @@ class GameViewTests(APITestCase):
         data = {"id": character.id, "name": "UpdatedCharacter"}
         response = self.client.patch(self.gamecharacter_url, data)
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_game_character_no_changes(self):
         # Create a GameSave and a character for the user
         gamesave = GameSave.objects.create(owner=self.user)
@@ -118,10 +126,11 @@ class GameViewTests(APITestCase):
         data = {"id": character.id}
         response = self.client.patch(self.gamecharacter_url, data)
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_game_character_not_found(self):
         # Test updating a character that does not exist
         data = {"id": 999, "name": "NonExistentCharacter"}
         response = self.client.patch(self.gamecharacter_url, data)
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular.utils import extend_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import status
@@ -5,8 +6,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from api.helper import clean_request_data, get_user_object
-from api.models.user import UserProfiles
+from api.models import User, UserProfiles
 from api.schema_docs import Tags
 from api.serializers.user_profile import UserProfileFormSerializer
 
@@ -27,35 +27,17 @@ class UserProfileView(AbstractUserProfileView):
 
     @extend_schema(description="Uses the Authentication Token as identifier")
     def get(self, request: Request, format=None) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return Response({"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND)
-
+        user = request.user
+        assert isinstance(user, User)
         try:
             profile = self.model.objects.get(userid=user.userid)
-            serializer = self.get_serializer_class()(profile)
+            serializer = self.get_serializer(instance=profile)
             return Response(data=serializer.data, status=status.HTTP_200_OK)
-        except UserProfiles.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(
-                {"msg": "User profile does not exist"}, status=status.HTTP_404_NOT_FOUND
+                {"msg": f"FAIL: User profile for user {user.userid} is NOT FOUND"},
+                status=status.HTTP_404_NOT_FOUND,
             )
-
-
-@extend_schema(
-    summary="Create new user profile",
-    tags=[Tags.PROFILE],
-)
-class CreateUserProfileView(AbstractUserProfileView):
-    required_scopes = ["write"]
-
-    @extend_schema(description="TBA")
-    def post(self, request: Request, format=None) -> Response:
-        serialized = UserProfileFormSerializer(data=request.data)
-        if serialized.is_valid():
-            serialized.save()
-            return Response({"msg": "user profile created"}, status=status.HTTP_201_CREATED)
-
-        return Response(data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @extend_schema(
@@ -69,25 +51,20 @@ class UpdateUserProfileView(AbstractUserProfileView):
         description="Updates the relevant entry in the database. Does not expect all fields. This uses the Authentication Token as the identifier."
     )
     def patch(self, request: Request) -> Response:
-        user = get_user_object(request)
-
-        if user is None:
-            return Response({"msg": "unable to find user"}, status=status.HTTP_404_NOT_FOUND)
-
+        user = request.user
+        assert isinstance(user, User)
         try:
+            serialized = self.get_serializer(data=request.data, partial=True)
+
+            if not serialized.is_valid():
+                return Response(data=serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
             profile = self.model.objects.get(userid=user.userid)
-            serializer = self.get_serializer_class()
-            serialized = serializer(
-                instance=profile, data=clean_request_data(request), partial=True
-            )
+            serialized.update(profile, serialized.validated_data)
+            return Response(data=serialized.data, status=status.HTTP_200_OK)
 
-            if serialized.is_valid():
-                serialized.save()
-                return Response(data=serialized.data, status=status.HTTP_201_CREATED)
-
-            return Response(data=serialized.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        except UserProfiles.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(
-                {"msg": "User profile does not exist"}, status=status.HTTP_404_NOT_FOUND
+                {"msg": f"FAIL: User profile for user {user.userid} is NOT FOUND"},
+                status=status.HTTP_404_NOT_FOUND,
             )

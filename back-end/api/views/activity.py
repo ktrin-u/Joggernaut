@@ -147,7 +147,7 @@ class FriendActivityView(AbstractActivityView):
                 activities_qset = activities_qset.exclude(status=activity_status)
 
         for activity in activities_qset:
-            _ = activity.expired  # update status if expired
+            activity.refresh_status()  # update status if expired
 
         activities = self.get_serializer(
             activities_qset,

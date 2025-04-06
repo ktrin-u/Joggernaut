@@ -140,7 +140,7 @@ class EditCharacterSerializer(serializers.ModelSerializer):
             instance.select()
         instance.name = validated_data.get("name", instance.name)
         instance.color = validated_data.get("color", instance.color)
-        instance.type = validated_data.get("class", instance.type)
+        instance.type = validated_data.get("type", instance.type)
         instance.health = validated_data.get("health", instance.health)
         instance.speed = validated_data.get("speed", instance.speed)
         instance.strength = validated_data.get("strength", instance.strength)

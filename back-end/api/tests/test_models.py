@@ -109,15 +109,13 @@ class TestUserProfiles(TestCase):
             lastname="Last",
             password="testPass1@",
         )  # type: ignore
-        self.profile = UserProfiles.objects.create(
-            userid=self.user,
-            accountname="First Last",
-            dateofbirth=date(2025, 2, 13),
-            gender=Gender.MALE,
-            address="",
-            height_cm=999.9,
-            weight_kg=99.9,
-        )
+        self.profile = UserProfiles.objects.get(userid=self.user.userid)
+        self.profile.accountname = "First Last"
+        self.profile.accountname = "First Last"
+        self.profile.dateofbirth = date(2025, 2, 13)
+        self.profile.gender = Gender.MALE
+        self.profile.height_cm = 999.9  # type: ignore
+        self.profile.weight_kg = 99.9  # type: ignore
 
     def test_profile_creation(self):
         self.assertEqual(self.profile.accountname, "First Last")

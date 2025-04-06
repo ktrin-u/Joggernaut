@@ -16,7 +16,6 @@ from .game import (
 )
 from .user import (
     Gender,
-    Status,
     User,
     UserAuditLog,
     UserManager,

@@ -3,13 +3,13 @@ import uuid
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+from api.helper import generate_random_username
 from api.validators import validate_phoneNumber
 
-
-class Status(models.TextChoices):
-    ONLINE = "online"
-    IDLE = "idle"
-    DND = "do not disturb"
+# class Status(models.TextChoices):
+#     ONLINE = "online"
+#     IDLE = "idle"
+#     DND = "do not disturb"
 
 
 class Gender(models.TextChoices):
@@ -37,6 +37,10 @@ class UserManager(BaseUserManager):
         )
         user.set_password(password)
         user.save(using=self._db)
+        user_settings = UserSettings.objects.create(userid=user)
+        user_profile = UserProfiles.objects.create(userid=user)
+        user_settings.save()
+        user_profile.save()
         return user
 
     def create_superuser(self, email, phonenumber, firstname, lastname, password=None):
@@ -105,17 +109,21 @@ class UserAuditLog(models.Model):
 
 
 class UserProfiles(models.Model):
-    # profileid = models.AutoField(db_column='profileID', primary_key=True)  # Field name made lowercase.
-    # userid = models.ForeignKey(User, models.CASCADE, db_column='userID', unique=True)  # Field name made lowercase.
     userid = models.OneToOneField(
-        User, on_delete=models.CASCADE, db_column="userID", primary_key=True
+        User,
+        on_delete=models.CASCADE,
+        db_column="userID",
+        primary_key=True,
+        to_field="userid",
     )
-    accountname = models.CharField(unique=True, max_length=50)
-    dateofbirth = models.DateField(db_column="dateOfBirth")  # Field name made lowercase.
-    gender = models.CharField(choices=Gender, max_length=6)
-    address = models.TextField()
-    height_cm = models.DecimalField(max_digits=5, decimal_places=2)
-    weight_kg = models.DecimalField(max_digits=5, decimal_places=2)
+    accountname = models.CharField(unique=True, max_length=50, default=generate_random_username)
+
+    #  added null=True to allow autocreation with User, albeit left unfilled.
+    dateofbirth = models.DateField(db_column="dateOfBirth", null=True)
+    gender = models.CharField(choices=Gender, max_length=6, null=True)
+    # address = models.TextField()  # removed due irrelevance
+    height_cm = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True)
 
     class Meta:
         db_table = "user_profiles"
@@ -124,11 +132,34 @@ class UserProfiles(models.Model):
 
 
 class UserSettings(models.Model):
-    # settingid = models.AutoField(db_column='settingID', primary_key=True)  # Field name made lowercase.
     userid = models.OneToOneField(
-        User, models.CASCADE, db_column="userID", primary_key=True
+        User,
+        models.CASCADE,
+        db_column="userID",
+        primary_key=True,
+        to_field="userid",
     )  # Field name made lowercase.
-    status = models.CharField(choices=Status, max_length=14)
+    # status = models.CharField(choices=Status, max_length=14)  # Currently removed for irrelevance
+    profile_edit = models.BooleanField(
+        default=True,
+        help_text="When True, user can edit their profile",
+        verbose_name="Can Edit Profile",
+    )
+    workout_share = models.BooleanField(
+        default=True,
+        help_text="When True, user can share their workout data",
+        verbose_name="Can Share Workout",
+    )
+    in_leaderboards = models.BooleanField(
+        default=True,
+        help_text="When True, user can participate in the leaderboards",
+        verbose_name="Can Join Leaderboards",
+    )
+    user_interact = models.BooleanField(
+        default=True,
+        help_text="When True, user can participate in the leaderboards",
+        verbose_name="Can Interact with Users",
+    )
 
     class Meta:
         db_table = "user_settings"

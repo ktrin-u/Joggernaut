@@ -10,7 +10,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api import schema_docs
-from api.helper import get_user_object
 from api.models import FriendTable, User
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.schema_docs import Tags
@@ -70,10 +69,8 @@ class SendFriendRequestView(AbstractFriendTableView):
         },
     )
     def post(self, request: Request) -> Response:
-        user = get_user_object(request)
-
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         data = deepcopy(request.data)
         data["fromUserid"] = user.userid
@@ -190,9 +187,8 @@ class RejectFriendView(AbstractFriendTableView):
         },
     )
     def patch(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         serialized = self.get_serializer(data=request.data)
 
@@ -223,9 +219,8 @@ class CancelPendingFriendView(AbstractFriendTableView):
 
     @extend_schema(description="Cancel a sent friend request which is still pending")
     def patch(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         serialized = self.get_serializer(data=request.data)
 
@@ -320,9 +315,8 @@ class GetPendingFriendsView(AbstractFriendTableView):
         },
     )
     def get(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         received = self.get_serializer(
             self.model.objects.filter(toUserid=user, status=FriendTable.FriendshipStatus.PENDING),
@@ -401,9 +395,8 @@ class GetFriendsView(AbstractFriendTableView):
         },
     )
     def get(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         friends = self.get_serializer(
             self.model.objects.filter(
@@ -427,9 +420,8 @@ class RemoveFriendView(AbstractFriendTableView):
 
     @extend_schema(description="Find the friendship entry with the given userid and then delete it")
     def post(self, request: Request) -> Response:
-        user = get_user_object(request)
-        if user is None:
-            return RESPONSE_USER_NOT_FOUND
+        user = request.user
+        assert isinstance(user, User)
 
         serialized = self.get_serializer(data=request.data)
 

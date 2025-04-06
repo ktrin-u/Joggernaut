@@ -1,12 +1,22 @@
 from django.test import TestCase
+
+from api.models import GameCharacter, GameCharacterClass, GameCharacterColor, GameSave, User
 from api.serializers.game import EditCharacterSerializer
-from api.models.game import GameCharacter, GameCharacterColor, GameCharacterClass
 
 
 class TestEditCharacterSerializer(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(  # type: ignore
+            email="test@email.com",
+            phonenumber="09171112222",
+            firstname="First",
+            lastname="Last",
+            password="testPass1@",
+        )
+        self.gamesave = GameSave.objects.create(owner=self.user)
         # Create a mock GameCharacter instance
         self.character = GameCharacter.objects.create(
+            gamesave_id=self.gamesave,
             name="TestCharacter",
             color=GameCharacterColor.RED,
             type=GameCharacterClass.PAWN,
@@ -25,8 +35,8 @@ class TestEditCharacterSerializer(TestCase):
 
     def test_update_all_fields(self):
         # Test updating all fields of the GameCharacter instance
-        serializer = EditCharacterSerializer()
         validated_data = {
+            "id": self.character.id,
             "name": "UpdatedName",
             "color": GameCharacterColor.YELLOW,
             "type": GameCharacterClass.KNIGHT,
@@ -35,7 +45,9 @@ class TestEditCharacterSerializer(TestCase):
             "strength": 12,
             "stamina": 14,
         }
-        updated_character = serializer.update(self.character, validated_data)
+        serializer = EditCharacterSerializer(data=validated_data)
+        self.assertTrue(serializer.is_valid())
+        updated_character = serializer.update(self.character, serializer.validated_data)
 
         self.assertEqual(updated_character.name, "UpdatedName")
         self.assertEqual(updated_character.color, GameCharacterColor.YELLOW)
@@ -47,9 +59,10 @@ class TestEditCharacterSerializer(TestCase):
 
     def test_update_partial_fields(self):
         # Test updating only some fields of the GameCharacter instance
-        serializer = EditCharacterSerializer()
         validated_data = {"name": "PartiallyUpdatedName", "health": 20}
-        updated_character = serializer.update(self.character, validated_data)
+        serializer = EditCharacterSerializer(data=validated_data, partial=True)
+        self.assertTrue(serializer.is_valid())
+        updated_character = serializer.update(self.character, serializer.validated_data)
 
         self.assertEqual(updated_character.name, "PartiallyUpdatedName")
         self.assertEqual(updated_character.health, 20)
@@ -58,15 +71,15 @@ class TestEditCharacterSerializer(TestCase):
 
     def test_update_selected_field(self):
         # Test updating the 'selected' field to True
-        serializer = EditCharacterSerializer()
         validated_data = {"selected": True}
-        updated_character = serializer.update(self.character, validated_data)
+        serializer = EditCharacterSerializer(data=validated_data, partial=True)
+        self.assertTrue(serializer.is_valid())
+        updated_character = serializer.update(self.character, serializer.validated_data)
 
         self.assertTrue(updated_character.selected)
 
     def test_update_invalid_data(self):
         # Test updating with invalid data (e.g., negative health)
-        serializer = EditCharacterSerializer()
         validated_data = {"health": -5}
-        with self.assertRaises(ValueError):
-            serializer.update(self.character, validated_data)
+        serializer = EditCharacterSerializer(data=validated_data, partial=True)
+        self.assertFalse(serializer.is_valid())

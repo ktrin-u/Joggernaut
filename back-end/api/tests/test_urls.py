@@ -16,7 +16,6 @@ from api.views.user import (
     ViewUserInfoView,
 )
 from api.views.user_profile import (
-    CreateUserProfileView,
     UpdateUserProfileView,
     UserProfileView,
 )
@@ -31,9 +30,10 @@ class TestUrls(SimpleTestCase):
         url = reverse("retrieve user profile")
         self.assertEqual(resolve(url).func.view_class, UserProfileView)  # type: ignore
 
-    def test_create_user_profile_url(self):
-        url = reverse("create new user profile")
-        self.assertEqual(resolve(url).func.view_class, CreateUserProfileView)  # type: ignore
+    # Deprecated: User Profile is auto created with user account now
+    # def test_create_user_profile_url(self):
+    #     url = reverse("create new user profile")
+    #     self.assertEqual(resolve(url).func.view_class, CreateUserProfileView)  # type: ignore
 
     def test_update_user_profile_url(self):
         url = reverse("update user profile")
@@ -88,7 +88,6 @@ class TestUrls(SimpleTestCase):
         urlpatterns = [
             reverse("register new user"),
             reverse("retrieve user profile"),
-            reverse("create new user profile"),
             reverse("update user profile"),
             reverse("delete user account"),
             reverse("retrieve user info"),

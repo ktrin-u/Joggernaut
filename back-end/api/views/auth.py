@@ -7,7 +7,7 @@ from drf_spectacular.utils import (
 )
 from oauth2_provider.views import RevokeTokenView, TokenView
 from rest_framework import permissions, status
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -39,10 +39,26 @@ def verify_reset_token(user: User, token: str):
     summary="Register new user account",
     tags=[Tags.AUTH],
 )
-class CreateUserView(CreateAPIView):
+class CreateUserView(GenericAPIView):
     model = User
     permission_classes = [permissions.AllowAny]  # Or anon users can't register
     serializer_class = RegisterFormSerializer
+
+    def post(self, request: Request) -> Response:
+        serialized = self.get_serializer(data=request.data)
+
+        if not serialized.is_valid():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=serialized.errors,
+            )
+
+        new_user = serialized.create(serialized.validated_data)
+
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={"msg": f"PASS: user {new_user.email} has been created."},
+        )
 
 
 @extend_schema(
