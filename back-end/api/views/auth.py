@@ -12,7 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.models import PasswordResetToken, User
-from api.permissions import isBanned
+from api.permissions import IsBanned
 from api.schema_docs import Tags
 from api.serializers import (
     ForgotPasswordEmailSerializer,
@@ -67,7 +67,7 @@ class CreateUserView(GenericAPIView):
 )
 class TokenAPIView(TokenView, GenericAPIView):
     serializer_class = TokenSerializer
-    permission_classes = [isBanned]
+    permission_classes = [IsBanned]
 
     @extend_schema(description="For acquiring an access token", responses=TokenResponseSerializer)
     def post(self, request, *args, **kwargs):
@@ -80,7 +80,7 @@ class TokenAPIView(TokenView, GenericAPIView):
 )
 class RevokeTokenAPIView(RevokeTokenView, GenericAPIView):
     serializer_class = RevokeTokenSerializer
-    permission_classes = [isBanned]
+    permission_classes = [IsBanned]
 
     @extend_schema(
         description="Implements an endpoint to revoke access tokens",

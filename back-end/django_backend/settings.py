@@ -148,7 +148,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "oauth2_provider.contrib.rest_framework.TokenHasScope",
-        "api.permissions.isBanned",
+        "api.permissions.IsBanned",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }

@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from api import schema_docs
 from api.models import User, WorkoutRecord
+from api.permissions import CanShareWorkout
 from api.schema_docs import Tags
 from api.serializers import (
     MsgSerializer,
@@ -28,7 +29,7 @@ from api.serializers import (
 class WorkoutRecordView(GenericAPIView):
     model = WorkoutRecord
     serializer_class = WorkoutRecordSerializer
-    permission_classes = [TokenHasScope]
+    permission_classes = [TokenHasScope, CanShareWorkout]
     required_scopes = ["write", "read"]
 
     RESPONSE_SUCCESS = Response(

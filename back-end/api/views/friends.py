@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from api import schema_docs
 from api.models import FriendTable, User
+from api.permissions import CanUserInteract
 from api.responses import RESPONSE_USER_NOT_FOUND
 from api.schema_docs import Tags
 from api.serializers.friends import (
@@ -26,7 +27,7 @@ from api.serializers.general import MsgSerializer, TargetUserIdSerializer
 
 class AbstractFriendTableView(GenericAPIView):
     model = FriendTable
-    permission_classes = [TokenHasScope]
+    permission_classes = [TokenHasScope, CanUserInteract]
     required_scopes = ["write"]
 
 
@@ -252,6 +253,7 @@ class CancelPendingFriendView(AbstractFriendTableView):
     tags=[Tags.FRIENDS],
 )
 class GetPendingFriendsView(AbstractFriendTableView):
+    permission_classes = [TokenHasScope]
     serializer_class = FriendTableSerializer
     required_scopes = ["read"]
 
@@ -342,6 +344,7 @@ class GetPendingFriendsView(AbstractFriendTableView):
     tags=[Tags.FRIENDS],
 )
 class GetFriendsView(AbstractFriendTableView):
+    permission_classes = [TokenHasScope]
     serializer_class = FriendTableSerializer
     required_scopes = ["read"]
 
