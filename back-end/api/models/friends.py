@@ -89,7 +89,7 @@ class FriendActivity(models.Model):
     @property
     def deadline(self) -> timezone.datetime:
         offset = timezone.timedelta(seconds=self.durationSecs)
-        if self.status == FriendActivityStatus.ONGOING and self.statusDate:
+        if self.status == FriendActivityStatus.ONGOING:
             return self.statusDate + offset
         return self.creationDate + offset
 
@@ -101,7 +101,9 @@ class FriendActivity(models.Model):
                     time_elapsed = self.deadline - self.creationDate
                 case _:
                     time_elapsed = timezone.now() - self.creationDate
+
             activity_duration = timezone.timedelta(seconds=self.durationSecs)
+
             if self.durationSecs == 0:  # 0 means cannot expire;
                 return False
 
