@@ -86,48 +86,6 @@ class FriendActivity(models.Model):
     durationSecs = models.PositiveIntegerField(default=3600)
     details = models.CharField(max_length=255, blank=True, null=True)
 
-    @property
-    def deadline(self) -> timezone.datetime:
-        offset = timezone.timedelta(seconds=self.durationSecs)
-        if self.status == FriendActivityStatus.ONGOING:
-            return self.statusDate + offset
-        return self.creationDate + offset
-
-    @property
-    def expired(self) -> bool:
-        try:
-            match self.activity:
-                case FriendActivityChoices.CHALLENGE:
-                    time_elapsed = self.deadline - self.creationDate
-                case _:
-                    time_elapsed = timezone.now() - self.creationDate
-
-            activity_duration = timezone.timedelta(seconds=self.durationSecs)
-
-            if self.durationSecs == 0:  # 0 means cannot expire;
-                return False
-
-            if time_elapsed > activity_duration:
-                match self.status:
-                    case FriendActivityStatus.ONGOING:
-                        self.status = FriendActivityStatus.FINISHED
-                    case FriendActivityStatus.PENDING:
-                        self.status = FriendActivityStatus.EXPIRED
-                    case _:
-                        pass
-                self.statusDate = timezone.now()
-                self.save()
-                return True
-
-            return False
-        except Exception:
-            return False
-
-    def clean(self) -> None:
-        _ = self.expired
-        if self.fromUserid == self.toUserid:
-            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
-
     class Meta:
         verbose_name = "Friend Activity"
         verbose_name_plural = "Friend Activities"
@@ -137,5 +95,41 @@ class FriendActivity(models.Model):
             )
         ]
 
+    def clean(self) -> None:
+        self.refresh_status()
+        if self.fromUserid == self.toUserid:
+            raise ValidationError({"toUserid": "not allowed to match with key fromUserid"})
+
+    @property
+    def deadline(self) -> timezone.datetime | None:
+        if self.durationSecs == 0:
+            return None
+        offset = timezone.timedelta(seconds=self.durationSecs)
+        if self.status == FriendActivityStatus.ONGOING and self.statusDate:
+            return self.statusDate + offset
+        return self.creationDate + offset
+
+    @property
+    def expired(self) -> bool:
+        self.refresh_status()
+        if self.durationSecs == 0 or self.deadline is None:  # 0 means cannot expire;
+            return False
+
+        return self.status == FriendActivityStatus.EXPIRED
+
+    def update_status(self, new_status: FriendActivityStatus):
+        if new_status not in FriendActivityStatus:
+            raise ValueError(f"{new_status} is not in enum FriendActivityStatus.")
+        self.status = new_status
+        self.statusDate = timezone.now()
+        self.save()
+
     def refresh_status(self):
-        _ = self.expired
+        if self.deadline and timezone.now() > self.deadline:
+            match self.status:
+                case FriendActivityStatus.ONGOING:
+                    self.update_status(FriendActivityStatus.FINISHED)
+                case FriendActivityStatus.PENDING:
+                    self.update_status(FriendActivityStatus.EXPIRED)
+                case _:
+                    pass
