@@ -73,10 +73,14 @@ class CreateGameSaveSerializer(serializers.ModelSerializer):
         model = GameSave
         fields = ["owner"]
 
-
 class CreateGameCharacterSerializer(GameCharacterSerializer):
     class Meta(GameCharacterSerializer.Meta):
         fields = ["name", "color", "type", "health", "speed", "strength", "stamina"]
+
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Name cannot be empty.")
+        return value
 
 
 class TargetCharacterSerializer(serializers.ModelSerializer):

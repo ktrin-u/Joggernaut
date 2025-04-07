@@ -196,14 +196,6 @@ class GameCharacterView(AbstractGameView):
             )
 
         try:
-            if (
-                len(serialized.validated_data) == 2
-                and serialized.validated_data["selected"] is None
-            ):
-                return Response(
-                    status=status.HTTP_200_OK, data={"msg": "PASS: no changes have been made"}
-                )
-
             instance = self.model.objects.get(id=id)
             serialized.update(instance, serialized.validated_data)
 
@@ -215,5 +207,5 @@ class GameCharacterView(AbstractGameView):
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"msg": f"FAIL: Gamecharacter {id} for user {request.user.email}is NOT FOUND"},  # type: ignore
+                data={"msg": f"FAIL: Gamecharacter {id} for user {request.user.email} is NOT FOUND"},
             )
