@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from django.utils.timezone import now, timedelta, datetime
+from django.utils.timezone import now, timedelta
 
 from api.models import FriendActivity, FriendActivityChoices, FriendActivityStatus, User
 
@@ -143,5 +143,3 @@ class TestFriendActivity(TestCase):
 
         valid_deadline = activity.statusDate + duration  # type: ignore
         self.assertEqual(activity.deadline, valid_deadline)
-
-

@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.models.user import User, UserProfiles
-from api.permissions import isBanned
+from api.permissions import IsBanned
 from api.schema_docs import Tags
 from api.serializers.user import (
     PublicUserResponseSerializer,
@@ -51,7 +51,7 @@ class UpdateUserPasswordView(GenericAPIView):
 class AbstractUserView(views.APIView):
     serializer_class = UserModelSerializer
     model = User
-    permission_classes = [isBanned, TokenHasScope]
+    permission_classes = [IsBanned, TokenHasScope]
     required_scopes = []
 
 

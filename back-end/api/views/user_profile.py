@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.models import User, UserProfiles
+from api.permissions import CanEditProfile
 from api.schema_docs import Tags
 from api.serializers.user_profile import UserProfileFormSerializer
 
@@ -47,6 +48,7 @@ class UserProfileView(AbstractUserProfileView):
     tags=[Tags.PROFILE],
 )
 class UpdateUserProfileView(AbstractUserProfileView):
+    permission_classes = [TokenHasScope, CanEditProfile]
     required_scopes = ["write"]
 
     @extend_schema(

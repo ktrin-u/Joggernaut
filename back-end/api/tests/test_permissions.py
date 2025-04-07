@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from api.permissions import isBanned
+from api.permissions import IsBanned
 
 User = get_user_model()
 
@@ -18,7 +18,7 @@ class TestIsBannedPermission(TestCase):
         )  # type: ignore
 
         self.factory = APIRequestFactory()
-        self.permission = isBanned()
+        self.permission = IsBanned()
 
     def test_has_permission_user_not_banned(self):
         request = self.factory.get("/")
