@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                           alignment: WrapAlignment.center,
                           children: [
                             MenuButton(icon: Icons.fitness_center, label: "Workout", onTap: () => router.push('/workout')),
-                            MenuButton(icon: Icons.videogame_asset, label: "Play", onTap: () => router.push('/game')),
+                            MenuButton(icon: Icons.videogame_asset, label: "Play", onTap: () => router.push('/game/my-characters')),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.02),

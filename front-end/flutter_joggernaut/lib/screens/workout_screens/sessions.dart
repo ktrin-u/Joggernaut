@@ -19,6 +19,9 @@ class WorkoutSessionPage extends StatefulWidget {
 class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
   late BuildContext _currentContext;
 
+  TextEditingController stepsControllerCreate = TextEditingController();
+  TextEditingController caloriesControllerCreate = TextEditingController();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -27,77 +30,73 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
 
   late Future gettingWorkout;
   List<Map<String, dynamic>> sessions = [];
-  TextEditingController stepsController = TextEditingController();
-  TextEditingController caloriesController = TextEditingController();
   bool isLoadingAdd = false;
+  String? myUserID;
+
+  Future getUserId() async{
+    var response = await ApiService().getUserInfo();
+    var data = jsonDecode(response.body);
+    setState(() {
+      myUserID = data["userid"];
+    });
+  }
 
   void _addWorkout(){
     InputHelper.showWorkoutDialog(
       _currentContext, 
       "Create New Session", 
-      stepsController, 
-      caloriesController, 
-      (currentContext) => createWorkout()
+      stepsControllerCreate, 
+      caloriesControllerCreate, 
+      (currentContext) => createWorkout(stepsControllerCreate.text, caloriesControllerCreate.text)
     );
   }
 
-  void saveWorkout(item, workoutID){
-    InputHelper.showWorkoutDialog(
-      _currentContext, 
-      "Update Session", 
-      stepsController, 
-      caloriesController, 
-      (currentContext) => updateWorkout(item, workoutID)
-    );
-  }
-
-  Future createWorkout() async {
+  Future createWorkout(steps, calories) async {
     setState(() {
       isLoadingAdd = true;
     });
-    var response = await ApiService().createWorkout(stepsController.text, caloriesController.text);
-    if (response.statusCode == 200){
+    var response = await ApiService().createWorkout(steps, calories);
+    if (response.statusCode == 201){
       setState(() {
         getWorkout();
       });
       ConfirmHelper.showResultDialog(_currentContext, "Workout session created successfully!", "Success");
     } 
     else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody["msg"];
-      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
-    }
-  }
-
-  Future updateWorkout(item, workoutID) async {
-    setState(() {
-      isLoadingAdd = true;
-    });
-    var response = await ApiService().updateWorkout(workoutID, stepsController.text, caloriesController.text);
-    if (response.statusCode == 201){
-      setState(() {
-        getWorkout();
-      });
-      ConfirmHelper.showResultDialog(_currentContext, "Workout session updated successfully!", "Success");
-    } 
-    else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody.entries.map((entry) {
-        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
-        String messages = (entry.value as List).join("\n");
-        return "$field: $messages";
-      }).join("\n");
+      String errorMessage = "Please enter a valid integer for steps and calories";
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
       setState(() {
         isLoadingAdd = false;
       });
     }
   }
+
+  Future updateWorkout(workoutID, steps, calories) async {
+    if (checkWorkout(workoutID)){
+      var response = await ApiService().updateWorkout(workoutID, steps, calories);
+      if (response.statusCode == 201){
+        setState(() {
+          getWorkout();
+        });
+        ConfirmHelper.showResultDialog(_currentContext, "Workout session updated successfully!", "Success");
+        return true;
+      } 
+      else {
+        String errorMessage = "Please enter a valid integer for steps and calories";
+        ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+        return false;
+      }
+    }
+    else {
+      ConfirmHelper.showResultDialog(_currentContext, "The workout session has already passed. You can only update workout sessions on the same day they were created.", "Session Passed");
+      return false;
+    }
+  }
   
   Future getWorkout() async {
-    var response = await ApiService().getWorkout();
+    var response = await ApiService().getWorkout(myUserID);
     if (response.statusCode == 200){
-      List<dynamic> data = jsonDecode(response.body);
+      var data = jsonDecode(response.body)["workouts"];
       setState(() {
         sessions = List<Map<String, dynamic>>.from(data);
         sessions.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
@@ -108,7 +107,22 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
     });
   }
 
+  bool checkWorkout(workoutid) {
+    var item = sessions.firstWhere(
+      (element) => element['workoutid'] == workoutid,
+    );
+
+    DateTime creationDate = DateTime.parse(item["creationDate"]).toUtc().add(Duration(hours: 8));
+    DateTime today = DateTime.now().toUtc().add(Duration(hours: 8));
+    bool isSameDate(DateTime a, DateTime b) {
+      return a.year == b.year && a.month == b.month && a.day == b.day;
+    }
+
+    return isSameDate(creationDate, today);
+  } 
+
   Future setup() async {
+    await getUserId();
     await getWorkout();
   }
 
@@ -153,14 +167,6 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                       ),
                       Row(
                         children: [
-                          IconButton(
-                            onPressed: (){router.pop();},
-                            icon: Icon(
-                              Icons.arrow_back_ios,
-                              color: Colors.black87,
-                              size: screenWidth * 0.07,
-                            ),
-                          ),
                           Opacity(
                             opacity: isLoadingAdd ? 0.0 : 1.0, 
                             child: IconButton(
@@ -176,12 +182,20 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                           Padding(
                             padding: EdgeInsets.only(right: screenWidth*0.03),
                             child: SizedBox(
-                              height: screenWidth * 0.09, 
-                              width: screenWidth * 0.09, 
+                              height: screenWidth * 0.07, 
+                              width: screenWidth * 0.07, 
                               child: CircularProgressIndicator(
                                 color: Color.fromRGBO(51, 51, 51, 1),
                                 strokeWidth: 2.5,
                               ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: (){router.pop();},
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              color: Colors.black87,
+                              size: screenWidth * 0.07,
                             ),
                           ),
                         ],
@@ -197,7 +211,36 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                       var item = sessions[index];
                       var creationDate =  DateFormat("MMMM d").format(DateTime.parse(item["creationDate"]).toUtc().add(Duration(hours: 8)));
                       var lastUpdate =  DateFormat("MMMM d, h:mm a").format(DateTime.parse(item["lastUpdate"]).toUtc().add(Duration(hours: 8)));
+                      TextEditingController stepsController = TextEditingController();
+                      TextEditingController caloriesController = TextEditingController();
                       
+                      Future updatingWorkout() async{
+                        setState(() {
+                          item["isLoading"] = true;
+                        });
+                        var result = await updateWorkout(item["workoutid"], stepsController.text, caloriesController.text);
+                        if (result == false){
+                          setState(() {
+                            item["isLoading"] = false;
+                          });
+                        }
+                      }
+
+                      void saveWorkout(){
+                        if (checkWorkout(item["workoutid"])){
+                          InputHelper.showWorkoutDialog(
+                            _currentContext, 
+                            "Update Session", 
+                            stepsController, 
+                            caloriesController, 
+                            (currentContext) => updatingWorkout()
+                          );
+                        }
+                        else {
+                          ConfirmHelper.showResultDialog(_currentContext, "The workout session has already passed. You can only update workout sessions on the same day they were created.", "Session Passed");
+                        }
+                      }
+
                       return Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.07,
@@ -211,7 +254,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                           color: Colors.white,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(30),
-                            onTap: (){saveWorkout(item, item["workoutid"]);},
+                            onTap: (){saveWorkout();},
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: screenHeight * 0.001),
                               child: ListTile(
@@ -227,9 +270,22 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                                     ),
                                   ),
                                 ),
-                                leading: Icon(
-                                  Icons.fitness_center,
-                                  size: screenWidth*0.1,
+                                leading: (item["isLoading"] == true) ? Padding(
+                                  padding: EdgeInsets.only(left: screenWidth*0.02),
+                                  child: SizedBox(
+                                    height: screenWidth * 0.1, 
+                                    width: screenWidth * 0.1, 
+                                    child: CircularProgressIndicator(
+                                      color: Color.fromRGBO(51, 51, 51, 1),
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                ) : Padding(
+                                  padding: EdgeInsets.only(left: screenWidth*0.02),
+                                  child: Icon(
+                                    Icons.fitness_center,
+                                    size: screenWidth*0.1,
+                                  ),
                                 ),
                                 trailing: Column(
                                   mainAxisSize: MainAxisSize.min, 

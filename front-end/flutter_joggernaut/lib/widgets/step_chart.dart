@@ -40,10 +40,10 @@ class BarChartWidget extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: screenHeight * 0.001),
                   child: Text(
-                    "Steps Chart (last 7)",
+                    "Step Chart (last 7 sessions)",
                     style: TextStyle(
                       fontFamily: "Roboto",
-                      fontSize: screenWidth * 0.06,
+                      fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
