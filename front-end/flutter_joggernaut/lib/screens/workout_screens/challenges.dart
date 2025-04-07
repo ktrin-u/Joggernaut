@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
-import 'package:flutter_application_1/widgets/input_dialog.dart';
 import 'package:intl/intl.dart';
 
 class WorkoutChallengesPage extends StatefulWidget {
@@ -17,85 +16,100 @@ class WorkoutChallengesPage extends StatefulWidget {
 }
 
 class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
-  late BuildContext _currentContext;
+  // late BuildContext _currentContext;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _currentContext = context;
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   _currentContext = context;
+  // }
 
-  late Future gettingWorkout;
+  late Future gettingChallenges;
   List<Map<String, dynamic>> sessions = [];
-  TextEditingController stepsController = TextEditingController();
-  TextEditingController caloriesController = TextEditingController();
-  bool isLoadingUpdate = false;
+  List<Map<String, dynamic>> challenges = [];
+  String? myUserID;
+  List<Map<String, dynamic>> users = [];
 
-  void saveWorkout(item, workoutID){
-    InputHelper.showWorkoutDialog(
-      _currentContext, 
-      "Update Session", 
-      stepsController, 
-      caloriesController, 
-      (currentContext) => updateWorkout(item, workoutID)
-    );
+  Future getFriendActivity() async {
+    var response = await ApiService().getFriendActivity();
+    if (response.statusCode == 200){
+      var data = jsonDecode(response.body)["activities"];
+      setState(() {
+        challenges = List<Map<String, dynamic>>.from(data); 
+      });
+    }
   }
 
-  Future updateWorkout(item, workoutID) async {
-    setState(() {
-      isLoadingUpdate = true;
-    });
-    var response = await ApiService().updateWorkout(workoutID, stepsController.text, caloriesController.text);
-    if (response.statusCode == 201){
+  Future getAllUsers() async {
+    var response = await ApiService().getAllUsers();
+    if (response.statusCode == 200){
+      var data = jsonDecode(response.body);
       setState(() {
-        getWorkout();
-      });
-      ConfirmHelper.showResultDialog(_currentContext, "Workout session updated successfully!", "Success");
-    } 
-    else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody.entries.map((entry) {
-        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
-        String messages = (entry.value as List).join("\n");
-        return "$field: $messages";
-      }).join("\n");
-      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
-      setState(() {
-        isLoadingUpdate = false;
+        users = List<Map<String, dynamic>>.from(data["users"]); 
       });
     }
   }
   
-  Future getWorkout() async {
-    var response = await ApiService().getWorkout();
-    if (response.statusCode == 200){
-      List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        sessions = List<Map<String, dynamic>>.from(data);
-        sessions.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
-      });
-    }
+  Future getUserId() async{
+    var response = await ApiService().getUserInfo();
+    var data = jsonDecode(response.body);
     setState(() {
-      isLoadingUpdate = false;
+      myUserID = data["userid"];
     });
   }
 
+  Future getWorkout() async {
+    var response = await ApiService().getWorkout(myUserID);
+    if (response.statusCode == 200){
+      var data = jsonDecode(response.body)["workouts"];
+      setState(() {
+        sessions = List<Map<String, dynamic>>.from(data);
+      }); 
+    }
+  }
+
+  void filterFriends() {
+    Map<String, String> userMap = {
+      for (var user in users) user["userid"] as String: user["accountname"] as String
+    };
+
+    for (var activity in challenges) {
+      String toUserId = activity["toUserid"];
+      String fromUserId = activity["fromUserid"];
+      activity["friendName"] = toUserId == myUserID ? userMap[fromUserId] : userMap[toUserId];
+      activity["friendId"] = toUserId == myUserID ? fromUserId : toUserId;
+    }
+
+    challenges = challenges.where((activity) =>
+      activity["activity"] == "CHA" &&
+      (activity["status"] == "ONG" ||
+      activity["status"] == "FIN")
+    ).toList();
+
+    challenges.sort((a, b) => DateTime.parse(b["creationDate"]).compareTo(DateTime.parse(a["creationDate"])));
+  }
+
   Future setup() async {
+    await getUserId();
+    await getAllUsers();
+    await getFriendActivity();
     await getWorkout();
+    filterFriends();
   }
 
   @override
   void initState() {
     super.initState();
-    gettingWorkout = setup();
+    gettingChallenges = setup();
   }
+  
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: FutureBuilder(
-        future: gettingWorkout,
+        future: gettingChallenges,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -125,16 +139,12 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                       ),
                       Row(
                         children: [
-                          if (isLoadingUpdate)
-                          Padding(
-                            padding: EdgeInsets.only(right: screenWidth*0.03),
-                            child: SizedBox(
-                              height: screenWidth * 0.09, 
-                              width: screenWidth * 0.09, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
+                          IconButton(
+                            onPressed: (){ConfirmHelper.showResultDialog(context, "Challenge your friend one on one and see who has the most steps taken by the end of your challenge.\nPerson with the most steps by the end of your challenge wins!\nSteps will be counted from 12:00 AM on the challenge start date until 11:59 PM on the challenge end date.", "Info");},
+                            icon: Icon(
+                              Icons.info,
+                              color: Colors.black87,
+                              size: screenWidth * 0.07,
                             ),
                           ),
                           IconButton(
@@ -153,13 +163,99 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.only(top: 0, bottom: screenHeight * 0.01),
-                    itemCount: sessions.length, 
+                    itemCount: challenges.length,
                     itemBuilder: (context, index) {
-                      var item = sessions[index];
-                      var creationDate =  DateFormat("MMMM d").format(DateTime.parse(item["creationDate"]).toUtc().add(Duration(hours: 8)));
-                      var lastUpdate =  DateFormat("MMMM d, h:mm a").format(DateTime.parse(item["lastUpdate"]).toUtc().add(Duration(hours: 8)));
-                      
-                      return Padding(
+                      var item = challenges[index];
+                      String creationDate = DateFormat("MMMM d").format(DateTime.parse(item["creationDate"]).toUtc().add(Duration(hours: 8)));
+                      String deadline = DateFormat("MMMM d").format(DateTime.parse(item["deadline"]).toUtc().add(Duration(hours: 8)));
+                      DateTime startDate = DateTime.parse(item["creationDate"]);
+                      DateTime endDate = DateTime.parse(item["deadline"]);
+
+                      Future<Map<String, dynamic>> prepareChallengeData() async {
+                        List<Map<String, dynamic>> friendSessions = await ApiService().getWorkout(item["friendId"]).then((response) {
+                          if (response.statusCode == 200) {
+                            var data = jsonDecode(response.body)["workouts"];
+                            return List<Map<String, dynamic>>.from(data);
+                          }
+                          return [];
+                        });
+
+                        List filteredWorkouts = sessions.where((workout) {
+                          final creationDate = DateTime.parse(workout["creationDate"]);
+                          final creationDateOnly = DateTime(creationDate.year, creationDate.month, creationDate.day);
+
+                          final startDateOnly = DateTime(startDate.year, startDate.month, startDate.day);
+                          final endDateOnly = DateTime(endDate.year, endDate.month, endDate.day);
+
+                          return (creationDateOnly.isAtSameMomentAs(startDateOnly) ||
+                                  creationDateOnly.isAtSameMomentAs(endDateOnly) ||
+                                  (creationDateOnly.isAfter(startDateOnly) && creationDateOnly.isBefore(endDateOnly)));
+                        }).toList();
+
+                        int totalSteps = filteredWorkouts.fold<int>(0, (sum, workout) => sum + (workout["steps"] as int));
+
+                        // Filter friend's sessions
+                        List friendFilteredWorkouts = friendSessions.where((workout) {
+                          final creationDate = DateTime.parse(workout["creationDate"]);
+                          final creationDateOnly = DateTime(creationDate.year, creationDate.month, creationDate.day);
+
+                          final startDateOnly = DateTime(startDate.year, startDate.month, startDate.day);
+                          final endDateOnly = DateTime(endDate.year, endDate.month, endDate.day);
+
+                          return (creationDateOnly.isAtSameMomentAs(startDateOnly) ||
+                                  creationDateOnly.isAtSameMomentAs(endDateOnly) ||
+                                  (creationDateOnly.isAfter(startDateOnly) && creationDateOnly.isBefore(endDateOnly)));
+                        }).toList();
+
+                        int friendTotalSteps = friendFilteredWorkouts.fold<int>(0, (sum, workout) => sum + (workout["steps"] as int));
+
+                        String subtitleText;
+                        String titleText;
+                        Icon icon;
+
+                        if (item["status"] == "ONG") {
+                          subtitleText = "Your steps: $totalSteps";
+                          titleText = "Vs. ${item["friendName"]}";
+                          icon = Icon(Icons.timelapse_rounded, size: screenWidth * 0.1);
+                        } else {
+                          if (friendTotalSteps > totalSteps) {
+                            subtitleText = "You lost by: ${friendTotalSteps-totalSteps}";
+                            titleText = "${item["friendName"]} won";
+                            icon = Icon(Icons.close, size: screenWidth * 0.1);
+                          } else if (totalSteps > friendTotalSteps) {
+                            subtitleText = "You won by: ${totalSteps-friendTotalSteps}";
+                            titleText = "You won vs. ${item["friendName"]}";
+                            icon = Icon(Icons.check, size: screenWidth * 0.1);
+                          } else {
+                            subtitleText = "Your steps: $totalSteps";
+                            titleText = "Tied with ${item["friendName"]}";
+                            icon = Icon(Icons.horizontal_rule_rounded, size: screenWidth * 0.1);
+                          }
+                        }
+
+                        return {
+                          "titleText": titleText,
+                          "subtitleText": subtitleText,
+                          "icon": icon,
+                          "totalSteps": totalSteps,
+                          "friendTotalSteps": friendTotalSteps,
+                          "creationDate": creationDate,
+                          "deadline": deadline,
+                        };
+                      }
+
+                      return FutureBuilder<Map<String, dynamic>>(
+                        future: prepareChallengeData(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Center(
+                              child: CircularProgressIndicator(
+                              color: Color.fromRGBO(51, 51, 51, 1),
+                              ) 
+                            ); 
+                          }
+                          final data = snapshot.data!;
+                          return Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.07,
                           vertical: screenHeight * 0.0075,
@@ -172,14 +268,14 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                           color: Colors.white,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(30),
-                            onTap: (){saveWorkout(item, item["workoutid"]);},
+                            onTap: (){router.push('/social/profile/${item["friendId"]}/${item["friendName"]}');  },
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: screenHeight * 0.001),
                               child: ListTile(
                                 title: Padding(
                                   padding: EdgeInsets.only(left: screenWidth*0.02),
                                   child: Text(
-                                    creationDate,
+                                    data["titleText"],
                                     style: TextStyle(
                                       fontFamily: 'Roboto',
                                       fontWeight: FontWeight.w700,
@@ -188,16 +284,16 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                                     ),
                                   ),
                                 ),
-                                leading: Icon(
-                                  Icons.fitness_center,
-                                  size: screenWidth*0.1,
+                                leading: Padding(
+                                  padding: EdgeInsets.only(left: screenWidth*0.01),
+                                  child: data["icon"]
                                 ),
                                 trailing: Column(
                                   mainAxisSize: MainAxisSize.min, 
                                   crossAxisAlignment: CrossAxisAlignment.end, 
                                   children: [
                                     Text(
-                                      "Last Updated:",
+                                      "Start: $creationDate",
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
                                         fontWeight: FontWeight.w400,
@@ -207,7 +303,7 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                                       ),
                                     ),
                                     Text(
-                                      lastUpdate,
+                                      "End: $deadline",
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
                                         fontWeight: FontWeight.w400,
@@ -225,23 +321,14 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start, 
                                     children: [
                                       Text(
-                                        "Steps: ${item["steps"]}",
-                                        style: TextStyle(
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: screenWidth * 0.035,
-                                          color: Color.fromRGBO(51, 51, 51, 1),
-                                        ),
+                                      data["subtitleText"],
+                                      style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: screenWidth * 0.038,
+                                        color: Color.fromRGBO(51, 51, 51, 1),
                                       ),
-                                      Text(
-                                        "Calories: ${item["calories"]}",
-                                        style: TextStyle(
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: screenWidth * 0.035,
-                                          color: Color.fromRGBO(51, 51, 51, 1),
-                                        ),
-                                      ),
+                                    ),
                                     ],
                                   ),
                                 ),
@@ -251,7 +338,9 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                         ),
                       );
                     },
-                  ),
+                  );
+                    }
+                )
                 )
               ]
             );

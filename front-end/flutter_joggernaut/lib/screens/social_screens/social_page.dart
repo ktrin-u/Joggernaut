@@ -209,14 +209,10 @@ class _SocialPageState extends State<SocialPage> {
                             padding: EdgeInsets.symmetric(horizontal: screenWidth*0.03, vertical: screenHeight*0.01),
                             child: Row(
                               children: [
-                                Container(
-                                  width: screenWidth*0.17,
-                                  height: screenWidth*0.17,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),  
+                                Icon(
+                                  Icons.person,
+                                  size: screenWidth*0.15,
+                                ),
                                 SizedBox(width: screenWidth*0.04),
                                 Text(
                                   filteredSearch[index]["accountname"],

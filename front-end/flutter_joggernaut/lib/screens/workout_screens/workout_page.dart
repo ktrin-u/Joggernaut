@@ -18,14 +18,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
   late Future gettingWorkout;
   int? steps;
   int? calories;
-  int? workoutID;
   String? creationDate;
   String? lastUpdate;
   List<(DateTime, int)> sessions = [];
   List<int> weeklySteps = List.filled(7, 0);
+  String? myUserID;
+
+  Future getUserId() async{
+    var response = await ApiService().getUserInfo();
+    var data = jsonDecode(response.body);
+    setState(() {
+      myUserID = data["userid"];
+    });
+  }
 
   Future getWorkout() async {
-    var response = await ApiService().getWorkout();
+    var response = await ApiService().getWorkout(myUserID);
     if (response.statusCode == 200){
       if (response.body == "[]"){
         setState(() {
@@ -34,22 +42,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
         });
         return;
       }
-      List<dynamic> jsonData = jsonDecode(response.body);
+      var jsonData = jsonDecode(response.body)["workouts"];
       jsonData = jsonData.length > 7 ? jsonData.sublist(jsonData.length - 7) : jsonData;
       jsonData.sort((a, b) => DateTime.parse(a["creationDate"]).compareTo(DateTime.parse(b["creationDate"])));
       Map<String, dynamic> data = jsonData.last;
-      
+    
       setState(() {
         steps = data["steps"];
         calories = data["calories"];
-        workoutID = data["workoutid"];
         creationDate = DateFormat("MMMM d").format(DateTime.parse(data["creationDate"]).toUtc().add(Duration(hours: 8)));
         lastUpdate = DateFormat("MMMM d, h:mm a").format(DateTime.parse(data["lastUpdate"]).toUtc().add(Duration(hours: 8)));
-        sessions = jsonData.map((w) => (
-          DateTime.parse(w["lastUpdate"]).toUtc().add(Duration(hours: 8)), (w["steps"] as num).toInt()  
+        sessions = jsonData.map<(DateTime, int)>((w) => (
+          DateTime.parse(w["lastUpdate"]).toUtc().add(Duration(hours: 8)),
+          (w["steps"] as num).toInt(),
         )).toList();
       });
-
+      
     }
     else if (response.statusCode == 404){
       setState(() {
@@ -60,6 +68,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future setup() async{
+    await getUserId();
     await getWorkout();
   }
 
