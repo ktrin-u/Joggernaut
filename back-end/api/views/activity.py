@@ -2,7 +2,6 @@ from copy import deepcopy
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, QuerySet
-from django.utils.timezone import now
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -154,10 +153,6 @@ class FriendActivityView(AbstractActivityView):
             many=True,
         )
 
-        for activity in activities.data:
-            if activity["durationSecs"] == 0:
-                activity.pop("deadline")
-
         return Response(
             data={"activities": activities.data},
             status=status.HTTP_200_OK,
@@ -191,9 +186,7 @@ class FriendActivityView(AbstractActivityView):
                 )
 
             if activity.status in [FriendActivityStatus.PENDING, FriendActivityStatus.ONGOING]:
-                activity.status = activity_status
-                activity.statusDate = now()
-                activity.save()
+                activity.update_status(activity_status)
                 return Response(
                     status=status.HTTP_200_OK,
                     data={"msg": f"PASS: activity {activityid} status is set to {activity_status}"},

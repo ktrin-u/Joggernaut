@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now, timedelta, datetime
 
 from api.models import FriendActivity, FriendActivityChoices, FriendActivityStatus, User
 
@@ -112,3 +112,36 @@ class TestFriendActivity(TestCase):
         self.assertTrue(activity.expired)
         self.assertEqual(activity.status, FriendActivityStatus.EXPIRED)
         self.assertIsNotNone(activity.statusDate)
+
+    def test_deadline_property_none(self):
+        activity = FriendActivity.objects.create(
+            fromUserid=self.user1,
+            toUserid=self.user2,
+            activity=FriendActivityChoices.CHALLENGE,
+            status=FriendActivityStatus.PENDING,
+            statusDate=now(),
+            durationSecs=0,
+        )
+        self.assertEqual(activity.deadline, None)
+
+        activity.update_status(FriendActivityStatus.FINISHED)
+        self.assertEqual(activity.deadline, None)
+
+    def test_deadline_property_datetime(self):
+        activity = FriendActivity.objects.create(
+            fromUserid=self.user1,
+            toUserid=self.user2,
+            activity=FriendActivityChoices.CHALLENGE,
+            status=FriendActivityStatus.PENDING,
+            durationSecs=5,
+        )
+        duration = timedelta(seconds=activity.durationSecs)
+        valid_deadline = activity.creationDate + duration
+        self.assertEqual(activity.deadline, valid_deadline)
+
+        activity.update_status(FriendActivityStatus.ONGOING)
+
+        valid_deadline = activity.statusDate + duration  # type: ignore
+        self.assertEqual(activity.deadline, valid_deadline)
+
+

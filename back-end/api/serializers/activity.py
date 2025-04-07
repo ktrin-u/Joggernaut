@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
+from typing import Any
+
 from api.models.friends import (
     FriendActivity,
     FriendActivityStatus,
@@ -60,6 +62,12 @@ class FriendActivitySerializer(serializers.ModelSerializer):
             "creationDate",
             "deadline",
         ]
+
+    def to_representation(self, instance: FriendActivity) -> dict[str,Any]:
+        ret = super().to_representation(instance)
+        if ret["deadline"] is None:
+            ret.pop("deadline")
+        return ret
 
 
 class TargetActivitySerializer(serializers.ModelSerializer):
