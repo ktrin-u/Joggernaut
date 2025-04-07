@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils.timezone import now, timedelta
 
@@ -33,8 +33,8 @@ class TestFriendActivity(TestCase):
         self.assertEqual(activity.activity, FriendActivityChoices.POKE)
 
     def test_self_referencing_activity(self):
-        with self.assertRaises(ValidationError):
-            self_referencing_activity = FriendActivity(
+        with self.assertRaises(IntegrityError):
+            self_referencing_activity = FriendActivity.objects.create(
                 fromUserid=self.user1,
                 toUserid=self.user1,
                 activity=FriendActivityChoices.POKE,
