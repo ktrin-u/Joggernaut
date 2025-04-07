@@ -31,6 +31,8 @@ class CanShareWorkout(permissions.BasePermission):
     message = "User cannot share their workout data"
 
     def has_permission(self, request: Request, view) -> bool:
+        if request.method == "GET":
+            return True
         try:
             user = request.user
             settings = UserSettings.objects.get(userid=user)
