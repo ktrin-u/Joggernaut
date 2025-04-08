@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/character.dart';
 
 class ConfirmHelper {
   static void showConfirmDialog(BuildContext context, String confirmationText, Function(BuildContext) onConfirm) {
@@ -365,5 +366,155 @@ class ConfirmHelper {
       ],
     );
   }
-}
+
+  static void showEditCharacterDialog(
+    BuildContext context,
+    String? color,
+    String? type,
+    List<Character> characters,
+    Function onConfirm
+  ) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
   
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditCharacterDialog(
+          context: context, 
+          color: color!,
+          type: type!,
+          screenHeight: screenHeight,
+          screenWidth: screenWidth,
+          characters: characters,
+          onConfirm: onConfirm
+        );
+      }
+    );
+  }
+
+  static StatefulBuilder EditCharacterDialog({
+    required BuildContext context,
+    required String color,
+    required String type,
+    required double screenHeight,
+    required double screenWidth,
+    required List<Character> characters,
+    required Function onConfirm
+  }) {
+    List<Character> characterImages = characters.where((character) => character.type == type).toList();
+    int selectedItemIndex = characterImages.indexWhere((character) => character.color == color && character.type == type);
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return AlertDialog.adaptive(
+          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+          title: Text(
+            "Edit Character",
+            style: TextStyle(
+              fontFamily: 'Big Shoulders Display',
+              fontSize: screenWidth * 0.08,
+              fontWeight: FontWeight.bold,
+              color: Color.fromRGBO(51, 51, 51, 1),
+            ),
+          ),
+          content: SizedBox(
+            width: screenWidth * 0.8, 
+            height: screenHeight * 0.35, 
+            child: Column(
+              children: [
+                Expanded(
+                  child: GridView.builder(
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.01,
+                      horizontal: screenWidth * 0.05,
+                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: screenWidth * 0.02,
+                      mainAxisSpacing: screenHeight * 0.02,
+                    ),
+                    itemCount: 4, 
+                    itemBuilder: (context, index) {
+                     return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          color = characterImages[index].color;
+                          type = characterImages[index].type;
+                          selectedItemIndex = index;
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: selectedItemIndex == index
+                              ? Colors.blue 
+                              : Colors.grey, 
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selectedItemIndex == index
+                                ? Color.fromRGBO(90, 155, 212, 1) 
+                                : Colors.transparent, 
+                            width: 5,
+                          ),
+                        ),
+                        child: Container(
+                          width: screenWidth * 0.5,
+                          height: screenWidth * 0.5,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            image: DecorationImage(
+                              image: AssetImage(characterImages[index].imagePath),
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        ),
+                      ),
+                    );
+                    },
+                  ),
+                ),
+                Text(
+                  "$color $type",
+                  style: TextStyle(
+                    fontFamily: 'Big Shoulders Display',
+                    fontSize: screenWidth * 0.07,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                "Back",
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: screenWidth * 0.04,
+                  color: Color.fromRGBO(51, 51, 51, 1),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                onConfirm(color);
+              },
+              child: Text(
+                "Save",
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: screenWidth * 0.04,
+                  color: Color.fromRGBO(51, 51, 51, 1),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
