@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/character.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
@@ -22,9 +23,23 @@ class _MyCharactersPageState extends State<MyCharactersPage> {
     super.didChangeDependencies();
     _currentContext = context;
   }
-  String tempCharacterID = "1safsaf";
+
   late Future gettingCharacters;
   List<Map<String, dynamic>> myCharacters = [];
+  List<Character> characterImages = [
+    Character(color: "Blue", type: "Archer", imagePath: "assets/characters/Blue Archer.png"),
+    Character(color: "Purple", type: "Archer", imagePath: "assets/characters/Purple Archer.png"),
+    Character(color: "Red", type: "Archer", imagePath: "assets/characters/Red Archer.png"),
+    Character(color: "Yellow", type: "Archer", imagePath: "assets/characters/Yellow Archer.png"),
+    Character(color: "Blue", type: "Pawn", imagePath: "assets/characters/Blue Pawn.png"),
+    Character(color: "Purple", type: "Pawn", imagePath: "assets/characters/Purple Pawn.png"),
+    Character(color: "Red", type: "Pawn", imagePath: "assets/characters/Red Pawn.png"),
+    Character(color: "Yellow", type: "Pawn", imagePath: "assets/characters/Yellow Pawn.png"),
+    Character(color: "Blue", type: "Knight", imagePath: "assets/characters/Blue Knight.png"),
+    Character(color: "Purple", type: "Knight", imagePath: "assets/characters/Purple Knight.png"),
+    Character(color: "Red", type: "Knight", imagePath: "assets/characters/Red Knight.png"),
+    Character(color: "Yellow", type: "Knight", imagePath: "assets/characters/Yellow Knight.png"),
+  ];
   bool isDeleting = false;
 
   void deletingCharacters(){
@@ -139,7 +154,7 @@ class _MyCharactersPageState extends State<MyCharactersPage> {
                             ),
                           ),
                           IconButton(
-                            onPressed: (){router.push("/game/view-character/$tempCharacterID");},
+                            onPressed: (){router.push("/game/create-character");},
                             icon: Icon(
                               Icons.add_circle_rounded,
                               color: Colors.black87,
@@ -181,6 +196,14 @@ class _MyCharactersPageState extends State<MyCharactersPage> {
                           item["isLoading"] = true;
                         });
                         await deleteCharacter(characterid);
+                      }
+
+                      String getImagePath(String color, String type) {
+                        final character = characterImages.firstWhere(
+                          (c) => c.color == color && c.type == type,
+                          orElse: () => throw Exception('Character not found'),
+                        );
+                        return character.imagePath;
                       }
 
                       return Padding(
@@ -226,6 +249,10 @@ class _MyCharactersPageState extends State<MyCharactersPage> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Color.fromRGBO(245, 245, 245, 1),
+                                      image: DecorationImage(
+                                        image: AssetImage(getImagePath("${item["color"][0]}${item["color"].substring(1).toLowerCase()}", "${item["type"][0]}${item["type"].substring(1).toLowerCase()}")), 
+                                        fit: BoxFit.cover, 
+                                      ),
                                     ),
                                   ),
                                   trailing: (item["isLoading"] == true) ? Padding(
@@ -265,7 +292,7 @@ class _MyCharactersPageState extends State<MyCharactersPage> {
                                   subtitle: Padding(
                                     padding: EdgeInsets.only(left: screenWidth*0.02),
                                     child: Text(
-                                      "Red Archer", 
+                                      "${item["color"][0]}${item["color"].substring(1).toLowerCase()} ${item["type"][0]}${item["type"].substring(1).toLowerCase()}", 
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
                                         fontWeight: FontWeight.w400,

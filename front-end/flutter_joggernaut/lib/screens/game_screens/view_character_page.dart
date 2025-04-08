@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/character.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
@@ -21,8 +22,16 @@ class ViewCharacterPage extends StatefulWidget {
 }
 
 class _ViewCharacterPageState extends State<ViewCharacterPage> {
+  late BuildContext _currentContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentContext = context;
+  }
   Map <String, dynamic> character = {};
   bool isLoading = false;
+  bool isLoadingName = false;
   bool isEditing = false;
   late Future gettingCharacter;
   int? health;
@@ -32,6 +41,8 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
   String? name;
   String? type;
   String? color;
+  String? selectedImage;
+  int? id;
 
   TextEditingController healthController = TextEditingController();
   TextEditingController staminaController = TextEditingController();
@@ -39,11 +50,36 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
   TextEditingController strengthController = TextEditingController();
   TextEditingController nameController = TextEditingController();
 
-  void _saveName(){
+  List<Character> characterImages = [
+    Character(color: "Blue", type: "Archer", imagePath: "assets/characters/Blue Archer.png"),
+    Character(color: "Purple", type: "Archer", imagePath: "assets/characters/Purple Archer.png"),
+    Character(color: "Red", type: "Archer", imagePath: "assets/characters/Red Archer.png"),
+    Character(color: "Yellow", type: "Archer", imagePath: "assets/characters/Yellow Archer.png"),
+    Character(color: "Blue", type: "Pawn", imagePath: "assets/characters/Blue Pawn.png"),
+    Character(color: "Purple", type: "Pawn", imagePath: "assets/characters/Purple Pawn.png"),
+    Character(color: "Red", type: "Pawn", imagePath: "assets/characters/Red Pawn.png"),
+    Character(color: "Yellow", type: "Pawn", imagePath: "assets/characters/Yellow Pawn.png"),
+    Character(color: "Blue", type: "Knight", imagePath: "assets/characters/Blue Knight.png"),
+    Character(color: "Purple", type: "Knight", imagePath: "assets/characters/Purple Knight.png"),
+    Character(color: "Red", type: "Knight", imagePath: "assets/characters/Red Knight.png"),
+    Character(color: "Yellow", type: "Knight", imagePath: "assets/characters/Yellow Knight.png"),
+  ];
+
+  void _saveName() async{
     setState(() {
       name = nameController.text;
     });
+    await updateName();
   }
+
+  void _saveCharacter(newColor) async{
+    setState(() {
+      color = newColor;
+      selectedImage = getImagePath(color!, "${character["type"][0]}${character["type"].substring(1).toLowerCase()}");
+    });
+    await updateCharacter();
+  }
+
   // void _saveHealth(){
   //   setState(() {
   //     health = int.tryParse(healthController.text);
@@ -65,17 +101,12 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
   //   });
   // }
 
-  void _toggleEdit(context){
-    if (isEditing) {
-      ConfirmHelper.showConfirmDialog(
-        context, 
-        "Are you sure you want to update your character?",
-        (context) => updateCharacter()
-      );
-    }
-    setState(() {
-      isEditing = !isEditing;
-    });
+  String getImagePath(String color, String type) {
+    final character = characterImages.firstWhere(
+      (c) => c.color == color && c.type == type,
+      orElse: () => throw Exception('Character not found'),
+    );
+    return character.imagePath;
   }
 
   Future getCharacters() async {
@@ -90,29 +121,62 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
         );
 
         name = character["name"] ?? "New Character";
-        type = character["class"] ?? "Class";
+        type = character["type"] ?? "Class";
         color = character["color"] ?? "Color";
         strength = character["strength"] ?? 0;
         speed = character["speed"] ?? 0;
         stamina = character["stamina"] ?? 0;
         health = character["health"] ?? 0;
-      });
-    }
-    else {
-      setState(() {
-        name = character["name"] ?? "New Character";
-        type = character["class"] ?? "Class";
-        color = character["color"] ?? "Color";
-        strength = character["strength"] ?? 0;
-        speed = character["speed"] ?? 0;
-        stamina = character["stamina"] ?? 0;
-        health = character["health"] ?? 0;
+        id = character["id"] ?? 0;
+        selectedImage = getImagePath("${character["color"][0]}${character["color"].substring(1).toLowerCase()}", "${character["type"][0]}${character["type"].substring(1).toLowerCase()}");
       });
     }
   }
 
   Future updateCharacter() async {
+    setState(() {
+      isLoading = true;
+    });
+    var response = await ApiService().updateCharacter(id, type, color, name);
+    if (response.statusCode == 202){
+      ConfirmHelper.showResultDialog(_currentContext, "Character updated successfully!", "Success");
+      await getCharacters();
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
 
+  Future updateName() async {
+    setState(() {
+      isLoadingName = true;
+    });
+    var response = await ApiService().updateCharacter(id, type, color, name);
+    if (response.statusCode == 202){
+      ConfirmHelper.showResultDialog(_currentContext, "Character updated successfully!", "Success");
+      await getCharacters();
+    } 
+    else {
+      Map responseBody = jsonDecode(response.body);
+      String errorMessage = responseBody.entries.map((entry) {
+        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
+        String messages = (entry.value as List).join("\n");
+        return "$field: $messages";
+      }).join("\n");
+      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
+    }
+    setState(() {
+      isLoadingName = false;
+    });
   }
 
   @override
@@ -170,31 +234,6 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
                                 color: Colors.white,
                               ),
                             ),
-                            Opacity(
-                              opacity: isLoading ? 0.0 : 1.0, 
-                              child: IconButton(
-                                onPressed: (){
-                                   _toggleEdit(context);
-                                },
-                                icon: Icon(
-                                  Icons.edit_square,
-                                  color: (!isEditing) ? Colors.white : Color.fromRGBO(90, 155, 212, 1),
-                                  size: screenWidth * 0.09,
-                                ),
-                              ),
-                            ),
-                            if (isLoading)
-                              Padding(
-                                padding: EdgeInsets.only(right: screenWidth*0.03),
-                                child: SizedBox(
-                                  height: screenWidth * 0.09, 
-                                  width: screenWidth * 0.09, 
-                                  child: CircularProgressIndicator(
-                                    color: Color.fromRGBO(255, 255, 255, 1),
-                                    strokeWidth: 2.5,
-                                  ),
-                                ),
-                              ),
                           ],
                         ),
                       ),
@@ -206,61 +245,77 @@ class _ViewCharacterPageState extends State<ViewCharacterPage> {
                           Stack(
                             alignment: Alignment.centerRight,
                             children: [
-                              CircleAvatar(radius: screenWidth * 0.17),
+                              Container(
+                                width: screenWidth*0.3,
+                                height: screenWidth*0.3,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.fromRGBO(245, 245, 245, 1),
+                                  image: DecorationImage(
+                                    image: AssetImage(selectedImage!), 
+                                    fit: BoxFit.cover, 
+                                  ),
+                                ),
+                              ),
                               Material(
                                 shape: CircleBorder(),
                                 color: Colors.white,
                                 elevation: 2,
-                                child: InkWell(
-                                  onTap: () {},
+                                child: (!isLoading) ? InkWell(
+                                  onTap: () { 
+                                    ConfirmHelper.showEditCharacterDialog(context, "${color![0]}${color!.substring(1).toLowerCase()}", "${type![0]}${type!.substring(1).toLowerCase()}", characterImages, _saveCharacter);
+                                  },
                                   customBorder: CircleBorder(),
                                   splashColor: Colors.black12,
                                   child: Padding(
                                     padding: EdgeInsets.all(screenWidth * 0.02),
                                     child: Icon(Icons.edit, size: screenWidth * 0.055, color: Colors.black87),
                                   ),
-                                ),
-                              ),
+                                ) : CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                )
+                              ) 
                             ],
                           ),  
                           SizedBox(height: screenHeight * 0.01),
-                          (isEditing) ? TextButton(
-                            onPressed: () {
-                              InputHelper.showInputDialog(
-                                context, 
-                                "Character Name", 
-                                "Enter your character's name", 
-                                nameController, 
-                                _saveName,
-                                TextInputType.text
-                              );
-                            },
-                            style: TextButton.styleFrom(foregroundColor: Colors.white),
-                            child: Text(
-                              name!,
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.1,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.white,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                name!,
+                                style: TextStyle(
+                                  fontFamily: 'Big Shoulders Display',
+                                  fontSize: screenWidth * 0.1,
+                                  fontWeight: FontWeight.bold,
+                                  color:  Color.fromARGB(255, 255, 255, 255),
+                                ),
                               ),
-                            ),
-                          ) : Padding(
-                            padding: EdgeInsets.only(top: screenHeight*0.015),
-                            child: Text(
-                              name!,
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: screenWidth * 0.1,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                              (!isLoadingName) ? IconButton(
+                                onPressed: () {
+                                  InputHelper.showInputDialog(
+                                    context, 
+                                    "Character Name", 
+                                    "Enter your character's name", 
+                                    nameController, 
+                                    _saveName,
+                                    TextInputType.text
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.edit,
+                                  size: screenHeight*0.03,
+                                  color: Colors.white,
+                                ),
+                              ) : Padding(
+                                padding: EdgeInsets.only(left: screenWidth*0.04),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                            ],
                           ),
                           Text(
-                            "$color $type",
+                            "${color![0]}${color!.substring(1).toLowerCase()} ${type![0]}${type!.substring(1).toLowerCase()}",
                             style: TextStyle(
                               fontFamily: 'Roboto',
                               fontStyle: FontStyle.italic,

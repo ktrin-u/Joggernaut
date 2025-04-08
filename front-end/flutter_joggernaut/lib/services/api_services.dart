@@ -699,17 +699,17 @@ class ApiService {
         }, 
         body: {
           "name": name,
-          "class": type,
-          "color": color
+          "type": type.toUpperCase(),
+          "color": color.toUpperCase(),
         },
         encoding: Encoding.getByName('utf-8')
       );
 
-      if (response.statusCode == 200) {
-        print("Characters obtained successfully!");
+      if (response.statusCode == 201) {
+        print("Character created successfully!");
         return response;
       } else {
-        print("Failed to load my characters. Status code: ${response.statusCode}");
+        print("Failed to create character. Status code: ${response.body}");
         return response;
       }
     } catch (e) {
@@ -730,10 +730,10 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        print("Characters obtained successfully!");
+        print("Character deleted successfully!");
         return response;
       } else {
-        print("Failed to load my characters. Status code: ${response.statusCode}");
+        print("Failed to delete character. Status code: ${response.statusCode}");
         return response;
       }
     } catch (e) {
@@ -750,7 +750,8 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken",
         }, 
       body: {
-          "id": characterid.toString()
+          "id": characterid.toString(),
+          "selected": "true"
         },
         encoding: Encoding.getByName('utf-8')
       );
@@ -760,6 +761,35 @@ class ApiService {
         return response;
       } else {
         print("Failed to select character. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future updateCharacter(characterid, type, color, name) async {
+    var uri = Uri.parse(characterURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken",
+        }, 
+      body: {
+          "id": characterid.toString(),
+          "name": name,
+          "color": color.toUpperCase(),
+          "type": type.toUpperCase(),
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 202) {
+        print("Character updateed successfully!");
+        return response;
+      } else {
+        print("Failed to update character. Status code: ${response.statusCode}");
         return response;
       }
     } catch (e) {
