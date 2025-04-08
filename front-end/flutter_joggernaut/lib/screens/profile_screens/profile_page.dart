@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/input_dialog.dart';
+import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -25,64 +26,28 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool isLoading = false;
   bool isEditing = false;
-  bool? isNewUser;
   late Future gettingProfile;
   String? accountName;
   String? weight;
   String? height;
-  String? address;
   String? dateofbirth;
   String? gender;
 
   TextEditingController accNameController = TextEditingController();
   TextEditingController weightController = TextEditingController();
   TextEditingController heightController = TextEditingController(); 
-  TextEditingController dateofbirthController = TextEditingController();
   TextEditingController genderController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController validateController = TextEditingController();
 
   void _toggleEdit(context){
     if (isEditing) {
-      if (isNewUser!) {
-        ConfirmHelper.showConfirmDialog(
-          context, 
-          "Are you sure you want to create your profile?",
-          (context) => createUserProfile(context)
-        );
-      }
-      else {
-        ConfirmHelper.showConfirmDialog(
-          context, 
-          "Are you sure you want to update your profile?",
-          (context) => updateUserProfile(context)
-        );
-      }
+      ConfirmHelper.showConfirmDialog(
+        context, 
+        "Are you sure you want to update your profile?",
+        (context) => updateUserProfile(context)
+      );
     }
     setState(() {
       isEditing = !isEditing;
-    });
-  }
-
-  Future createUserProfile(context) async {
-    setState(() {
-      isLoading = true;
-    });
-    var response = await ApiService().createUserProfile(accountName, dateofbirth, gender, address, height, weight);
-    if (response.statusCode == 201){
-      ConfirmHelper.showResultDialog(_currentContext, "User Profile created successfully!", "Success");
-    } 
-    else {
-      Map responseBody = jsonDecode(response.body);
-      String errorMessage = responseBody.entries.map((entry) {
-        String field = (entry.key)[0].toUpperCase() + entry.key.substring(1);
-        String messages = (entry.value as List).join("\n");
-        return "$field: $messages";
-      }).join("\n");
-      ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
-    }
-    setState(() {
-      isLoading = false;
     });
   }
 
@@ -90,8 +55,8 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       isLoading = true;
     });
-    var response  = await ApiService().updateUserProfile(accountName, dateofbirth, gender, address, height, weight);
-    if (response.statusCode == 201){
+    var response  = await ApiService().updateUserProfile(accountName, dateofbirth, gender, height, weight);
+    if (response.statusCode == 200){
       ConfirmHelper.showResultDialog(_currentContext, "User Profile updated successfully!", "Success");
     } 
     else {
@@ -119,24 +84,16 @@ class _ProfilePageState extends State<ProfilePage> {
       weight = weightController.text;
     });
   }
+  
   void _saveHeight(){
     setState(() {
       height = heightController.text;
     });
   }
-  void _savedateofbirth(){
-    setState(() {
-      dateofbirth = dateofbirthController.text;
-    });
-  }
+
   void _saveGender(){
     setState(() {
       gender = genderController.text;
-    });
-  }
-  void _saveAddress(){
-    setState(() {
-      address = addressController.text;
     });
   }
 
@@ -145,38 +102,60 @@ class _ProfilePageState extends State<ProfilePage> {
     if (response.statusCode == 200){
       var data = jsonDecode(response.body);
       setState(() {
-        isNewUser = false;
         accountName = data["accountname"] ?? "??";
         dateofbirth = data["dateofbirth"] ?? "??";
         gender = data["gender"] ?? "??";
         weight = data["weight_kg"]?.toString() ?? "??";
         height = data["height_cm"]?.toString() ?? "??";
-        address = data["address"] ?? "??";
 
         accNameController.text = accountName!;
-        dateofbirthController.text = dateofbirth!;
         genderController.text = gender!;
         weightController.text = weight!;
         heightController.text = height!;
-        addressController.text = address!;
       });
     }
     else if (response.statusCode == 404){
       setState(() {
-        isNewUser = true;
         accountName = "New User";
         dateofbirth = "??";
         gender = "??";
         weight =  "??";
         height = "??";
-        address ="??";
 
         accNameController.text = accountName!;
-        dateofbirthController.text = dateofbirth!;
         genderController.text = gender!;
         weightController.text = weight!;
         heightController.text = height!;
-        addressController.text = address!;
+      });
+    }
+  }
+
+  Future selectBirthday() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      helpText: "Birthdate",
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.black87,
+            hintColor: Colors.black87,
+            colorScheme: ColorScheme.light(primary: Colors.black87),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black87,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (selectedDate != null) {
+      setState(() {
+        dateofbirth = DateFormat('yyyy-MM-dd').format(selectedDate);
       });
     }
   }
@@ -339,8 +318,63 @@ class _ProfilePageState extends State<ProfilePage> {
                         _buildListTileItem("Weight in kg", weight!, context, weightController, isEditing, TextInputType.number, _saveWeight, "Enter your weight in kg", Icon(Icons.monitor_weight)),
                         _buildListTileItem("Height in cm", height!, context, heightController, isEditing, TextInputType.number, _saveHeight, "Enter your height in cm", Icon(Icons.height)),
                         _buildListTileItem("Gender", gender!, context, genderController, isEditing, TextInputType.text, _saveGender, "Enter your gender", Icon(Icons.account_circle_rounded)),
-                        _buildListTileItem("Birthdate", dateofbirth!, context, dateofbirthController, isEditing, TextInputType.datetime, _savedateofbirth, "Enter your birthdate (yyyy-mm-dd)", Icon(Icons.cake)),
-                        _buildListTileItem("Address", address!, context, addressController, isEditing, TextInputType.streetAddress, _saveAddress, "Enter your city", Icon(Icons.location_on))
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07, vertical: screenHeight*0.0075),
+                          child: Card(
+                            margin: EdgeInsets.zero,
+                            color: Colors.white,
+                            child: (isEditing) ? InkWell(
+                              onTap: (){
+                                selectBirthday();
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              splashColor: Colors.black12,
+                              child: ListTile(
+                                title: Text(
+                                "Birthday:",
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: screenWidth * 0.04,
+                                  color: Color.fromRGBO(51, 51, 51, 1)
+                                ),
+                                ),
+                                leading: Icon(Icons.edit),
+                                trailing: Text(
+                                dateofbirth!,
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: screenWidth * 0.04,
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  decoration: TextDecoration.underline,
+                                  decorationColor:Color.fromRGBO(51, 51, 51, 1),
+                                ),
+                                ),
+                              ),
+                            ) : ListTile(
+                                  title: Text(
+                                  "Birthday:",
+                                  style: TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: screenWidth * 0.04,
+                                    color: Color.fromRGBO(51, 51, 51, 1)
+                                  ),
+                                  ),
+                                  leading: Icon(Icons.cake),
+                                  trailing: Text(
+                                  dateofbirth!,
+                                  style: TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: screenWidth * 0.04,
+                                    color: Color.fromRGBO(51, 51, 51, 1),
+                                  ),
+                                  ),
+                                ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

@@ -15,9 +15,7 @@ const getPendingFriendsURL = "${hostURL}api/friends/pending";
 
 // activity
 const getActivitiesURL = "${hostURL}api/activity";
-const acceptActivityURL = "${hostURL}api/activity/accept";
-const cancelActivityURL = "${hostURL}api/activity/cancel";
-const rejectActivityURL = "${hostURL}api/activity/reject";
+const updateActivityURL = "${hostURL}api/activity/update";
 const challengeFriendURL = "${hostURL}api/activity/challenge";
 const pokeFriendURL = "${hostURL}api/activity/poke";
 
@@ -37,10 +35,11 @@ const updateUserInfoURL = "${hostURL}api/user/info/update";
 
 // profile
 const getUserProfileURL = "${hostURL}api/profile";
-const createUserProfileURL = "${hostURL}api/profile/new";
 const updateUserProfileURL = "${hostURL}api/profile/update";
 
 // workout
-const getWorkoutURL = "${hostURL}api/workout";
-const createWorkoutURL = "${hostURL}api/workout/add";
-const updateWorkoutURL = "${hostURL}api/workout/update";
+const workoutURL = "${hostURL}api/workout/";
+
+//game
+const gameSaveURL = "${hostURL}api/game";
+const characterURL = "${hostURL}api/game/character/";

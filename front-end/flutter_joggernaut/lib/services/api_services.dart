@@ -86,39 +86,7 @@ class ApiService {
     }
   }
 
-  Future createUserProfile (accountName, dateofbirth, gender, address, height, weight) async {
-    var uri = Uri.parse(createUserProfileURL);
-    String? accessToken = await storage.getAccessToken();
-    try {
-      var response = await client.post(uri, 
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          HttpHeaders.authorizationHeader: "Bearer $accessToken"
-        }, 
-        body: {
-          "userid":  (await storage.getData("userid")).toString(),
-          "accountname": accountName,
-          "dateofbirth" : dateofbirth,
-          "gender" : gender,
-          "address" : address,
-          "height_cm" : height,
-          "weight_kg" : weight
-        },
-        encoding: Encoding.getByName('utf-8')
-      );
-      if (response.statusCode == 201) {
-        print("Account Profile created successfully!");
-        return response;
-      } else {
-        print("Failed to create profile. Status code: ${response.statusCode}. Response body: ${response.body}");
-        return response;
-      }
-    } catch (e) {
-      throw Exception("Error: $e");
-    }
-  }
-
-  Future updateUserProfile (accountName, dateofbirth, gender, address, height, weight) async {
+  Future updateUserProfile (accountName, dateofbirth, gender, height, weight) async {
     var uri = Uri.parse(updateUserProfileURL);
     String? accessToken = await storage.getAccessToken();
     try {
@@ -132,7 +100,6 @@ class ApiService {
           "accountname": accountName,
           "dateofbirth" : dateofbirth,
           "gender" : gender,
-          "address" : address,
           "height_cm" : height,
           "weight_kg" : weight
         },
@@ -258,8 +225,10 @@ class ApiService {
     }
   }
 
-  Future getWorkout() async {
-    var uri = Uri.parse(getWorkoutURL);
+  Future getWorkout(userid) async {
+    var uri = Uri.parse(workoutURL).replace(queryParameters: {
+      "userid": userid.toString()
+    });
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.get(uri, 
@@ -281,7 +250,7 @@ class ApiService {
   }
   
   Future createWorkout (steps, calories) async {
-    var uri = Uri.parse(createWorkoutURL);
+    var uri = Uri.parse(workoutURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.post(uri, 
@@ -295,7 +264,7 @@ class ApiService {
         },
         encoding: Encoding.getByName('utf-8')
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         print("Workout session created successfully!");
         return response;
       } else {
@@ -308,7 +277,7 @@ class ApiService {
   }
 
   Future updateWorkout (workoutID, steps, calories) async {
-    var uri = Uri.parse(updateWorkoutURL);
+    var uri = Uri.parse(workoutURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.patch(uri, 
@@ -439,6 +408,7 @@ class ApiService {
         }, 
         body: {
           "toUserid": friendId,
+          "durationSecs": "0",
         },
         encoding: Encoding.getByName('utf-8')
       );
@@ -585,7 +555,7 @@ class ApiService {
     }
   }
 
-  Future addChallenge(friendId) async {
+  Future addChallenge(friendId, duration) async {
     var uri = Uri.parse(challengeFriendURL);
     String? accessToken = await storage.getAccessToken();
     try {
@@ -595,7 +565,7 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "durationSecs": "3600",
+          "durationSecs": duration,
           "toUserid": friendId,
         },
         encoding: Encoding.getByName('utf-8')
@@ -613,8 +583,8 @@ class ApiService {
     }
   }
 
-  Future acceptChallenge(friendId, activityId) async {
-    var uri = Uri.parse(acceptActivityURL);
+  Future acceptChallenge(activityId) async {
+    var uri = Uri.parse(updateActivityURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.patch(uri, 
@@ -623,7 +593,8 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "activityid": activityId.toString()
+          "activityid": activityId.toString(),
+          "status": "ONG"
         },
         encoding: Encoding.getByName('utf-8')
       );
@@ -640,8 +611,8 @@ class ApiService {
     }
   }
 
-  Future rejectChallenge(friendId, activityId) async {
-    var uri = Uri.parse(rejectActivityURL);
+  Future rejectChallenge(activityId) async {
+    var uri = Uri.parse(updateActivityURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.patch(uri, 
@@ -650,7 +621,8 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "activityid": activityId.toString()
+          "activityid": activityId.toString(),
+          "status": "REJ"
         },
         encoding: Encoding.getByName('utf-8')
       );
@@ -667,8 +639,8 @@ class ApiService {
     }
   }
 
-  Future cancelChallenge(friendId, activityId) async {
-    var uri = Uri.parse(cancelActivityURL);
+  Future cancelChallenge(activityId) async {
+    var uri = Uri.parse(updateActivityURL);
     String? accessToken = await storage.getAccessToken();
     try {
       var response = await client.patch(uri, 
@@ -677,7 +649,8 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "activityid": activityId.toString()
+          "activityid": activityId.toString(),
+          "status": "CAN"
         },
         encoding: Encoding.getByName('utf-8')
       );
@@ -687,6 +660,128 @@ class ApiService {
         return response;
       } else {
         print("Failed to cancel challenge. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future getCharacters() async {
+    var uri = Uri.parse(characterURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Characters obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load my characters. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future createCharacter(name, type, color) async {
+    var uri = Uri.parse(characterURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+        body: {
+          "name": name,
+          "class": type,
+          "color": color
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Characters obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load my characters. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future deleteCharacter(characterid) async {
+    var uri = Uri.parse(characterURL).replace(queryParameters: {
+      "id": characterid.toString()
+    });
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.delete(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken",
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Characters obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load my characters. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future selectCharacter(characterid) async {
+    var uri = Uri.parse(characterURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.patch(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken",
+        }, 
+      body: {
+          "id": characterid.toString()
+        },
+        encoding: Encoding.getByName('utf-8')
+      );
+
+      if (response.statusCode == 200) {
+        print("Character selected successfully!");
+        return response;
+      } else {
+        print("Failed to select character. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  Future getGameSave() async {
+    var uri = Uri.parse(gameSaveURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Game save obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load game save. Status code: ${response.statusCode}");
         return response;
       }
     } catch (e) {

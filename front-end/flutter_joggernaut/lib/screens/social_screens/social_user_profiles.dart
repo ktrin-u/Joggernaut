@@ -7,6 +7,7 @@ import 'package:flutter_application_1/services/api_services.dart';
 import 'package:flutter_application_1/utils/routes.dart';
 import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
 import 'package:flutter_application_1/widgets/step_chart.dart';
+import 'package:intl/intl.dart';
 
 class SocialUserProfilePage extends StatefulWidget {
   final String userId;
@@ -17,7 +18,6 @@ class SocialUserProfilePage extends StatefulWidget {
     required this.userId,
     required this.userName
   });
-
 
   @override
   State<SocialUserProfilePage> createState() => _SocialUserProfilePageState();
@@ -43,18 +43,16 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
   List<Map<String, dynamic>> pendingRequest = [];
   List<Map<String, dynamic>> friendActivities = [];
   Map<String, dynamic> latestChallenge = {};
+  List<(DateTime, int)> sessions = [];
   bool isPoking = false;
   bool isLoadingCha = false;
-  bool isLoadingAccCha = false;
-  bool isLoadingRejCha = false;
   bool isLoadingAccFr = false;
   bool isLoadingRejFr = false;
   bool isLoadingFr = false;
   bool isFriends = false;
   bool isPending = false;
   bool hasReceived = false;
-  bool hasChallenged = false;
-  bool isChallenged = false;
+  bool pendingChallenge = false;
   bool ongoingChallenge = false;
  
 
@@ -250,12 +248,9 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
     setState(() {
       isLoadingCha = true;
     });
-    var response = await ApiService().addChallenge(userId);
+    var response = await ApiService().addChallenge(userId, durationChallenge);
     if (response.statusCode == 201){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = true;
-      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenged $userName successfully.", "Success");
       await getFriendActivity();
       getLatestChallenge();
     } 
@@ -268,21 +263,17 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       }).join("\n");
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
-    setState(() {
-      isLoadingCha = false;
-    });
   }
   
   Future cancelChallenge() async {
     setState(() {
       isLoadingCha = true;
     });
-    var response = await ApiService().cancelChallenge(userId, latestChallenge["activityid"]);
+    var response = await ApiService().cancelChallenge(latestChallenge["activityid"]);
     if (response.statusCode == 200){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = false;
-      });
+      ConfirmHelper.showResultDialog(_currentContext, "Challenge cancelled successfully", "Success");
+      await getFriendActivity();
+      getLatestChallenge();
     } 
     else {
       Map responseBody = jsonDecode(response.body);
@@ -293,65 +284,61 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       }).join("\n");
       ConfirmHelper.showResultDialog(_currentContext, errorMessage, "Failed");
     }
-    setState(() {
-      isLoadingCha = false;
-    });
   }
 
   Future acceptChallenge() async {
     setState(() {
-      isLoadingAccCha = true;
+      isLoadingCha = true;
     });
-    var response = await ApiService().acceptChallenge(userId, latestChallenge["activityid"]);
+    var response = await ApiService().acceptChallenge(latestChallenge["activityid"]);
     if (response.statusCode == 200){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = false;
-      });
+      await getFriendActivity();
+      getLatestChallenge();
       ConfirmHelper.showResultDialog(_currentContext, "Challenge accepted successfully", "Success");
     } 
     else if (response.statusCode == 400){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = false;
-      });
       ConfirmHelper.showResultDialog(_currentContext, "Challenge is expired", "Failed");
+      await setup();
     }
-    setState(() {
-      isLoadingAccCha = false;
-    });
   }
 
   Future rejectChallenge() async {
     setState(() {
-      isLoadingRejCha = true;
+      isLoadingCha = true;
     });
-    var response = await ApiService().rejectChallenge(userId, latestChallenge["activityid"]);
+    var response = await ApiService().rejectChallenge(latestChallenge["activityid"]);
     if (response.statusCode == 200){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = false;
-      });
+      await getFriendActivity();
+      getLatestChallenge();
       ConfirmHelper.showResultDialog(_currentContext, "Challenge rejected successfully", "Success");
     } 
     else if (response.statusCode == 400){
-      setState(() {
-        isChallenged = false;
-        hasChallenged = false;
-      });
       ConfirmHelper.showResultDialog(_currentContext, "Challenge is expired", "Failed");
+      await setup();
     }
-    setState(() {
-      isLoadingRejCha = false;
-    });
   }
   
   Future getFriendActivity() async {
     var response = await ApiService().getFriendActivity();
     if (response.statusCode == 200){
-      var data = jsonDecode(response.body);
+      var data = jsonDecode(response.body)["activities"];
       setState(() {
         friendActivities = List<Map<String, dynamic>>.from(data); 
+      });
+    }
+  }
+
+  Future getWorkout() async {
+    var response = await ApiService().getWorkout(userId);
+    if (response.statusCode == 200){
+      var jsonData = jsonDecode(response.body)["workouts"];
+      jsonData = jsonData.length > 7 ? jsonData.sublist(jsonData.length - 7) : jsonData;
+      jsonData.sort((a, b) => DateTime.parse(a["creationDate"]).compareTo(DateTime.parse(b["creationDate"])));
+      setState(() {
+        sessions = jsonData.map<(DateTime, int)>((w) => (
+          DateTime.parse(w["lastUpdate"]).toUtc().add(Duration(hours: 8)),
+          (w["steps"] as num).toInt(),
+        )).toList();
       });
     }
   }
@@ -364,6 +351,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
     if (friendActivities.isNotEmpty){
       setState(() {
         latestChallenge = friendActivities.last;  
+        deadline = DateTime.parse(latestChallenge["deadline"]).toUtc().add(Duration(hours: 8));
       });
     }
 
@@ -374,26 +362,39 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
       if (latestChallenge['status'] == "EXP" && latestChallenge["fromUserid"] == myUserID){
         ConfirmHelper.showResultDialog(_currentContext, "Your latest Challenge to $userName has expired", "Notification");
       }
-      if (latestChallenge["fromUserid"] == userId && latestChallenge['status'] == "PEN"){
+      if (latestChallenge['status'] == "FIN" && latestChallenge["fromUserid"] == userId){
+        ConfirmHelper.showResultDialog(_currentContext, "Latest Challenge from $userName has finished", "Notification");
+      }
+      if (latestChallenge['status'] == "FIN" && latestChallenge["fromUserid"] == myUserID){
+        ConfirmHelper.showResultDialog(_currentContext, "Your latest Challenge to $userName has finished", "Notification");
+      }
+      if (latestChallenge['status'] == "ONG"){
         setState(() {
-          isChallenged = true;
-          hasChallenged = false;
+          ongoingChallenge = true;
         });
       }
-      else if (latestChallenge["fromUserid"] == myUserID && latestChallenge['status'] == "PEN"){
+      else if (latestChallenge['status'] == "PEN"){
         setState(() {
-          isChallenged = false;
-          hasChallenged = true;
+          pendingChallenge = true;
+        });
+      }
+      else {
+        setState(() {
+          ongoingChallenge = false;
+          pendingChallenge = false;
         });
       }
     }
+    setState(() {
+      isLoadingCha = false;
+    });
   }
 
   Future selectDeadline() async {
     DateTime? selectedDate = await showDatePicker(
       context: context, 
-      firstDate: DateTime.now(), 
-      lastDate: DateTime(2100),
+      firstDate: DateTime.now().toUtc().add(Duration(hours: 8)).add(Duration(days: 1)), 
+      lastDate: DateTime(2100).toUtc().add(Duration(hours: 8)),
       helpText: "Deadline of Challenge",
       builder: (BuildContext context, Widget? child) {
         return Theme(
@@ -411,9 +412,20 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
         );
       },
     );
+    selectedDate = DateTime(
+      selectedDate!.year,
+      selectedDate.month,
+      selectedDate.day,
+      23,
+      59,
+    );
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 8));
+    Duration difference = selectedDate.difference(now);
     setState(() {
       deadline = selectedDate;
+      durationChallenge = difference.inSeconds.toString();
     });
+    ConfirmHelper.showConfirmDialog(_currentContext, "Are you sure you want to challenge $userName?\n\nStart of challenge: ${DateFormat("MMMM d, y").format(now)} at 12:00 AM\n\nDeadline of challenge: ${DateFormat("MMMM d, y 'at' hh:mm a").format(deadline!)}", (context) => addChallenge());
   }
 
   Future setup() async {
@@ -421,6 +433,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
     await getFriends();
     await getPendingFriends();
     await getFriendActivity();
+    await getWorkout();
     getLatestChallenge();
   }
   
@@ -500,94 +513,11 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (isFriends && hasChallenged) ElevatedButton(
-                        onPressed: () {cancelChallenge();},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingCha ? 0.0 : 1.0, 
-                              child: Text(
-                                "Cancel Challenge",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.035, 
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingCha)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
-                        ),
-                      ),
-                      if (isFriends && !hasChallenged && !isChallenged) ElevatedButton(
+                    children: [                  
+                      isFriends ? ElevatedButton(
                         onPressed: () {
-                          ConfirmHelper.showChallengeDialog(context, (context)=> {selectDeadline()});
+                          ConfirmHelper.showConfirmDialog(context, "Are you sure you want to poke $userName?", (context) => pokeFriend());
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingCha ? 0.0 : 1.0, 
-                              child: Text(
-                                "Challenge",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.035, 
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingCha)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
-                        ),
-                      ),
-                      if (isFriends && (hasChallenged || !isChallenged)) SizedBox(width: screenWidth*0.03),
-                      if (isFriends) ElevatedButton(
-                        onPressed: () {ConfirmHelper.showConfirmDialog(context, "Are you sure you want to poke $userName?", (context) => pokeFriend());},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -626,10 +556,79 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                             ),
                           ]  
                         ),
+                      ) :
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.05,
+                          vertical: screenHeight * 0.01,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Poke",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 121, 119, 119),
+                              fontFamily: 'Roboto',
+                              fontSize: screenWidth * 0.035,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
-                      if (isFriends) SizedBox(width: screenWidth*0.03),
-                      if (isPending) ElevatedButton(
-                        onPressed: () {cancelRequest();},
+                      SizedBox(width: screenWidth*0.03),
+                      isFriends ? ElevatedButton(
+                        onPressed: () {
+                          if (ongoingChallenge){
+                            ConfirmHelper.showPlainActionDialog(
+                              context, 
+                              "Ongoing Challenge", 
+                              "You have an ongoing challenge with $userName.\n\nStart of challenge: ${DateFormat("MMMM d, y").format(DateTime.parse(latestChallenge["creationDate"]))} at 12:00 AM\n\nDeadline of challenge: ${DateFormat("MMMM d, y").format(deadline!)} at 11:59 PM,",
+                              "Go to Challenges",
+                              "null",
+                              false,
+                              (context) => router.push('/workout/challenges'),
+                              (context) => router.push('/workout/challenges'),
+                            );
+                          } 
+                          else if (pendingChallenge && latestChallenge["fromUserid"] == myUserID){
+                            ConfirmHelper.showPlainActionDialog(
+                              context, 
+                              "Pending Challenge", 
+                              "You have a pending challenge with $userName.\n\nStart of challenge: ${DateFormat("MMMM d, y").format(DateTime.parse(latestChallenge["creationDate"]))} at 12:00 AM\n\nDeadline of challenge: ${DateFormat("MMMM d, y").format(deadline!)} at 11:59 PM,",
+                              "Cancel Challenge",
+                              "null",
+                              false,
+                              (context) => cancelChallenge(),
+                              (context) => cancelChallenge()
+                            );
+                          }
+                          else if (pendingChallenge && latestChallenge["fromUserid"] == userId){
+                            ConfirmHelper.showPlainActionDialog(
+                              context, 
+                              "Pending Challenge", 
+                              "You have a pending challenge from $userName.\n\nStart of challenge: ${DateFormat("MMMM d, y").format(DateTime.parse(latestChallenge["creationDate"]))} at 12:00 AM\n\nDeadline of challenge: ${DateFormat("MMMM d, y").format(deadline!)} at 11:59 PM,",
+                              "Reject",
+                              "Accept",
+                              true,
+                              (context) => rejectChallenge(),
+                              (context) => acceptChallenge()
+                            );
+                          }
+                          else {
+                            ConfirmHelper.showChallengeDialog(context, (context) => selectDeadline());
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -646,104 +645,23 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                           alignment: Alignment.center,
                           children: [
                             Opacity(
-                              opacity: isLoadingFr ? 0.0 : 1.0, 
+                              opacity: isLoadingCha ? 0.0 : 1.0, 
                               child: Text(
-                                "Cancel Friend Request",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.035, 
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingFr)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
-                        ),
-                      )  
-                      else if (isFriends) ElevatedButton(
-                        onPressed: () {unFriend();},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingFr ? 0.0 : 1.0, 
-                              child: Text(
-                                "Unfriend",
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.035, 
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isLoadingFr)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
-                        ),
-                      )
-                      else if (hasReceived) ElevatedButton(
-                        onPressed: () {acceptRequest();},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingAccFr ? 0.0 : 1.0, 
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "Accept Friend",
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontFamily: 'Roboto',
-                                      fontSize: screenWidth * 0.035, 
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                ongoingChallenge ? 
+                                "Current Challenge"
+                                : (pendingChallenge ? 
+                                  "Pending Challenge"
+                                  : "Challenge"
                                   ),
-                                ],
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'Roboto',
+                                fontSize: screenWidth * 0.035, 
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            if (isLoadingAccFr)
+                          ),
+                          if (isLoadingCha)
                             SizedBox(
                               height: screenWidth * 0.045, 
                               width: screenWidth * 0.045, 
@@ -754,103 +672,45 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                             ),
                           ]  
                         ),
-                      )
-                      else ElevatedButton(
-                        onPressed: () {addFriend();},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                      ) : 
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.05,
+                          vertical: screenHeight * 0.01,
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingFr ? 0.0 : 1.0, 
-                              child: Text(
-                                "Add as friend",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
-                                  fontSize: screenWidth * 0.035, 
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: Offset(0, 2),
                             ),
-                            if (isLoadingFr)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
+                          ],
                         ),
-                      ), 
-                      if (hasReceived) SizedBox(width: screenWidth*0.03),
-                      if (hasReceived) ElevatedButton(
-                        onPressed: () {rejectRequest();},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: screenHeight * 0.01,
+                        child: Center(
+                          child: Text(
+                            "Challenge",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 121, 119, 119),
+                              fontFamily: 'Roboto',
+                              fontSize: screenWidth * 0.035,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Opacity(
-                              opacity: isLoadingRejFr ? 0.0 : 1.0, 
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "Reject Friend",
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontFamily: 'Roboto',
-                                      fontSize: screenWidth * 0.035, 
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isLoadingRejFr)
-                            SizedBox(
-                              height: screenWidth * 0.045, 
-                              width: screenWidth * 0.045, 
-                              child: CircularProgressIndicator(
-                                color: Color.fromRGBO(51, 51, 51, 1),
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ]  
-                        ),
-                      )
+                      ),
                     ],
                   ),
-                  if (isChallenged && isFriends) Padding(
-                    padding: EdgeInsets.only(top: screenHeight*0.005),
+                  Padding(
+                    padding: EdgeInsets.only(top: screenHeight*0.01),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {acceptChallenge();},
+                        if (isPending) ElevatedButton(
+                          onPressed: () {cancelRequest();},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
@@ -867,22 +727,18 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                             alignment: Alignment.center,
                             children: [
                               Opacity(
-                                opacity: isLoadingAccCha ? 0.0 : 1.0, 
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Accept Challenge",
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontFamily: 'Roboto',
-                                        fontSize: screenWidth * 0.035, 
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
+                                opacity: isLoadingFr ? 0.0 : 1.0, 
+                                child: Text(
+                                  "Cancel Friend Request",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Roboto',
+                                    fontSize: screenWidth * 0.035, 
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                              if (isLoadingAccCha)
+                              if (isLoadingFr)
                               SizedBox(
                                 height: screenWidth * 0.045, 
                                 width: screenWidth * 0.045, 
@@ -893,10 +749,9 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                               ),
                             ]  
                           ),
-                        ),
-                        SizedBox(width: screenWidth*0.03),
-                        ElevatedButton(
-                          onPressed: () {rejectChallenge();},
+                        )  
+                        else if (isFriends) ElevatedButton(
+                          onPressed: () {unFriend();},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
@@ -913,11 +768,139 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                             alignment: Alignment.center,
                             children: [
                               Opacity(
-                                opacity: isLoadingRejCha ? 0.0 : 1.0, 
+                                opacity: isLoadingFr ? 0.0 : 1.0, 
+                                child: Text(
+                                  "Unfriend",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontFamily: 'Roboto',
+                                    fontSize: screenWidth * 0.035, 
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              if (isLoadingFr)
+                              SizedBox(
+                                height: screenWidth * 0.045, 
+                                width: screenWidth * 0.045, 
+                                child: CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ]  
+                          ),
+                        )
+                        else if (hasReceived) ElevatedButton(
+                          onPressed: () {acceptRequest();},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: isLoadingAccFr ? 0.0 : 1.0, 
                                 child: Row(
                                   children: [
                                     Text(
-                                      "Reject Challenge",
+                                      "Accept Friend",
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontFamily: 'Roboto',
+                                        fontSize: screenWidth * 0.035, 
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isLoadingAccFr)
+                              SizedBox(
+                                height: screenWidth * 0.045, 
+                                width: screenWidth * 0.045, 
+                                child: CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ]  
+                          ),
+                        )
+                        else ElevatedButton(
+                          onPressed: () {addFriend();},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: isLoadingFr ? 0.0 : 1.0, 
+                                child: Text(
+                                  "Add as friend",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Roboto',
+                                    fontSize: screenWidth * 0.035, 
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              if (isLoadingFr)
+                              SizedBox(
+                                height: screenWidth * 0.045, 
+                                width: screenWidth * 0.045, 
+                                child: CircularProgressIndicator(
+                                  color: Color.fromRGBO(51, 51, 51, 1),
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ]  
+                          ),
+                        ), 
+                        if (hasReceived) SizedBox(width: screenWidth*0.03),
+                        if (hasReceived) ElevatedButton(
+                          onPressed: () {rejectRequest();},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size(screenWidth * 0.1, screenHeight * 0.01),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: isLoadingRejFr ? 0.0 : 1.0, 
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Reject Friend",
                                       style: TextStyle(
                                         color: Colors.red,
                                         fontFamily: 'Roboto',
@@ -928,7 +911,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                                   ],
                                 ),
                               ),
-                              if (isLoadingRejCha)
+                              if (isLoadingRejFr)
                               SizedBox(
                                 height: screenWidth * 0.045, 
                                 width: screenWidth * 0.045, 
@@ -943,30 +926,18 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: screenHeight*0.03),
-                    child: Text(
-                      "$userName's progress as of last week:",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'Roboto',
-                        fontSize: screenWidth * 0.04, 
-                        fontWeight: FontWeight.w400,
-                      ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: screenHeight*0.02, horizontal: screenWidth*0.05),
+                      child: AspectRatio(
+                        aspectRatio: 1.1, 
+                        child: BarChartWidget(
+                          title: "Weekly Steps",
+                          workoutData: sessions,
+                        )
+                      )
                     ),
-                  ),
-                  // Expanded(
-                  //   child: Padding(
-                  //     padding: EdgeInsets.symmetric(vertical: screenHeight*0.02),
-                  //     child: AspectRatio(
-                  //       aspectRatio: 0.95, 
-                  //       child: BarChartWidget(
-                  //         title: "Weekly Steps",
-                  //         weeklyData: [8, 10, 14, 15, 13, 10, 16], 
-                  //       )
-                  //     )
-                  //   )
-                  // )
+                  )
                 ],
               );
             }
