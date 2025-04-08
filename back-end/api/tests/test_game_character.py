@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import now
@@ -6,7 +7,7 @@ from oauth2_provider.models import AccessToken, Application
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from api.models import User, GameSave, GameCharacter
+from api.models import GameCharacter, GameSave, User
 
 
 class TestGameCharacterView(TestCase):
@@ -106,7 +107,7 @@ class TestGameCharacterView(TestCase):
      #       f"PASS: character {self.character1.name} has been deleted.",
     #    )
     #    self.assertEqual(GameCharacter.objects.filter(id=self.character1.id).count(), 0)
-   #need to fix 
+   #need to fix
 
     def test_patch_game_character_valid(self):
         """Test updating an existing game character with valid data."""

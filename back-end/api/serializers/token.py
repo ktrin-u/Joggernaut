@@ -5,7 +5,7 @@ class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(default="email")
     password = serializers.CharField(default="raw_password")
     grant_type = serializers.CharField(default="password")
-    Scope = serializers.CharField(default="read write")
+    scope = serializers.CharField(default="read write")
     client_id = serializers.CharField(default="MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3")
 
 
