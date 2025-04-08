@@ -1,12 +1,13 @@
 from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import now
 from oauth2_provider.models import AccessToken, Application
 from rest_framework import status
 from rest_framework.test import APIClient
-from api.models import User, PasswordResetToken
-from unittest.mock import patch
+
+from api.models import PasswordResetToken, User
 
 
 class TestAuthViews(TestCase):
@@ -14,18 +15,18 @@ class TestAuthViews(TestCase):
         self.client = APIClient()
 
         # Create a test user
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user(  # type: ignore
             email="testuser@email.com",
             phonenumber="09171234567",
             firstname="Test",
             lastname="User",
-            password="TestPassword123",
+            password="TestPassword12!",
         )
 
         # Create an OAuth2 application
         self.application = Application.objects.create(
             name="Test Application",
-            client_type=Application.CLIENT_CONFIDENTIAL,
+            client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_PASSWORD,
             user=self.user,
         )
@@ -56,7 +57,7 @@ class TestAuthViews(TestCase):
             "phonenumber": "09171234568",
             "firstname": "New",
             "lastname": "User",
-            "password": "NewPassword123",
+            "password": "NewPassword12!",
         }
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -66,7 +67,10 @@ class TestAuthViews(TestCase):
         """Test user login."""
         data = {
             "username": self.user.email,
-            "password": "TestPassword123",
+            "password": "TestPassword12!",
+            "grant_type": "password",
+            "scope": "read write",
+            "client_id": self.application.client_id,
         }
         response = self.client.post(self.login_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -74,7 +78,7 @@ class TestAuthViews(TestCase):
 
     def test_logout_user(self):
         """Test user logout."""
-        data = {"token": self.access_token.token}
+        data = {"token": self.access_token.token, "client_id": self.application.client_id}
         response = self.client.post(self.logout_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -95,6 +99,7 @@ class TestAuthViews(TestCase):
             "token": token,
             "new_password": "NewPassword123",
         }
+        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
         response = self.client.post(self.reset_password_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -105,6 +110,7 @@ class TestAuthViews(TestCase):
             "token": "invalid-token",
             "new_password": "NewPassword123",
         }
+        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
         response = self.client.post(self.reset_password_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("invalid token", response.json().get("msg", "").lower())
@@ -115,6 +121,7 @@ class TestAuthViews(TestCase):
             "token": "test-reset-token",
             "new_password": "NewPassword123",
         }
+        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
         response = self.client.post(self.reset_password_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", response.json())
@@ -143,6 +150,7 @@ class TestAuthViews(TestCase):
         token = "test-reset-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
+        # header is different from request body/data
         data = {
             "email": self.user.email,
             "token": token,
@@ -154,6 +162,7 @@ class TestAuthViews(TestCase):
 
     def test_patch_reset_password_invalid_token(self):
         """Test resetting the password using PATCH with an invalid token."""
+        # header is different from request body/data
         data = {
             "email": self.user.email,
             "token": "invalid-token",
@@ -169,17 +178,18 @@ class TestAuthViews(TestCase):
         token = "valid-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
+        # pay attention to header names in the API documentation
         headers = {
             "HTTP_EMAIL": self.user.email,
             "HTTP_TOKEN": token,
         }
         data = {"new_password": "NewPassword123"}
-        response = self.client.patch(self.reset_password_url, data, **headers)
+        response = self.client.patch(self.reset_password_url, data, **headers)  # no need to **headers just match it to the correct parameter
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("password has been changed", response.json()["msg"].lower())
 
-    def test_patch_reset_password_invalid_token(self):
+    def test_patch_reset_password_invalid_token2(self):
         """Test resetting the password with an invalid token."""
         headers = {
             "HTTP_EMAIL": self.user.email,
@@ -225,6 +235,7 @@ class TestAuthViews(TestCase):
         token = "valid-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
+        # check documentation
         headers = {
             "HTTP_EMAIL": self.user.email,
             "HTTP_TOKEN": token,
@@ -252,14 +263,15 @@ class TestAuthViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("not found", response.json()["msg"].lower())
 
-    @patch("api.models.PasswordResetToken.objects.get")
-    def test_forgot_password_generic_exception(self, mock_get):
-        """Test forgot password when a generic exception is raised."""
-        # Simulate an exception being raised
-        mock_get.side_effect = Exception("Simulated exception")
+    # removed test for deprecated feature
+    # @patch("api.models.PasswordResetToken.objects.get")
+    # def test_forgot_password_generic_exception(self, mock_get):
+    #     """Test forgot password when a generic exception is raised."""
+    #     # Simulate an exception being raised
+    #     mock_get.side_effect = Exception("Simulated exception")
 
-        data = {"email": self.user.email}
-        response = self.client.post(self.forgot_password_url, data)
+    #     data = {"email": self.user.email}
+    #     response = self.client.post(self.forgot_password_url, data)
 
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        self.assertIn("error raised", response.json()["msg"].lower())
+    #     self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #     self.assertIn("error raised", response.json()["msg"].lower())

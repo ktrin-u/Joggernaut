@@ -98,6 +98,7 @@ class ForgotPasswordOtpView(GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
+        summary="Send an password reset token to an email",
         description="Send an email containing a token that is used to reset the password.",
     )
     def post(self, request: Request) -> Response:
@@ -133,11 +134,12 @@ class ForgotPasswordOtpView(GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND,
                 data={"msg": MSG_FAIL.format(email, "NOT FOUND")},
             )
-        except Exception as e:
-            return Response(
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                data={"msg": f"FAIL: error raised: {str(e)}"},
-            )
+        # unnecessary
+        # except Exception as e:
+        #     return Response(
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #         data={"msg": f"FAIL: error raised: {str(e)}"},
+        #     )
 
     GET_PARAMS = [
         OpenApiParameter(
@@ -157,7 +159,7 @@ class ForgotPasswordOtpView(GenericAPIView):
     ]
 
     @extend_schema(
-        description="Verify the reset password token for a given user identified by email",
+        summary="Verify the reset password token for a given user identified by email",
         request=ForgotPasswordTokenSerializer,
         responses=MsgSerializer,
         parameters=GET_PARAMS,
