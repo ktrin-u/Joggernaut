@@ -818,4 +818,51 @@ class ApiService {
       throw Exception("Error: $e");
     }
   }
+
+  Future getLeaderboards(category) async {
+    var uri = Uri.parse(leaderboardURL).replace(queryParameters: {
+      "category": category,
+      "top_n": "10"
+    });
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.get(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Leaderboard obtained successfully!");
+        return response;
+      } else {
+        print("Failed to load leaderboards. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+  
+  Future postGameStats() async {
+    var uri = Uri.parse(gameStatsURL);
+    String? accessToken = await storage.getAccessToken();
+    try {
+      var response = await client.post(uri, 
+        headers: {
+          HttpHeaders.authorizationHeader: "Bearer $accessToken"
+        }, 
+      );
+
+      if (response.statusCode == 200) {
+        print("Game stat added successfully!");
+        return response;
+      } else {
+        print("Failed to add game stat. Status code: ${response.statusCode}");
+        return response;
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
 }

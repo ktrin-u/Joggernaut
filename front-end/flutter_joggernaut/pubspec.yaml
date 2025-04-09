@@ -71,15 +71,24 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/dashboard/
     - assets/characters/
+    - assets/tutorial/
     - assets/images/
     - assets/tiles/
     - assets/images/Terrain/Ground/
     - assets/images/Terrain/Water/
     - assets/images/Terrain/Bridge/
     - assets/images/Factions/Goblins/Troops/Torch/Blue/
-    - assets/images/Factions/Knights/Troops/Archer/Blue/
     - assets/images/Factions/Knights/Troops/Archer/Arrow/
+    - assets/images/Factions/Knights/Troops/Archer/Blue/
+    - assets/images/Factions/Knights/Troops/Archer/Yellow/
+    - assets/images/Factions/Knights/Troops/Archer/Purple/
+    - assets/images/Factions/Knights/Troops/Archer/Red/
+    - assets/images/Factions/Knights/Troops/Warrior/Blue/
+    - assets/images/Factions/Knights/Troops/Warrior/Yellow/
+    - assets/images/Factions/Knights/Troops/Warrior/Purple/
+    - assets/images/Factions/Knights/Troops/Warrior/Red/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

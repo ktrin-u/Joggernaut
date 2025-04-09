@@ -43,3 +43,7 @@ const workoutURL = "${hostURL}api/workout/";
 //game
 const gameSaveURL = "${hostURL}api/game";
 const characterURL = "${hostURL}api/game/character/";
+const gameStatsURL = "${hostURL}api/game/stats/";
+
+//leaderboard
+const leaderboardURL = "${hostURL}api/leaderboards";

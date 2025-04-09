@@ -148,6 +148,14 @@ class _WorkoutChallengesPageState extends State<WorkoutChallengesPage> {
                             ),
                           ),
                           IconButton(
+                            onPressed: (){router.push("/social");},
+                            icon: Icon(
+                              Icons.add_circle_rounded,
+                              color: Colors.black87,
+                              size: screenWidth * 0.07,
+                            ),
+                          ),
+                          IconButton(
                             onPressed: (){router.pop();},
                             icon: Icon(
                               Icons.arrow_back_ios,

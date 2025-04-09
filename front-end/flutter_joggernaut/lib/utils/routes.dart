@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/game_screens/create_character_page.dart';
+import 'package:flutter_application_1/screens/game_screens/game_dashboard_page.dart';
+import 'package:flutter_application_1/screens/game_screens/leaderboards_page.dart';
 import 'package:flutter_application_1/screens/game_screens/my_characters_page.dart';
 import 'package:flutter_application_1/screens/game_screens/view_character_page.dart';
 import 'package:flutter_application_1/screens/settings_screens/account_settings_page.dart';
@@ -75,7 +77,9 @@ final GoRouter router = GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/game', builder: (context, state) => GamePage()),
+            GoRoute(path: '/game', builder: (context, state) => GameDashboardPage()),
+            GoRoute(path: '/game/play', builder: (context, state) => GamePage()),
+            GoRoute(path: '/game/leaderboards', builder: (context, state) => LeaderboardsPage()),
             GoRoute(path: '/game/create-character', builder: (context, state) => CreateCharacterPage()),
             GoRoute(path: '/game/my-characters', builder: (context, state) => MyCharactersPage()),
             GoRoute(path: '/game/view-character/:characterid', builder: (context, state) {

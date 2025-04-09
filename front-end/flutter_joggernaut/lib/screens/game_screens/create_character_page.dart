@@ -35,10 +35,10 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
     Character(color: "Purple", type: "Archer", imagePath: "assets/characters/Purple Archer.png"),
     Character(color: "Red", type: "Archer", imagePath: "assets/characters/Red Archer.png"),
     Character(color: "Yellow", type: "Archer", imagePath: "assets/characters/Yellow Archer.png"),
-    Character(color: "Blue", type: "Pawn", imagePath: "assets/characters/Blue Pawn.png"),
-    Character(color: "Purple", type: "Pawn", imagePath: "assets/characters/Purple Pawn.png"),
-    Character(color: "Red", type: "Pawn", imagePath: "assets/characters/Red Pawn.png"),
-    Character(color: "Yellow", type: "Pawn", imagePath: "assets/characters/Yellow Pawn.png"),
+    // Character(color: "Blue", type: "Pawn", imagePath: "assets/characters/Blue Pawn.png"),
+    // Character(color: "Purple", type: "Pawn", imagePath: "assets/characters/Purple Pawn.png"),
+    // Character(color: "Red", type: "Pawn", imagePath: "assets/characters/Red Pawn.png"),
+    // Character(color: "Yellow", type: "Pawn", imagePath: "assets/characters/Yellow Pawn.png"),
     Character(color: "Blue", type: "Knight", imagePath: "assets/characters/Blue Knight.png"),
     Character(color: "Purple", type: "Knight", imagePath: "assets/characters/Purple Knight.png"),
     Character(color: "Red", type: "Knight", imagePath: "assets/characters/Red Knight.png"),
@@ -176,9 +176,9 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
               crossAxisSpacing: screenWidth * 0.01,
               mainAxisSpacing: screenHeight * 0.01,
             ),
-            itemCount: 12, 
+            itemCount: 8, 
             itemBuilder: (context, index) {
-              return GestureDetector(
+              return InkWell(
                 onTap: () {
                   setState(() {
                     selectedImage = characterImages[index].imagePath;
@@ -191,7 +191,7 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
                   decoration: BoxDecoration(
                     color: selectedItemIndex == index
                         ? Colors.blue 
-                        : Colors.grey, 
+                        : Colors.white, 
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: selectedItemIndex == index
@@ -199,6 +199,13 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
                           : Colors.transparent, 
                       width: 5,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        spreadRadius: 1,
+                        blurRadius: 6
+                      )
+                    ]
                   ),
                   child: Container(
                     width: screenWidth * 0.5,
