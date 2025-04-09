@@ -100,4 +100,19 @@ class Map extends World with HasGameRef<JoggernautGame> {
 
     add(enemy);
   }
+
+  void respawnPlayer() {
+    final spawnLayer = map.tileMap.getLayer<ObjectGroup>('Spawnpoints');
+
+    if (spawnLayer != null) {
+      for (final spawnPoint in spawnLayer.objects) {
+        if (spawnPoint.class_ == 'Player') {
+          player.position = Vector2(spawnPoint.x, spawnPoint.y);
+          player.currentHp = player.maxHp;
+          player.updateHpBar();
+          break;
+        }
+      }
+    }
+  }
 }

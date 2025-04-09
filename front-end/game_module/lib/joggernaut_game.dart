@@ -4,8 +4,11 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/palette.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_joggernaut_game/components/enemy.dart';
 import 'package:flutter_joggernaut_game/components/player.dart';
 import 'package:flutter_joggernaut_game/components/map.dart';
+import 'package:flutter_joggernaut_game/components/projectile.dart';
+import 'package:flutter_joggernaut_game/components/score.dart';
 
 class JoggernautGame extends FlameGame {
   final String character;
@@ -24,15 +27,16 @@ class JoggernautGame extends FlameGame {
   late Player player;
   late JoystickComponent joystick;
 
+  double elapsedTime = 0;
+  int get score => elapsedTime.floor();
+
+  bool isGameOver = false;
+
   @override
   FutureOr<void> onLoad() async {
     await images.loadAllImages();
 
-    player = Player(
-      color: color,
-      character: character,
-      atkSpeed: atkSpeed,
-    );
+    player = Player(color: color, character: character, atkSpeed: atkSpeed);
     player.priority = 2;
     map = Map(mapName: 'world01', player: player);
 
@@ -46,7 +50,16 @@ class JoggernautGame extends FlameGame {
 
     addAll([camera, map]);
     addJoystick();
+    add(ScoreDisplay()..priority = 3);
     return super.onLoad();
+  }
+
+  @override
+  void update(double dt) {
+    if (!isGameOver) {
+      elapsedTime += dt;
+    }
+    super.update(dt);
   }
 
   void addJoystick() {
@@ -64,5 +77,25 @@ class JoggernautGame extends FlameGame {
       margin: EdgeInsets.only(left: 64, bottom: 128),
     );
     camera.viewport.add(joystick);
+  }
+
+  void gameOver() {
+    isGameOver = true;
+    overlays.add('gameOver');
+    pauseEngine();
+  }
+
+  void restartGame() {
+    isGameOver = false;
+    overlays.remove('gameOver');
+
+    map.respawnPlayer();
+    map.removeAll(map.children.whereType<Enemy>());
+    map.removeAll(map.children.whereType<Projectile>());
+    elapsedTime = 0;
+
+    camera.viewfinder.position = player.position;
+
+    resumeEngine();
   }
 }

@@ -27,8 +27,6 @@ class Player extends Character {
   double lastDamageTime = 0.0;
   bool get isInvulnerable => lastDamageTime < damageCooldown;
 
-  bool dead = false;
-
   late final RectangleComponent hpBarBackground;
   late final RectangleComponent hpBar;
 
@@ -183,6 +181,6 @@ class Player extends Character {
   }
 
   void die() {
-    currentHp = 100;
-  } // implement game over / play again screen
+    gameRef.gameOver();
+  }
 }
