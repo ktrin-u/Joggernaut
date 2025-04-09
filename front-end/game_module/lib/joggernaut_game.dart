@@ -8,8 +8,18 @@ import 'package:flutter_joggernaut_game/components/player.dart';
 import 'package:flutter_joggernaut_game/components/map.dart';
 
 class JoggernautGame extends FlameGame {
+  final String character;
+  final String color;
+  final double atkSpeed;
+
+  JoggernautGame({
+    this.character = 'Archer',
+    this.color = 'Blue',
+    this.atkSpeed = 1.0,
+  });
+
   @override
-  Color backgroundColor() => const Color(0xFF47ABA9); // 0xFF211F30
+  Color backgroundColor() => const Color(0xFF47ABA9);
   late Map map;
   late Player player;
   late JoystickComponent joystick;
@@ -18,7 +28,12 @@ class JoggernautGame extends FlameGame {
   FutureOr<void> onLoad() async {
     await images.loadAllImages();
 
-    player = Player(color: 'Blue');
+    player = Player(
+      color: color,
+      character: character,
+      atkSpeed: atkSpeed,
+    );
+    player.priority = 2;
     map = Map(mapName: 'world01', player: player);
 
     camera = CameraComponent.withFixedResolution(
