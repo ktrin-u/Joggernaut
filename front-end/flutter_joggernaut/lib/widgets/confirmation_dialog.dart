@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/character.dart';
+import 'package:flutter_application_1/utils/constants.dart';
 
 class ConfirmHelper {
   static void showConfirmDialog(BuildContext context, String confirmationText, Function(BuildContext) onConfirm) {
@@ -247,6 +248,112 @@ class ConfirmHelper {
     );
   }
 
+  static void showTutorialDialog(
+    BuildContext context,
+    String title,
+    String description,
+    String buttonText,
+    Function onNextPressed,
+    Image? image,
+  ) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+  
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TutorialDialog(
+          context: context, 
+          height: screenHeight,
+          width: screenWidth,
+          title: title,
+          description: description,
+          buttonText: buttonText,
+          onNextPressed: onNextPressed,
+          image: image
+        );
+      }
+    );
+  }
+
+  static AlertDialog TutorialDialog({
+    required BuildContext context,
+    required double height,
+    required double width,
+    required title,
+    required description,
+    required buttonText,
+    required onNextPressed,
+    image
+  }) {
+    return AlertDialog.adaptive(
+      backgroundColor: Colors.white,
+      title: Align(
+        alignment: Alignment.center,
+        child: Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w700,
+            fontSize: width*0.07,
+            color: Color.fromRGBO(51, 51, 51, 1),
+          ),
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: width*0.5,
+            height: width*0.5,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: image 
+          ),
+          SizedBox(height: height*0.02),
+          Text(
+            description,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w300,
+              fontSize: width*0.055,
+              color: Color.fromRGBO(51, 51, 51, 1),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ]
+      ),
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(bottom: height*0.01),
+          child: Align(
+            alignment: Alignment.center,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[400],
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: width*0.05,
+                  vertical: height*0.01,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: (){
+                Navigator.pop(context);
+                onNextPressed();
+              },
+              child: Text(buttonText, style: TextStyle(fontSize: width*0.05, color: Colors.black87)),
+            ),
+          ),
+        ),
+      ]
+    );
+  }
+
   static void showPlainActionDialog(
     BuildContext context,
     String titleText,
@@ -407,7 +514,7 @@ class ConfirmHelper {
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         return AlertDialog.adaptive(
-          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+          backgroundColor: primaryColor,
           title: Text(
             "Edit Character",
             style: TextStyle(
@@ -433,6 +540,7 @@ class ConfirmHelper {
                       crossAxisSpacing: screenWidth * 0.02,
                       mainAxisSpacing: screenHeight * 0.02,
                     ),
+                    shrinkWrap: true,
                     itemCount: 4, 
                     itemBuilder: (context, index) {
                      return GestureDetector(
@@ -447,7 +555,7 @@ class ConfirmHelper {
                         decoration: BoxDecoration(
                           color: selectedItemIndex == index
                               ? Colors.blue 
-                              : Colors.grey, 
+                              : Colors.white, 
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: selectedItemIndex == index
@@ -455,6 +563,13 @@ class ConfirmHelper {
                                 : Colors.transparent, 
                             width: 5,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              spreadRadius: 1,
+                              blurRadius: 6
+                            )
+                          ]
                         ),
                         child: Container(
                           width: screenWidth * 0.5,
