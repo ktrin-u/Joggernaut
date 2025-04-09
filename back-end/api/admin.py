@@ -96,9 +96,27 @@ class UserSettingsAdmin(admin.ModelAdmin):
     ]
     ordering = ["userid"]
     readonly_fields = ["userid"]
+    list_editable = [
+        "profile_edit",
+        "workout_share",
+        "in_leaderboards",
+        "user_interact",
+    ]
     list_filter = ["profile_edit", "workout_share", "in_leaderboards", "user_interact"]
-    pass
-
+    fieldsets=[
+        (
+            None,
+            {
+                "fields": [
+                    "userid",
+                    "profile_edit",
+                    "workout_share",
+                    "in_leaderboards",
+                    "user_interact",
+                ]
+            }
+        )
+    ]
 
 @admin.register(FriendTable)
 class FriendTableAdmin(admin.ModelAdmin):

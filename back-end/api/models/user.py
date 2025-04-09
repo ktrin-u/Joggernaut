@@ -92,6 +92,12 @@ class User(AbstractUser):
     def unban(self):
         self.is_active = True
 
+    def check_perm(self,key:str) -> bool :
+        try:
+            return getattr(UserSettings.objects.get(userid=self), key)  # type: ignore
+        except Exception:
+            return False
+
 
 class UserAuditLog(models.Model):
     logid = models.AutoField(db_column="logID", primary_key=True)  # Field name made lowercase.
