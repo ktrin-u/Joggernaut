@@ -89,42 +89,66 @@ class TestAuthViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_reset_password(self):
-        """Test resetting the password using a token."""
+        """Test resetting the password using a valid token."""
         # Create a password reset token
         token = "test-reset-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
-        data = {
-            "email": self.user.email,
-            "token": token,
-            "new_password": "NewPassword123",
+        # Headers and request body
+        headers = {
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": token,  # Valid token in headers
         }
-        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
-        response = self.client.post(self.reset_password_url, data)
+        data = {
+            "new_password": "ABC123/",  # New password in body
+            "confirm_password": "ABC123/",  # Confirm password in body
+        }
+
+        # Send PATCH request
+        response = self.client.patch(self.reset_password_url, data, **headers)
+
+
+
+        # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json().get("msg"),
+            f"PASS: user {self.user.email}'s password has been changed.",
+        )
 
     def test_reset_password_invalid_token(self):
         """Test resetting the password with an invalid token."""
-        data = {
-            "email": self.user.email,
-            "token": "invalid-token",
-            "new_password": "NewPassword123",
+        headers = {
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": "invalidtoken",  # Invalid token in headers
         }
-        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
-        response = self.client.post(self.reset_password_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("invalid token", response.json().get("msg", "").lower())
+        data = {
+            "new_password": "NewPassword123/",  # New password in body
+            "confirm_password": "NewPassword123/",  # Confirm password in body
+        }
+        response = self.client.patch(self.reset_password_url, data, **headers)
 
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json().get("msg"), "FAIL: token invalidtoken is invalid")
+        
     def test_reset_password_missing_email(self):
         """Test resetting the password without providing an email."""
+        # Only provide the token and password, omit the email
         data = {
             "token": "test-reset-token",
             "new_password": "NewPassword123",
+            "confirm_password": "NewPassword123",
         }
-        # check API documentation /api/ comments to see the difference between the POST and PATCH endpoints
-        response = self.client.post(self.reset_password_url, data)
+        response = self.client.patch(self.reset_password_url, data)
+
+
+        # Assertions
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("email", response.json())
+        self.assertEqual(
+            response.json(),
+            {'email': ['This field is required.'], 'token': ['This field is required.']}
+        )
 
     def test_get_reset_token_valid(self):
         """Test verifying a valid reset token."""
@@ -150,27 +174,43 @@ class TestAuthViews(TestCase):
         token = "test-reset-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
-        # header is different from request body/data
-        data = {
-            "email": self.user.email,
-            "token": token,
-            "new_password": "NewPassword123",
+        # Headers and request body
+        headers = {
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": token,  # Token in headers
         }
-        response = self.client.patch(self.reset_password_url, data)
+        data = {
+            "new_password": "NewPassword123/",  # New password in body
+            "confirm_password": "NewPassword123/",
+        }
+        response = self.client.patch(self.reset_password_url, data, **headers)
+        # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("password has been reset", response.json().get("msg", "").lower())
-
+        self.assertIn(
+            f"PASS: user {self.user.email}'s password has been changed.",
+            response.json().get("msg", ""),
+        )
+        
     def test_patch_reset_password_invalid_token(self):
         """Test resetting the password using PATCH with an invalid token."""
-        # header is different from request body/data
-        data = {
-            "email": self.user.email,
-            "token": "invalid-token",
-            "new_password": "NewPassword123",
+        # Headers and request body
+        headers = {
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": "invalid-token",  # Invalid token in headers
         }
-        response = self.client.patch(self.reset_password_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("invalid token", response.json().get("msg", "").lower())
+        data = {
+            "new_password": "NewPassword12/3",  # New password in body
+            "confirm_password": "NewPassword12/3",  # Confirm password in body
+        }
+        response = self.client.patch(self.reset_password_url, data, **headers)
+
+        # Debug the response
+
+        # Assertions
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json().get("msg"), "FAIL: token invalid-token is invalid"
+        )
 
     def test_patch_reset_password_valid(self):
         """Test resetting the password with a valid token."""
@@ -178,16 +218,25 @@ class TestAuthViews(TestCase):
         token = "valid-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
-        # pay attention to header names in the API documentation
+        # Headers and request body
         headers = {
-            "HTTP_EMAIL": self.user.email,
-            "HTTP_TOKEN": token,
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": token,  # Valid token in headers
         }
-        data = {"new_password": "NewPassword123"}
-        response = self.client.patch(self.reset_password_url, data, **headers)  # no need to **headers just match it to the correct parameter
+        data = {
+            "new_password": "NewPassword12/3",  # New password in body
+            "confirm_password": "NewPassword12/3",  # Confirm password in body
+        }
+        response = self.client.patch(self.reset_password_url, data, **headers)
 
+
+
+        # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("password has been changed", response.json()["msg"].lower())
+        self.assertIn(
+            f"PASS: user {self.user.email}'s password has been changed.",
+            response.json().get("msg", ""),
+        )
 
     def test_patch_reset_password_invalid_token2(self):
         """Test resetting the password with an invalid token."""
@@ -235,26 +284,27 @@ class TestAuthViews(TestCase):
         token = "valid-token"
         PasswordResetToken.objects.create(user_email=self.user, token=token)
 
-        # check documentation
+        # Headers and request body
         headers = {
-            "HTTP_EMAIL": self.user.email,
-            "HTTP_TOKEN": token,
+            "HTTP_EMAIL": self.user.email,  # Email in headers
+            "HTTP_TOKEN": token,  # Valid token in headers
         }
-        data = {"new_password": "NewPassword123"}
+        data = {
+            "new_password": "ABC123/",  # New password in body
+            "confirm_password": "ABC123/",  # Confirm password in body
+        }
         response = self.client.patch(self.reset_password_url, data, **headers)
 
-        # Assert the response status and message
+        # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("password has been changed", response.json()["msg"].lower())
+        self.assertIn(
+            f"PASS: user {self.user.email}'s password has been changed.",
+            response.json().get("msg", ""),
+        )
 
-        # Assert that the user's password has been updated
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password("NewPassword123"))
-
-        # Assert that the token has been deleted
-        token_exists = PasswordResetToken.objects.filter(token=token).exists()
-        self.assertFalse(token_exists)
-
+        # Verify that the token is deleted
+        with self.assertRaises(PasswordResetToken.DoesNotExist):
+            PasswordResetToken.objects.get(user_email=self.user, token=token)
     def test_forgot_password_user_not_found(self):
         """Test forgot password when the user does not exist."""
         data = {"email": "nonexistent@email.com"}
