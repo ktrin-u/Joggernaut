@@ -1,7 +1,7 @@
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from api.views import activity, admin, auth, friends, game, user, user_profile, workout
+from api.views import activity, admin, auth, friends, game, user, user_profile, workout, leaderboard
 
 schema_urls = [
     path("", SpectacularSwaggerView.as_view(url_name="schema"), name="overview"),
@@ -107,6 +107,11 @@ workout_urls = [
 game_urls = [
     path("game/", game.GameSaveView.as_view(), name="access game save"),
     path("game/character/", game.GameCharacterView.as_view(), name="get characters"),
+    path("game/stats/", game.GameStatsView.as_view(), name="update stats"),
+]
+
+leaderboards_urls = [
+    path("leaderboards/", leaderboard.LeaderboardsView.as_view(), name="get leaderboards"),
 ]
 
 
@@ -120,4 +125,5 @@ urlpatterns = [
     *activity_urls,
     *workout_urls,
     *game_urls,
+    *leaderboards_urls,
 ]

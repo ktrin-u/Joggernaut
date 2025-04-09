@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 
 from .user import User
 
@@ -19,6 +20,12 @@ class GameCharacterClass(models.TextChoices):
 class GameSave(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     owner = models.OneToOneField(User, on_delete=models.CASCADE, db_column="owner_user")
+    attempts_lifetime = models.PositiveIntegerField(default=0)
+
+    def plus_attempt(self, count:int=1):
+        self.attempts_lifetime += count
+        self.save()
+
 
 
 class GameCharacter(models.Model):

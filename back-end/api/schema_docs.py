@@ -55,3 +55,4 @@ class Tags(StrEnum):
     PROFILE = auto()
     WORKOUT = auto()
     GAME = auto()
+    LEADERBOARDS = auto()

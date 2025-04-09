@@ -39,3 +39,9 @@ from .workout import (
     UpdateWorkoutRecordSerializer,
     WorkoutRecordSerializer,
 )
+from .leaderboards import (
+    GetLeaderboardRequestSerializer,
+    LeaderboardCategories,
+    LeaderboardTimeframe,
+    LifetimeAttemptsLeaderboardSerializer,
+)
