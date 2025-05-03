@@ -207,17 +207,17 @@ class GameCharacterView(AbstractGameView):
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"msg": f"FAIL: Gamecharacter {id} for user {request.user.email} is NOT FOUND"},  # type: ignore
+                data={
+                    "msg": f"FAIL: Gamecharacter {id} for user {request.user.email} is NOT FOUND"
+                },  # type: ignore
             )
-
 
 
 class GameStatsView(AbstractGameView):
     required_scopes = ["write"]
+
     @extend_schema(
-        request=None,
-        responses=RESPONSEMSG,
-        summary="Increase a user's lifetime attempts by 1."
+        request=None, responses=RESPONSEMSG, summary="Increase a user's lifetime attempts by 1."
     )
     def post(self, request: Request) -> Response:
         user = request.user
@@ -229,15 +229,10 @@ class GameStatsView(AbstractGameView):
 
             return Response(
                 status=status.HTTP_200_OK,
-                data={
-                    "msg": f"PASS: successfully added attempt to user {user.email}'s gamesave."
-                }
+                data={"msg": f"PASS: successfully added attempt to user {user.email}'s gamesave."},
             )
 
         except ObjectDoesNotExist:
             return Response(
-                status=status.HTTP_404_NOT_FOUND,
-                data={
-                    "msg": "FAIL: user has no game save."
-                }
+                status=status.HTTP_404_NOT_FOUND, data={"msg": "FAIL: user has no game save."}
             )

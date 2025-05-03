@@ -22,6 +22,12 @@ from .game import (
     TargetCharacterSerializer,
 )
 from .general import MsgSerializer, TargetUserIdSerializer
+from .leaderboards import (
+    GetLeaderboardRequestSerializer,
+    LeaderboardCategories,
+    LeaderboardTimeframe,
+    LifetimeAttemptsLeaderboardSerializer,
+)
 from .token import RevokeTokenSerializer, TokenResponseSerializer, TokenSerializer
 from .user import (
     PublicUserResponseSerializer,
@@ -38,10 +44,4 @@ from .workout import (
     NewWorkoutRecordSerializer,
     UpdateWorkoutRecordSerializer,
     WorkoutRecordSerializer,
-)
-from .leaderboards import (
-    GetLeaderboardRequestSerializer,
-    LeaderboardCategories,
-    LeaderboardTimeframe,
-    LifetimeAttemptsLeaderboardSerializer,
 )

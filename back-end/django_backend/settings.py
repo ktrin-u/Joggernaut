@@ -10,12 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-<<<<<<< HEAD
-import os
-from pathlib import Path
-import dotenv
-=======
->>>>>>> 2062367 (style(backend): run linter and formatter)
 import os
 import sys
 from pathlib import Path
@@ -36,7 +30,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -50,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "oauth2_provider",
     "api.apps.ApiConfig",
@@ -59,7 +55,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -88,19 +86,15 @@ TEMPLATES = [  # type:ignore
 
 WSGI_APPLICATION = "django_backend.wsgi.application"
 
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-<<<<<<< HEAD
-DATABASES = {   # type: ignore
-=======
 
 DATABASES = {  # type: ignore
->>>>>>> 1216fc8 (feat(backend): add forgot password email token endpoints)
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "HOST": os.getenv("DB_HOST"),
@@ -217,6 +211,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -103,7 +103,7 @@ class UserSettingsAdmin(admin.ModelAdmin):
         "user_interact",
     ]
     list_filter = ["profile_edit", "workout_share", "in_leaderboards", "user_interact"]
-    fieldsets=[
+    fieldsets = [
         (
             None,
             {
@@ -114,9 +114,10 @@ class UserSettingsAdmin(admin.ModelAdmin):
                     "in_leaderboards",
                     "user_interact",
                 ]
-            }
+            },
         )
     ]
+
 
 @admin.register(FriendTable)
 class FriendTableAdmin(admin.ModelAdmin):

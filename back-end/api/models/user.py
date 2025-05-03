@@ -92,7 +92,7 @@ class User(AbstractUser):
     def unban(self):
         self.is_active = True
 
-    def check_perm(self,key:str) -> bool :
+    def check_perm(self, key: str) -> bool:
         try:
             return getattr(UserSettings.objects.get(userid=self), key)  # type: ignore
         except Exception:

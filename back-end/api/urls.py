@@ -1,7 +1,7 @@
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from api.views import activity, admin, auth, friends, game, user, user_profile, workout, leaderboard
+from api.views import activity, admin, auth, friends, game, leaderboard, user, user_profile, workout
 
 schema_urls = [
     path("", SpectacularSwaggerView.as_view(url_name="schema"), name="overview"),
