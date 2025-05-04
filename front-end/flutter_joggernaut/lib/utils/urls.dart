@@ -1,4 +1,4 @@
-const hostURL = "http://10.0.2.2:8000/";
+const hostURL = "https://cs192-joggernaut.onrender.com/";
 
 // admin
 const banURL = "${hostURL}api/admin/ban/";
