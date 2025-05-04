@@ -9,7 +9,7 @@ void main() {
   // Colors: Blue, Yellow, Purple, Red
   final game = JoggernautGame(
     character: 'Archer',
-    color: 'Blue',
+    color: 'Purple',
     atkSpeed: 1.0,
   );
 
