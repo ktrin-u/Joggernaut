@@ -6,6 +6,8 @@ from django.db import models
 from api.helper import generate_random_username
 from api.validators import validate_phoneNumber
 
+# from .workout import WorkoutRecord
+
 # class Status(models.TextChoices):
 #     ONLINE = "online"
 #     IDLE = "idle"
@@ -39,8 +41,12 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         user_settings = UserSettings.objects.create(userid=user)
         user_profile = UserProfiles.objects.create(userid=user)
+        from api.models.workout import WorkoutRecord
+
+        user_workout = WorkoutRecord.objects.create(userid=user)
         user_settings.save()
         user_profile.save()
+        user_workout.save()
         return user
 
     def create_superuser(self, email, phonenumber, firstname, lastname, password=None):

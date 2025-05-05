@@ -126,8 +126,6 @@ class WorkoutRecordView(GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 data=serialized.errors,
             )
-        print(serialized.validate_empty_values)
-        print(serialized.validated_data)
         userid_filter = serialized.validated_data.get("userid")
 
         if userid_filter is None:
