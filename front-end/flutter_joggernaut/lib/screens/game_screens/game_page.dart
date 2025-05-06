@@ -48,7 +48,6 @@ class _GamePageState extends State<GamePage> {
     game = JoggernautGame(character: "${selectedCharacter["type"][0]}${selectedCharacter["type"].substring(1).toLowerCase()}",
     color: "${selectedCharacter["color"][0]}${selectedCharacter["color"].substring(1).toLowerCase()}",
     atkSpeed: 1.0,);
-    await game!.onLoad();
   }
 
   @override
