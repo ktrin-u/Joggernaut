@@ -73,13 +73,34 @@ class UserModelSerializer(serializers.ModelSerializer):
             "is_active",
             "is_staff",
         ]
+        extra_kwargs = {
+            "email": {
+                "allow_blank": True,
+                "default": "",
+            },
+            "firstname": {
+                "allow_blank": True,
+                "default": "",
+            },
+            "lastname": {
+                "allow_blank": True,
+                "default": "",
+            },
+            "phonenumber": {
+                "allow_blank": True,
+                "default": "",
+            },
+        }
 
     def update(self, instance, validated_data) -> User:
-        instance.email = validated_data.get("email", instance.email)
-        instance.firstname = validated_data.get("firstname", instance.firstname)
-        instance.lastname = validated_data.get("lastname", instance.lastname)
-        instance.phonenumber = validated_data.get("phonenumber", instance.phonenumber)
-        instance.is_active = validated_data.get("is_active", instance.is_active)
+        if validated_data.get("email", "") != "":
+            instance.email = validated_data.get("email")
+        if validated_data.get("firstname", "") != "":
+            instance.firstname = validated_data.get("firstname")
+        if validated_data.get("lastname", "") != "":
+            instance.lastname = validated_data.get("lastname")
+        if validated_data.get("phonenumber", "") != "":
+            instance.phonenumber = validated_data.get("phonenumber")
         instance.save()
         return instance
 
