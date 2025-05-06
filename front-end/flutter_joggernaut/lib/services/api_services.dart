@@ -133,7 +133,7 @@ class ApiService {
         },
         encoding: Encoding.getByName('utf-8')
       );
-      if (response.statusCode == 202) {
+      if (response.statusCode == 200) {
         print("Account info updated successfully!");
         return response;
       } else {
