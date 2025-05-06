@@ -57,7 +57,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     setState(() {
       isLoading = true;
     });
-    var response = await ApiService().updateUserInfo(email, firstname, lastname, phonenumber);
+    var response = await ApiService().updateUserInfo(firstname, lastname, phonenumber);
     if (response.statusCode == 202){
       ConfirmHelper.showResultDialog(_currentContext, "User Info updated successfully!", "Success");
     } 
@@ -147,11 +147,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     });
   }
 
-  void _saveEmail(){
-    setState(() {
-      email = emailController.text;
-    });
-  }
   void _saveFirstname(){
     setState(() {
       firstname = firstnameController.text;
@@ -268,7 +263,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   child: ListView(
                     padding: EdgeInsets.zero, 
                     children: [
-                      _buildListTileItem("Email", email!, context, emailController, isEditing, TextInputType.emailAddress, _saveEmail, "Enter your new email address", Icon(Icons.email)),
+                      _buildListTileItem("Email", email!, context, emailController, false, TextInputType.emailAddress, ()=>(), "Enter your new email address", Icon(Icons.email)),
                       _buildListTileItem("First Name", firstname!, context, firstnameController, isEditing, TextInputType.text, _saveFirstname, "Enter your first name", Icon(Icons.account_circle)),
                       _buildListTileItem("Last Name", lastname!, context, lastnameController, isEditing, TextInputType.text, _saveLastname, "Enter your last name", Icon(Icons.account_circle)),
                       _buildListTileItem("Phone Number", phonenumber!, context, phonenumberController, isEditing, TextInputType.text, _savePhonenumber, "Enter your new phonenumber", Icon(Icons.smartphone_rounded)),

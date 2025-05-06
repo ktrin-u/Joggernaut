@@ -117,7 +117,7 @@ class ApiService {
     }
   }
 
-  Future updateUserInfo(email, firstname, lastname, phonenumber) async{
+  Future updateUserInfo(firstname, lastname, phonenumber) async{
     var uri = Uri.parse(updateUserInfoURL);
     String? accessToken = await storage.getAccessToken();
     try {
@@ -127,7 +127,6 @@ class ApiService {
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
         }, 
         body: {
-          "email": email,
           "firstname" : firstname,
           "lastname" : lastname,
           "phonenumber" : phonenumber,

@@ -43,7 +43,7 @@ class JoggernautGame extends FlameGame {
     camera = CameraComponent.withFixedResolution(
       world: map,
       width: 540,
-      height: 1144,
+      height: 1100,
     );
     camera.priority = 1;
     camera.follow(player);
