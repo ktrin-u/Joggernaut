@@ -117,11 +117,11 @@ class ApiService {
     }
   }
 
-  Future updateUserInfo(firstname, lastname, phonenumber) async{
+  Future updateUserInfo(firstname, lastname) async{
     var uri = Uri.parse(updateUserInfoURL);
     String? accessToken = await storage.getAccessToken();
     try {
-      var response = await client.patch(uri, 
+      var response = await client.put(uri, 
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           HttpHeaders.authorizationHeader: "Bearer $accessToken"
@@ -129,7 +129,6 @@ class ApiService {
         body: {
           "firstname" : firstname,
           "lastname" : lastname,
-          "phonenumber" : phonenumber,
         },
         encoding: Encoding.getByName('utf-8')
       );
