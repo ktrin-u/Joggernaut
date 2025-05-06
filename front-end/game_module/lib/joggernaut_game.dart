@@ -39,11 +39,11 @@ class JoggernautGame extends FlameGame {
     player = Player(color: color, character: character, atkSpeed: atkSpeed);
     player.priority = 2;
     map = Map(mapName: 'world01', player: player);
-
+    
     camera = CameraComponent.withFixedResolution(
       world: map,
       width: 540,
-      height: 1200,
+      height: 1144,
     );
     camera.priority = 1;
     camera.follow(player);

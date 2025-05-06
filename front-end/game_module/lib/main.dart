@@ -8,7 +8,7 @@ void main() {
   // (no Pawn yet. Will use Warrior as close-range tank para no new projectile asset)
   // Colors: Blue, Yellow, Purple, Red
   final game = JoggernautGame(
-    character: 'Archer',
+    character: 'Warrior',
     color: 'Purple',
     atkSpeed: 1.0,
   );
