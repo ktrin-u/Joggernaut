@@ -107,8 +107,6 @@ class TestAuthViews(TestCase):
         # Send PATCH request
         response = self.client.patch(self.reset_password_url, data, **headers)
 
-
-
         # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -128,10 +126,9 @@ class TestAuthViews(TestCase):
         }
         response = self.client.patch(self.reset_password_url, data, **headers)
 
-
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json().get("msg"), "FAIL: token invalidtoken is invalid")
-        
+
     def test_reset_password_missing_email(self):
         """Test resetting the password without providing an email."""
         # Only provide the token and password, omit the email
@@ -142,12 +139,11 @@ class TestAuthViews(TestCase):
         }
         response = self.client.patch(self.reset_password_url, data)
 
-
         # Assertions
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json(),
-            {'email': ['This field is required.'], 'token': ['This field is required.']}
+            {"email": ["This field is required."], "token": ["This field is required."]},
         )
 
     def test_get_reset_token_valid(self):
@@ -190,7 +186,7 @@ class TestAuthViews(TestCase):
             f"PASS: user {self.user.email}'s password has been changed.",
             response.json().get("msg", ""),
         )
-        
+
     def test_patch_reset_password_invalid_token(self):
         """Test resetting the password using PATCH with an invalid token."""
         # Headers and request body
@@ -208,9 +204,7 @@ class TestAuthViews(TestCase):
 
         # Assertions
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.json().get("msg"), "FAIL: token invalid-token is invalid"
-        )
+        self.assertEqual(response.json().get("msg"), "FAIL: token invalid-token is invalid")
 
     def test_patch_reset_password_valid(self):
         """Test resetting the password with a valid token."""
@@ -228,8 +222,6 @@ class TestAuthViews(TestCase):
             "confirm_password": "NewPassword12/3",  # Confirm password in body
         }
         response = self.client.patch(self.reset_password_url, data, **headers)
-
-
 
         # Assertions
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -305,6 +297,7 @@ class TestAuthViews(TestCase):
         # Verify that the token is deleted
         with self.assertRaises(PasswordResetToken.DoesNotExist):
             PasswordResetToken.objects.get(user_email=self.user, token=token)
+
     def test_forgot_password_user_not_found(self):
         """Test forgot password when the user does not exist."""
         data = {"email": "nonexistent@email.com"}

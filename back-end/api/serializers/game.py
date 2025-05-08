@@ -73,6 +73,7 @@ class CreateGameSaveSerializer(serializers.ModelSerializer):
         model = GameSave
         fields = ["owner"]
 
+
 class CreateGameCharacterSerializer(GameCharacterSerializer):
     class Meta(GameCharacterSerializer.Meta):
         fields = ["name", "color", "type", "health", "speed", "strength", "stamina"]

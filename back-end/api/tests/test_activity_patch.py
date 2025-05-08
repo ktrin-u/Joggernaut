@@ -131,6 +131,7 @@ class TestActivityViews(TestCase):
             response.json()["msg"],
             f"FAIL: activity {self.activity_challenge.activityid} cannot be changed due to status {FriendActivityStatus.ONGOING}.",
         )
+
     def test_patch_activity_not_found(self):
         """Test patching a non-existent activity."""
         data = {

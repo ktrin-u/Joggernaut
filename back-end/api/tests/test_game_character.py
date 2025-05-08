@@ -97,17 +97,17 @@ class TestGameCharacterView(TestCase):
             f"PASS: character {data['name']} for user {self.user.email} has been created",
         )
 
-   ## def test_delete_game_character_valid(self):
-     ##   """Test deleting an existing game character."""
-      ##  response = self.client.delete(self.character_url, {"id": self.character1.id}, format="json")
-      #  self.assertEqual(response.status_code, status.HTTP_200_OK)
-     #   self.assertIn("msg", response.json())
-     #   self.assertEqual(
-     #       response.json()["msg"],
-     #       f"PASS: character {self.character1.name} has been deleted.",
+    ## def test_delete_game_character_valid(self):
+    ##   """Test deleting an existing game character."""
+    ##  response = self.client.delete(self.character_url, {"id": self.character1.id}, format="json")
+    #  self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #   self.assertIn("msg", response.json())
+    #   self.assertEqual(
+    #       response.json()["msg"],
+    #       f"PASS: character {self.character1.name} has been deleted.",
     #    )
     #    self.assertEqual(GameCharacter.objects.filter(id=self.character1.id).count(), 0)
-   #need to fix
+    # need to fix
 
     def test_patch_game_character_valid(self):
         """Test updating an existing game character with valid data."""

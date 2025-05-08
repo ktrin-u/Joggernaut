@@ -36,7 +36,7 @@ class _GamePageState extends State<GamePage> {
       });
     }
   }
-  
+
   Future addGameStat() async {
     await ApiService().postGameStats();
   }
@@ -53,7 +53,7 @@ class _GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
-    loadingGame = loadGame();  
+    loadingGame = loadGame();
   }
 
   @override
@@ -66,8 +66,8 @@ class _GamePageState extends State<GamePage> {
           return Center(
             child: CircularProgressIndicator(
             color: Color.fromRGBO(51, 51, 51, 1),
-            ) 
-          ); 
+            )
+          );
         } else if (snapshot.hasError) {
             return Center(child: Text("Error loading game"));
         } else {
