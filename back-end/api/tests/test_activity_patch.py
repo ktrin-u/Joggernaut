@@ -27,14 +27,14 @@ class TestActivityViews(TestCase):
             firstname="User1",
             lastname="Last1",
             password="testPass1@",
-        )
+        )  # type: ignore
         self.user2 = User.objects.create_user(
             email="user2@email.com",
             phonenumber="09172223333",
             firstname="User2",
             lastname="Last2",
             password="testPass2@",
-        )
+        )  # type: ignore
 
         # Create an OAuth2 application
         self.application = Application.objects.create(
