@@ -15,7 +15,6 @@ jobs:
    run-tests:
     environment: TEST_SECRET
     runs-on: ubuntu-latest
-    environment: TEST_SECRET
     steps:
     - uses: actions/checkout@v4
       with:
