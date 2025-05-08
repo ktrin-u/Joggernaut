@@ -57,8 +57,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     setState(() {
       isLoading = true;
     });
-    var response = await ApiService().updateUserInfo(firstname, lastname, phonenumber);
-    if (response.statusCode == 202){
+    var response = await ApiService().updateUserInfo(firstname, lastname);
+    if (response.statusCode == 200){
       ConfirmHelper.showResultDialog(_currentContext, "User Info updated successfully!", "Success");
     } 
     else {
@@ -155,11 +155,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   void _saveLastname(){
     setState(() {
       lastname = lastnameController.text;
-    });
-  }
-  void _savePhonenumber(){
-    setState(() {
-      phonenumber = phonenumberController.text;
     });
   }
 
@@ -266,7 +261,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       _buildListTileItem("Email", email!, context, emailController, false, TextInputType.emailAddress, ()=>(), "Enter your new email address", Icon(Icons.email)),
                       _buildListTileItem("First Name", firstname!, context, firstnameController, isEditing, TextInputType.text, _saveFirstname, "Enter your first name", Icon(Icons.account_circle)),
                       _buildListTileItem("Last Name", lastname!, context, lastnameController, isEditing, TextInputType.text, _saveLastname, "Enter your last name", Icon(Icons.account_circle)),
-                      _buildListTileItem("Phone Number", phonenumber!, context, phonenumberController, isEditing, TextInputType.text, _savePhonenumber, "Enter your new phonenumber", Icon(Icons.smartphone_rounded)),
+                      _buildListTileItem("Phone Number", phonenumber!, context, phonenumberController, false, TextInputType.text, ()=>(), "Enter your new phonenumber", Icon(Icons.smartphone_rounded)),
                       SizedBox(height: screenHeight*0.02),
                       Padding(padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07), child: Divider()),
                       Padding(
