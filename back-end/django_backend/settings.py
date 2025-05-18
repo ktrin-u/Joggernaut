@@ -93,20 +93,29 @@ WSGI_APPLICATION = "django_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-
-DATABASES = {  # type: ignore
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "HOST": os.getenv("DB_HOST"),
-        "NAME": os.getenv("DB_DATABASE"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "PORT": os.getenv("DB_PORT"),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+# If remote DB is unavailable, default to local db
+if not (os.getenv("DB_HOST") and os.getenv("DB_DATABASE") and os.getenv("DB_USER") and os.getenv("DB_PASSWORD")):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "joggernaut_db",
+        }
     }
-}
+else:
+    DATABASES = {  # type: ignore
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "HOST": os.getenv("DB_HOST"),
+            "NAME": os.getenv("DB_DATABASE"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "PORT": os.getenv("DB_PORT"),
+            "OPTIONS": {
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+
 
 # use different database for testing to speed it up
 if "test" in sys.argv:
